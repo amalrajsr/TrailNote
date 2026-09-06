@@ -5,11 +5,11 @@ Last updated: 6 September 2026
 | Work order                                           | Status      | Changed files / evidence                                                                                                                    | Limitations                                                                                         |
 | ---------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | W00 — foundation and compatibility                   | Complete    | Exact `pnpm-lock.yaml` dependency graph; environment template/validation; CI; error and not-found boundaries; `docs/dependency-baseline.md` | Hosted CI awaits the first push; local `.env` must use documented `TURSO_*` names for remote checks |
-| W01 — schema, migrations and data fixtures           | Not started | —                                                                                                                                           | Depends on W00                                                                                      |
-| W02 — domain services and invariants                 | Not started | —                                                                                                                                           | Depends on W01                                                                                      |
-| W03 — design primitives and shell                    | Not started | —                                                                                                                                           | Depends on W00                                                                                      |
-| W04 — real search and destination reading            | Not started | —                                                                                                                                           | Depends on W01–W03                                                                                  |
-| W05 — Google auth, draft and text contribution       | Not started | —                                                                                                                                           | Depends on W02–W04                                                                                  |
+| W01 — schema, migrations and data fixtures           | In progress | Drizzle schema/migration, auth schema, local/production seeds; 5 database integration tests                                                 | Empty/existing local migration passes; remote Turso staging migration was not authorized or run     |
+| W02 — domain services and invariants                 | Complete    | Contribution/reaction services, shared validation/utilities; 5 transactional integration tests and 3 domain unit tests                      | Provider-backed photo attachment is verified separately by W06                                      |
+| W03 — design primitives and shell                    | Complete    | Semantic tokens, responsive shell/primitives/Radix overlays, development gallery; 390/1440 screenshots and browser checks                   | Manual real-device keyboard check remains part of W10                                               |
+| W04 — real search and destination reading            | Complete    | Home/search/destination routes, DTO queries, cursor listing, accessible combobox; query integration and public browser tests                | Screenshots use deterministic fictional local fixtures                                              |
+| W05 — Google auth, draft and text contribution       | In progress | Better Auth Google route/client, sign-in screen, composer, draft recovery and validated Server Action                                       | Manual Google OAuth staging flow and authenticated browser publish require provider verification    |
 | W06 — ImageKit pipeline and photo UX                 | Not started | —                                                                                                                                           | Depends on W01, W02, W05                                                                            |
 | W07 — detail, confirmations and changed information  | Not started | —                                                                                                                                           | Depends on W02, W04–W06                                                                             |
 | W08 — own content, reports, contacts and moderation  | Not started | —                                                                                                                                           | Depends on W02, W05, W07                                                                            |
@@ -37,3 +37,23 @@ Last updated: 6 September 2026
 No screenshots are required for W00. The error and missing-page presentation is
 foundational only; W03 owns final tokens, primitives, responsive screenshots,
 and visual fidelity.
+
+## W01–W05 verification
+
+- Local migration applied successfully to `file:./data/trailnote.db`; the
+  development seed reran idempotently. Remote Turso was deliberately not mutated.
+- `corepack pnpm test` — passed, 2 files / 8 unit tests.
+- `corepack pnpm test:integration` — passed, 2 files / 10 integration tests.
+  Coverage includes migration constraints, seed idempotency, alias and wildcard
+  search, visible root counts, pagination, transactional rollback, concurrency,
+  revision-aware confirmations and cross-user authorization.
+- `corepack pnpm lint`, `corepack pnpm typecheck`, and `corepack pnpm build` —
+  passed after the final composer layout adjustment.
+- `corepack pnpm test:e2e` against the seeded production build — 9 UI
+  tests passed at 320/390/1440, including no horizontal overflow, alias keyboard
+  selection, filter/back state, dialog focus restoration, and axe scans with no
+  serious/critical findings, plus the guest composer validation/draft return
+  journey.
+- Screenshot evidence: `docs/screenshots/home-{390,1440}.png`,
+  `destination-{390,1440}.png`, `components-{390,1440}.png`,
+  `composer-{390,1440}.png`, and `sign-in-390.png`.
