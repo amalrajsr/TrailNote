@@ -30,8 +30,22 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (commit the documented template only)
 .env*
+!.env.example
+
+# local databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+/data/
+
+# generated test artifacts
+/test-results/
+/playwright-report/
+/blob-report/
 
 # vercel
 .vercel

@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fieldnotes
 
-## Getting Started
+Fieldnotes is a mobile-first knowledge base for practical, first-hand travel
+information in India. The implementation contract lives in
+[`docs/implementation-plan.md`](docs/implementation-plan.md), and progress is
+tracked in [`docs/implementation-status.md`](docs/implementation-status.md).
 
-First, run the development server:
+## Local setup
+
+Requirements: Node.js 24 and Corepack.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+corepack pnpm install --frozen-lockfile
+cp .env.example .env.local
+corepack pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Local database development defaults to `file:./data/trailnote.db`. Provider
+credentials are validated only when their corresponding capability is used, so
+the UI and local database can be developed without Google, Turso, or ImageKit.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Do not commit `.env` files. Only `.env.example` belongs in version control.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Quality checks
 
-## Learn More
+```bash
+corepack pnpm format:check
+corepack pnpm lint
+corepack pnpm typecheck
+corepack pnpm test
+corepack pnpm build
+```
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The database, browser, visual, moderator, and account scripts are wired in
+`package.json`; their implementations arrive with the work orders that own those
+features.

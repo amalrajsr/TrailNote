@@ -1,0 +1,13 @@
+.next/
+node_modules/
+coverage/
+test-results/
+playwright-report/
+pnpm-lock.yaml
+docs/*
+!docs/dependency-baseline.md
+!docs/implementation-status.md
+crowdsourced-practical-travel-intelligence.md
+.agents/
+.env*
+!.env.example
