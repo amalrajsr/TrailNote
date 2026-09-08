@@ -52,7 +52,10 @@ export async function shareContribution(
       mapsUrl: text(data, "mapsUrl"),
       phone: text(data, "phone"),
       publicServiceContact: data.get("publicServiceContact") === "on",
-      photos: [],
+      photos: data.getAll("photoId").map((id, index) => ({
+        id: String(id),
+        alt: String(data.getAll("photoAlt")[index] ?? ""),
+      })),
       parentContributionId: null,
       parentRevision: null,
     });

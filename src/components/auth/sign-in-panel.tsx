@@ -46,7 +46,7 @@ export function SignInPanel({
         </div>
       )}
       <button className="btn secondary" disabled={pending} onClick={signIn}>
-        <Image src="/google-g.svg" width={20} height={20} alt="" />
+        <Image src="/google-g.svg" width={20} height={20} alt="" unoptimized />
         {pending ? "Opening Google…" : "Continue with Google"}
       </button>
       {hasDraft && (

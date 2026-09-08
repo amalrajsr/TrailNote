@@ -4,6 +4,7 @@ import { getDatabase } from "../../../../src/db";
 import { categories, type Category } from "../../../../src/lib/constants";
 import { destinationBySlug } from "../../../../src/server/queries/destinations";
 import { ContributionComposer } from "../../../../src/components/contributions/composer";
+import { viewer } from "../../../../src/server/auth";
 
 export const metadata = {
   title: "Share a travel tip",
@@ -20,7 +21,10 @@ export default async function AddContributionPage({
   const { slug } = await params;
   const query = await searchParams;
   const { db } = await getDatabase();
-  const destination = await destinationBySlug(db, slug);
+  const [destination, user] = await Promise.all([
+    destinationBySlug(db, slug),
+    viewer(),
+  ]);
   if (!destination) notFound();
 
   const initialCategory = categories.includes(query.category as Category)
@@ -39,6 +43,7 @@ export default async function AddContributionPage({
           destination={destination}
           initialCategory={initialCategory}
           initialMutationId={crypto.randomUUID()}
+          signedIn={!!user}
         />
       </div>
     </main>

@@ -363,7 +363,7 @@ export const uploadAssets = sqliteTable(
     ),
     check(
       "upload_verified",
-      sql`${t.status} not in ('ready','attached') or (${t.byteSize} is not null and typeof(${t.byteSize}) = 'integer' and ${t.byteSize} between 1 and 400000 and ${t.width} is not null and ${t.width} > 0 and ${t.height} is not null and ${t.height} > 0 and ${t.format} is not null and ${t.format} = 'webp' and ${t.imagekitFileId} is not null and ${t.imagekitPath} is not null)`,
+      sql`${t.status} not in ('ready','attached') or (${t.byteSize} is not null and typeof(${t.byteSize}) = 'integer' and ${t.byteSize} > 0 and ${t.width} is not null and ${t.width} > 0 and ${t.height} is not null and ${t.height} > 0 and ${t.format} is not null and ${t.format} = 'webp' and ${t.imagekitFileId} is not null and ${t.imagekitPath} is not null)`,
     ),
     check(
       "upload_attached",

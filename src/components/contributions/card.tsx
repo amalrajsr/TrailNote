@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Clock3, Flag } from "lucide-react";
 import { CategoryIcon } from "../ui/category-icon";
 import { categoryLabels } from "../../lib/constants";
@@ -6,6 +7,7 @@ import { formatMoney, priceSuffix } from "../../lib/money";
 import { formatMonth } from "../../lib/visit-month";
 import type { ContributionCardDTO } from "../../server/queries/contributions";
 export function TipCard({ tip }: { tip: ContributionCardDTO }) {
+  const photo = tip.photos[0];
   return (
     <article className="tip-card">
       <div className="row between">
@@ -22,6 +24,16 @@ export function TipCard({ tip }: { tip: ContributionCardDTO }) {
           {tip.freshness.label}
         </span>
       </div>
+      {photo && (
+        <Image
+          className="tip-thumbnail"
+          src={photo.path}
+          width={photo.width}
+          height={photo.height}
+          sizes="(max-width: 767px) 72px, 96px"
+          alt={photo.alt}
+        />
+      )}
       <h3>
         <Link href={`/tips/${tip.id}`}>{tip.title}</Link>
       </h3>

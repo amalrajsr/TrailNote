@@ -8,6 +8,13 @@
       "when": 1788707681136,
       "tag": "0000_nebulous_toad_men",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788759715023,
+      "tag": "0001_goofy_hairball",
+      "breakpoints": true
     }
   ]
 }

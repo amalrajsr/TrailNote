@@ -3,7 +3,14 @@
 import { Check, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useActionState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   categories,
   categoryLabels,
@@ -13,6 +20,7 @@ import {
 import { currentMonth, formatMonth } from "../../lib/visit-month";
 import { CategoryIcon } from "../ui/category-icon";
 import { Button, Field, Input, Select, Textarea } from "../ui/primitives";
+import { PhotoUploader, type UploadedPhoto } from "./photo-uploader";
 import {
   shareContribution,
   type ComposerActionState,
@@ -25,12 +33,28 @@ type Destination = {
   state: string;
 };
 
-type Draft = Record<string, string> & {
+type Draft = {
   category: Category;
   body: string;
   visitedChoice: string;
   visitedMonth: string;
   mutationId: string;
+  price: string;
+  priceUnit: string;
+  priceUnitLabel: string;
+  placeName: string;
+  roomType: string;
+  bookingMethod: string;
+  dish: string;
+  fromName: string;
+  toName: string;
+  transportMode: string;
+  durationMinutes: string;
+  walkMinutes: string;
+  locationText: string;
+  mapsUrl: string;
+  phone: string;
+  photos: UploadedPhoto[];
 };
 
 const initialActionState: ComposerActionState = { status: "idle" };
@@ -76,6 +100,16 @@ function makeDraft(category: Category, mutationId: string): Draft {
     locationText: "",
     mapsUrl: "",
     phone: "",
+    photos: [],
+  };
+}
+
+function storableDraft(draft: Draft) {
+  return {
+    ...draft,
+    phone: "",
+    schemaVersion: 1,
+    updatedAt: Date.now(),
   };
 }
 
@@ -83,10 +117,12 @@ export function ContributionComposer({
   destination,
   initialCategory,
   initialMutationId,
+  signedIn,
 }: {
   destination: Destination;
   initialCategory: Category;
   initialMutationId: string;
+  signedIn: boolean;
 }) {
   const router = useRouter();
   const storageKey = `fieldnotes:draft:${destination.slug}`;
@@ -95,6 +131,7 @@ export function ContributionComposer({
   );
   const [restored, setRestored] = useState(false);
   const [details, setDetails] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
   const [state, action, pending] = useActionState(
     shareContribution,
     initialActionState,
@@ -113,7 +150,12 @@ export function ContributionComposer({
         if (parsed.body || parsed.category) {
           queueMicrotask(() => {
             if (cancelled) return;
-            setDraft((current) => Object.assign({}, current, parsed) as Draft);
+            setDraft((current) => ({
+              ...current,
+              ...parsed,
+              phone: "",
+              photos: Array.isArray(parsed.photos) ? parsed.photos : [],
+            }));
             setRestored(true);
           });
         }
@@ -131,12 +173,18 @@ export function ContributionComposer({
       sessionStorage.removeItem(storageKey);
       return;
     }
-    try {
-      sessionStorage.setItem(storageKey, JSON.stringify(draft));
-      draftSaved.current = true;
-    } catch {
-      // Private browsing can make session storage unavailable.
-    }
+    const timer = window.setTimeout(() => {
+      try {
+        sessionStorage.setItem(
+          storageKey,
+          JSON.stringify(storableDraft(draft)),
+        );
+        draftSaved.current = true;
+      } catch {
+        // Private browsing can make session storage unavailable.
+      }
+    }, 300);
+    return () => window.clearTimeout(timer);
   }, [draft, state.status, storageKey]);
 
   useEffect(() => {
@@ -147,6 +195,23 @@ export function ContributionComposer({
     }
     if (state.status === "error") summaryRef.current?.focus();
   }, [router, state]);
+
+  const setPhotos = useCallback(
+    (photos: UploadedPhoto[]) =>
+      setDraft((current) => ({ ...current, photos })),
+    [],
+  );
+  const requirePhotoAuth = useCallback(() => {
+    try {
+      sessionStorage.setItem(storageKey, JSON.stringify(storableDraft(draft)));
+      draftSaved.current = true;
+    } catch {
+      // The in-memory draft remains available if the user returns with Back.
+    }
+    router.push(
+      `/sign-in?returnTo=${encodeURIComponent(`/destinations/${destination.slug}/add`)}&draft=1`,
+    );
+  }, [destination.slug, draft, router, storageKey]);
 
   if (state.status === "success" && state.tipId) {
     return (
@@ -550,10 +615,23 @@ export function ContributionComposer({
           </div>
         </details>
 
+        <PhotoUploader
+          key={restored ? "restored-photos" : "new-photos"}
+          signedIn={signedIn}
+          photos={draft.photos}
+          onChange={setPhotos}
+          onBusyChange={setPhotoBusy}
+          onRequireAuth={requirePhotoAuth}
+        />
+
         <div className="composer-footer">
           <span className="small muted">Shared from your own experience.</span>
-          <Button busy={pending} type="submit">
-            {pending ? "Sharing…" : "Share tip"}
+          <Button busy={pending} disabled={photoBusy} type="submit">
+            {photoBusy
+              ? "Finish uploading photos…"
+              : pending
+                ? "Sharing…"
+                : "Share tip"}
           </Button>
         </div>
       </form>

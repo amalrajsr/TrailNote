@@ -120,8 +120,8 @@ export function requireImageKitEnvironment(env: Environment) {
   }
 
   return {
-    privateKey: env.IMAGEKIT_PRIVATE_KEY,
-    urlEndpoint: env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT,
+    privateKey: env.IMAGEKIT_PRIVATE_KEY!,
+    urlEndpoint: env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT!,
   };
 }
 
@@ -136,7 +136,7 @@ export function requireOperationsEnvironment(env: Environment) {
   }
 
   return {
-    rateLimitSecret: env.RATE_LIMIT_SECRET,
-    cronSecret: env.CRON_SECRET,
+    rateLimitSecret: env.RATE_LIMIT_SECRET!,
+    cronSecret: env.CRON_SECRET!,
   };
 }

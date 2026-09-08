@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, gt, inArray, isNull, sql } from "drizzle-orm";
 import type { Database, Transaction } from "../../db/client";
 import * as s from "../../db/schema";
 import {
@@ -103,22 +103,39 @@ async function associations(
         .from(s.uploadAssets)
         .where(eq(s.uploadAssets.id, photo.id))
     )[0];
-    if (
-      !asset ||
-      asset.ownerId !== userId ||
-      !(
-        (asset.status === "ready" && asset.expiresAt > now) ||
-        (asset.status === "attached" && asset.attachedContributionId === id)
-      )
-    )
+    if (!asset || asset.ownerId !== userId)
       throw new DomainError(
         "VALIDATION",
         "A photo is unavailable. Remove it or upload it again.",
       );
-    await tx
-      .update(s.uploadAssets)
-      .set({ status: "attached", attachedContributionId: id, updatedAt: now })
-      .where(eq(s.uploadAssets.id, photo.id));
+    if (asset.status === "ready") {
+      const claimed = await tx
+        .update(s.uploadAssets)
+        .set({ status: "attached", attachedContributionId: id, updatedAt: now })
+        .where(
+          and(
+            eq(s.uploadAssets.id, photo.id),
+            eq(s.uploadAssets.ownerId, userId),
+            eq(s.uploadAssets.status, "ready"),
+            gt(s.uploadAssets.expiresAt, now),
+            isNull(s.uploadAssets.attachedContributionId),
+          ),
+        )
+        .returning({ id: s.uploadAssets.id });
+      if (!claimed.length)
+        throw new DomainError(
+          "VALIDATION",
+          "A photo is unavailable. Remove it or upload it again.",
+        );
+    } else if (
+      asset.status !== "attached" ||
+      asset.attachedContributionId !== id
+    ) {
+      throw new DomainError(
+        "VALIDATION",
+        "A photo is unavailable. Remove it or upload it again.",
+      );
+    }
     await tx.insert(s.contributionPhotos).values({
       contributionId: id,
       revision,

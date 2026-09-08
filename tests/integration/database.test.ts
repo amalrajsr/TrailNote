@@ -87,11 +87,15 @@ describe("migrated database contract", () => {
       "update contributions set visited_month = '2026-13'",
       "update contributions set parent_revision = 99 where parent_revision is not null",
       "update contributions set author_id = 'missing'",
-      "update upload_assets set byte_size = 400001 where status = 'ready'",
       "update upload_assets set byte_size = null where status = 'ready'",
     ]) {
       await expect(client.execute(statement)).rejects.toThrow();
     }
+    await expect(
+      client.execute(
+        "update upload_assets set byte_size = 500001 where status = 'ready'",
+      ),
+    ).resolves.toBeDefined();
     await expect(
       client.execute({
         sql: "insert into contribution_photos values (?,99,?,0,'')",

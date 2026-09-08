@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  distDir: process.env.NEXT_DIST_DIR ?? ".next",
   images: {
     loader: "custom",
     loaderFile: "./src/lib/imagekit-loader.ts",

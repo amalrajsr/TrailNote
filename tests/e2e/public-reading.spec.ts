@@ -6,12 +6,16 @@ for (const viewport of [
   { width: 390, height: 844 },
   { width: 1440, height: 1000 },
 ]) {
-  test(`home and destination fit at ${viewport.width}px`, async ({ page }) => {
+  test(`core public pages fit at ${viewport.width}px`, async ({ page }) => {
     await page.setViewportSize(viewport);
 
-    for (const path of ["/", "/destinations/badami"]) {
+    for (const path of [
+      "/",
+      "/destinations/badami",
+      "/destinations/badami/add",
+    ]) {
       await page.goto(path);
-      await expect(page.locator("main")).toBeVisible();
+      await expect(page.locator("main").last()).toBeVisible();
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - window.innerWidth,
       );
@@ -48,7 +52,7 @@ test("destination filters keep URL state and show only the selected category", a
 
   await expect(page).toHaveURL(/category=transport/);
   await expect(
-    page.getByRole("heading", { name: "Transport tips" }),
+    page.getByRole("heading", { name: "Transport tips", exact: true }),
   ).toBeVisible();
   await expect(page.locator(".tip-card")).toHaveCount(4);
 
@@ -103,7 +107,25 @@ test("guest composer validates first, preserves its draft, and returns from sign
   await expect(page.getByText("Your saved draft was restored.")).toBeVisible();
 });
 
-for (const path of ["/", "/destinations/badami"]) {
+test("guest photo selection asks for sign-in before opening a file picker", async ({
+  page,
+}) => {
+  await page.goto("/destinations/badami/add");
+  await page
+    .getByRole("textbox", { name: "What should the next traveler know?" })
+    .fill("A draft remains available before choosing any photos.");
+  await page.getByRole("button", { name: "Add photos" }).click();
+
+  await expect(page).toHaveURL(/\/sign-in\?returnTo=/);
+  await expect(page.getByText("Your tip is saved in this tab.")).toBeVisible();
+});
+
+for (const path of [
+  "/",
+  "/destinations/badami",
+  "/destinations/badami/add",
+  "/sign-in",
+]) {
   test(`${path} has no serious accessibility violations`, async ({ page }) => {
     await page.goto(path);
     const results = await new AxeBuilder({ page }).analyze();
