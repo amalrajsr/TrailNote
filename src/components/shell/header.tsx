@@ -9,7 +9,7 @@ export async function Header() {
       <div className="container header-inner">
         <Link href="/" className="wordmark">
           <Compass size={29} strokeWidth={1.5} aria-hidden />
-          fieldnotes
+          TrailNote
         </Link>
         <nav aria-label="Main navigation" className="nav">
           <Link className="desktop-link" href="/">

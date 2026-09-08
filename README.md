@@ -1,6 +1,6 @@
-# Fieldnotes
+# TrailNote
 
-Fieldnotes is a mobile-first knowledge base for practical, first-hand travel
+TrailNote is a mobile-first knowledge base for practical, first-hand travel
 information in India. The implementation contract lives in
 [`docs/implementation-plan.md`](docs/implementation-plan.md), and progress is
 tracked in [`docs/implementation-status.md`](docs/implementation-status.md).

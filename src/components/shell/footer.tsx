@@ -4,9 +4,9 @@ export function Footer() {
     <footer className="site-footer">
       <div className="container footer-inner">
         <div>
-          <strong className="footer-wordmark">fieldnotes</strong>
+          <strong className="footer-wordmark">TrailNote</strong>
           <p className="small muted">
-            Useful things, from people who&apos;ve been there.
+            Tell the next traveller what you wish someone had told you.
           </p>
         </div>
         <nav className="footer-links" aria-label="Footer">

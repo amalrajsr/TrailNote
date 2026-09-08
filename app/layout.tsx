@@ -6,10 +6,10 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: {
-    default: "Fieldnotes",
-    template: "%s · Fieldnotes",
+    default: "TrailNote",
+    template: "%s · TrailNote",
   },
-  description: "Practical travel knowledge, shared by people who were there.",
+  description: "Tell the next traveller what you wish someone had told you.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

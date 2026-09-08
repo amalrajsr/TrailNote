@@ -1,4 +1,4 @@
-# Fieldnotes — UI implementation specification
+# TrailNote — UI implementation specification
 
 Use with [implementation contract](implementation-plan.md) and [browser reference](design-reference.html). This document specifies the finished product, including states not illustrated in the reference. Values are CSS pixels unless noted. Do not reinterpret the design as a generic SaaS landing page or an admin dashboard.
 

@@ -22,7 +22,7 @@ export default function ComponentGalleryPage() {
       <div>
         <p className="eyebrow">Development only</p>
         <h1 className="page-title">Component gallery</h1>
-        <p className="muted">Visual and interaction states for Fieldnotes.</p>
+        <p className="muted">Visual and interaction states for TrailNote.</p>
       </div>
 
       <section className="gallery" aria-label="Buttons and statuses">

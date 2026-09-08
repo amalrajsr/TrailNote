@@ -31,7 +31,7 @@ Precedence: explicit user instructions → product behavior in this plan → UI 
 | Forms | React Hook Form + Zod; identical domain validation on the server |
 | Geography / currency | India; INR only; store money in integer paise |
 | Locale | English UI, Indian number formatting; calendar month semantics in Asia/Kolkata |
-| Brand | `Fieldnotes` is a replaceable working name, not a claim of name/domain availability |
+| Brand | Product name: `TrailNote`; motto: `Tell the next traveller what you wish someone had told you.` |
 | Hosting | Plan assumes Vercel Node functions; separate preview and production resources |
 | Theme | One carefully specified light theme for MVP |
 | Upload size interpretation | Aim for 200–400 KB per stored photo; enforce at most 400,000 bytes. Already clear images below 200,000 bytes are accepted, never padded/upscaled merely to increase bytes |
