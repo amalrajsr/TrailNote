@@ -11,6 +11,7 @@ export function Dialog({
   children,
   open,
   onOpenChange,
+  className,
 }: {
   trigger?: ReactNode;
   title: string;
@@ -18,6 +19,7 @@ export function Dialog({
   children: ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  className?: string;
 }) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
@@ -27,7 +29,7 @@ export function Dialog({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="dialog-backdrop" />
         <DialogPrimitive.Content
-          className="dialog"
+          className={`dialog${className ? ` ${className}` : ""}`}
           aria-describedby={description ? undefined : undefined}
         >
           <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
@@ -78,15 +80,25 @@ export function Menu({
 export function Popover({
   trigger,
   children,
+  open,
+  onOpenChange,
+  align = "center",
 }: {
   trigger: ReactNode;
   children: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  align?: "start" | "center" | "end";
 }) {
   return (
-    <PopoverPrimitive.Root>
+    <PopoverPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <PopoverPrimitive.Trigger asChild>{trigger}</PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Content className="popover stack" sideOffset={8}>
+        <PopoverPrimitive.Content
+          className="popover stack"
+          sideOffset={8}
+          align={align}
+        >
           {children}
           <PopoverPrimitive.Close className="quiet">
             Close

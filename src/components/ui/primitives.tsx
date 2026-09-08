@@ -1,5 +1,5 @@
 import type {
-  ButtonHTMLAttributes,
+  ComponentPropsWithRef,
   InputHTMLAttributes,
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
@@ -13,7 +13,7 @@ export function Button({
   children,
   className,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & {
+}: ComponentPropsWithRef<"button"> & {
   busy?: boolean;
   variant?: "primary" | "secondary" | "quiet";
 }) {

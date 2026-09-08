@@ -35,6 +35,11 @@ async function main() {
         ...process.env,
         APP_ENV: "test",
         TURSO_DATABASE_URL: databaseUrl,
+        BETTER_AUTH_SECRET:
+          "fieldnotes-e2e-secret-with-more-than-thirty-two-characters",
+        BETTER_AUTH_URL: "http://127.0.0.1:3100",
+        GOOGLE_CLIENT_ID: "e2e-client.apps.googleusercontent.com",
+        GOOGLE_CLIENT_SECRET: "e2e-google-client-secret",
         NEXT_DIST_DIR: ".next-playwright",
       },
     },

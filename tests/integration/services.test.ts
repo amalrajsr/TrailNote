@@ -15,8 +15,10 @@ import {
 } from "../../src/server/services/contributions";
 import {
   setConfirmation,
+  removeConfirmation,
   setHelpful,
 } from "../../src/server/services/reactions";
+import { contributionDetail } from "../../src/server/queries/contributions";
 let conn: Awaited<ReturnType<typeof connectDatabase>>,
   dir: string,
   destinationId: string;
@@ -131,13 +133,68 @@ describe("transactional contribution services", () => {
   it("keeps changed prices separate and hides children when the root is deleted", async () => {
     const parent = await visibleContribution(conn.db, fixtureId(102));
     expect(parent.pricePaise).toBe(3500);
+    const detail = await contributionDetail(conn.db, parent.id);
     expect(
       (await visibleContribution(conn.db, fixtureId(200))).pricePaise,
     ).toBe(4000);
+    expect(detail.price?.paise).toBe(3500);
+    expect(detail.updates[0]?.price?.paise).toBe(4000);
+    expect(detail.updateOriginalPrices[fixtureId(200)]?.paise).toBe(3500);
+    expect(detail.changeReported).toBe(true);
     await deleteContribution(conn.db, fixtureId(3), parent.id, 1);
     await expect(
       visibleContribution(conn.db, fixtureId(200)),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+  it("moves confirmations and updates into revision history after an edit", async () => {
+    const parent = await visibleContribution(conn.db, fixtureId(102));
+    await editContribution(
+      conn.db,
+      parent.authorId,
+      parent.id,
+      parent.revision,
+      crypto.randomUUID(),
+      {
+        destinationId: parent.destinationId,
+        category: parent.category,
+        body: `${parent.body} The timetable was checked again.`,
+        visitedMonth: "2026-09",
+        pricePaise: parent.pricePaise,
+        priceUnit: parent.priceUnit,
+        fromName: parent.fromName,
+        toName: parent.toName,
+        photos: [],
+      },
+    );
+    const detail = await contributionDetail(conn.db, parent.id);
+    expect(detail.revision).toBe(2);
+    expect(detail.confirmationCount).toBe(0);
+    expect(detail.changeReported).toBe(false);
+    expect(detail.updates).toHaveLength(0);
+    expect(detail.earlierUpdates.map((update) => update.id)).toContain(
+      fixtureId(200),
+    );
+    expect(detail.previousRevisions[0]).toMatchObject({
+      revision: 1,
+      price: { paise: 3500 },
+    });
+    await expect(
+      removeConfirmation(conn.db, fixtureId(4), parent.id, 1),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+  it("excludes an observer month older than the original visit from freshness", async () => {
+    const oldTip = await visibleContribution(conn.db, fixtureId(108));
+    await conn.db.insert(s.confirmations).values({
+      contributionId: oldTip.id,
+      revision: oldTip.revision,
+      userId: fixtureId(4),
+      visitedMonth: "2024-12",
+    });
+    const detail = await contributionDetail(conn.db, oldTip.id);
+    expect(detail.visitedMonth).toBe("2025-01");
+    expect(detail.confirmationCount).toBe(0);
+    expect(detail.lastConfirmedMonth).toBeNull();
+    expect(detail.freshness.label).toBe("May have changed");
   });
   it("rejects cross-user edits and duplicate helpful votes", async () => {
     const tip = await createContribution(

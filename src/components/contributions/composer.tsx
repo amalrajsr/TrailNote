@@ -25,12 +25,21 @@ import {
   shareContribution,
   type ComposerActionState,
 } from "../../../app/destinations/[slug]/add/actions";
+import { shareUpdate } from "../../../app/tips/[id]/update/actions";
 
 type Destination = {
   id: string;
   slug: string;
   name: string;
   state: string;
+};
+
+type OriginalTipSummary = {
+  id: string;
+  revision: number;
+  title: string;
+  body: string;
+  priceLabel: string | null;
 };
 
 type Draft = {
@@ -118,22 +127,30 @@ export function ContributionComposer({
   initialCategory,
   initialMutationId,
   signedIn,
+  mode = "create",
+  original,
 }: {
   destination: Destination;
   initialCategory: Category;
   initialMutationId: string;
   signedIn: boolean;
+  mode?: "create" | "update";
+  original?: OriginalTipSummary;
 }) {
   const router = useRouter();
-  const storageKey = `fieldnotes:draft:${destination.slug}`;
+  const storageKey =
+    mode === "update" && original
+      ? `fieldnotes:draft:v1:${destination.id}:update-${original.id}`
+      : `fieldnotes:draft:${destination.slug}`;
   const [draft, setDraft] = useState(() =>
     makeDraft(initialCategory, initialMutationId),
   );
   const [restored, setRestored] = useState(false);
   const [details, setDetails] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
+  const submitAction = mode === "update" ? shareUpdate : shareContribution;
   const [state, action, pending] = useActionState(
-    shareContribution,
+    submitAction,
     initialActionState,
   );
   const summaryRef = useRef<HTMLDivElement>(null);
@@ -189,12 +206,21 @@ export function ContributionComposer({
 
   useEffect(() => {
     if (state.status === "auth" && state.returnTo) {
+      try {
+        sessionStorage.setItem(
+          storageKey,
+          JSON.stringify(storableDraft(draft)),
+        );
+        draftSaved.current = true;
+      } catch {
+        // The sign-in screen avoids claiming persistence when storage fails.
+      }
       router.push(
         `/sign-in?returnTo=${encodeURIComponent(state.returnTo)}${draftSaved.current ? "&draft=1" : ""}`,
       );
     }
     if (state.status === "error") summaryRef.current?.focus();
-  }, [router, state]);
+  }, [draft, router, state, storageKey]);
 
   const setPhotos = useCallback(
     (photos: UploadedPhoto[]) =>
@@ -209,27 +235,37 @@ export function ContributionComposer({
       // The in-memory draft remains available if the user returns with Back.
     }
     router.push(
-      `/sign-in?returnTo=${encodeURIComponent(`/destinations/${destination.slug}/add`)}&draft=1`,
+      `/sign-in?returnTo=${encodeURIComponent(
+        mode === "update" && original
+          ? `/tips/${original.id}/update`
+          : `/destinations/${destination.slug}/add`,
+      )}&draft=1`,
     );
-  }, [destination.slug, draft, router, storageKey]);
+  }, [destination.slug, draft, mode, original, router, storageKey]);
 
   if (state.status === "success" && state.tipId) {
     return (
       <section className="form-card field-hint" aria-live="polite">
         <Check size={48} aria-hidden="true" />
-        <h2>Tip added</h2>
-        <p className="muted">Thanks for sharing something practical.</p>
+        <h2>{mode === "update" ? "Update shared" : "Tip added"}</h2>
+        <p className="muted">
+          {mode === "update"
+            ? "Thanks for helping travelers understand what changed."
+            : "Thanks for sharing something practical."}
+        </p>
         <div className="row">
           <Link className="btn secondary" href={`/tips/${state.tipId}`}>
-            View tip
+            {mode === "update" ? "View updated discussion" : "View tip"}
           </Link>
-          <button
-            type="button"
-            className="btn"
-            onClick={() => window.location.reload()}
-          >
-            Add another thing about {destination.name}
-          </button>
+          {mode === "create" && (
+            <button
+              type="button"
+              className="btn"
+              onClick={() => window.location.reload()}
+            >
+              Add another thing about {destination.name}
+            </button>
+          )}
         </div>
       </section>
     );
@@ -312,6 +348,16 @@ export function ContributionComposer({
         <input type="hidden" name="category" value={category} />
         <input
           type="hidden"
+          name="parentContributionId"
+          value={original?.id ?? ""}
+        />
+        <input
+          type="hidden"
+          name="parentRevision"
+          value={original?.revision ?? ""}
+        />
+        <input
+          type="hidden"
           name="visitedMonth"
           value={
             draft.visitedChoice === "custom"
@@ -331,34 +377,49 @@ export function ContributionComposer({
           </div>
         )}
 
-        <fieldset className="composer-categories">
-          <legend className="label">What did you discover?</legend>
-          <div className="pills">
-            {[
-              "general",
-              ...categories.filter((value) => value !== "general"),
-            ].map((value) => (
-              <button
-                type="button"
-                className={`pill ${category === value ? "selected" : ""}`}
-                aria-pressed={category === value}
-                key={value}
-                onClick={() =>
-                  setDraft((current) => ({
-                    ...current,
-                    category: value as Category,
-                    price: "",
-                    priceUnit: defaultUnits[value as Category],
-                    priceUnitLabel: "",
-                  }))
-                }
-              >
-                <CategoryIcon category={value as Category} />
-                {categoryNames[value as Category]}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+        {mode === "update" && original ? (
+          <section className="original-summary" aria-labelledby="original-tip">
+            <p className="eyebrow" id="original-tip">
+              Original report · version {original.revision}
+            </p>
+            <h2>{original.title}</h2>
+            {original.priceLabel && <strong>{original.priceLabel}</strong>}
+            <p>{original.body}</p>
+            <p className="small muted">
+              Destination and category stay linked to this report. Leave revised
+              facts blank when you did not observe a new value.
+            </p>
+          </section>
+        ) : (
+          <fieldset className="composer-categories">
+            <legend className="label">What did you discover?</legend>
+            <div className="pills">
+              {[
+                "general",
+                ...categories.filter((value) => value !== "general"),
+              ].map((value) => (
+                <button
+                  type="button"
+                  className={`pill ${category === value ? "selected" : ""}`}
+                  aria-pressed={category === value}
+                  key={value}
+                  onClick={() =>
+                    setDraft((current) => ({
+                      ...current,
+                      category: value as Category,
+                      price: "",
+                      priceUnit: defaultUnits[value as Category],
+                      priceUnitLabel: "",
+                    }))
+                  }
+                >
+                  <CategoryIcon category={value as Category} />
+                  {categoryNames[value as Category]}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        )}
 
         <div className="category-fields">
           {(category === "stay" ||
@@ -422,7 +483,11 @@ export function ContributionComposer({
 
           <Field
             id="body"
-            label="What should the next traveler know?"
+            label={
+              mode === "update"
+                ? "Tell travelers what's different"
+                : "What should the next traveler know?"
+            }
             error={error("body")}
           >
             <Textarea
@@ -631,7 +696,9 @@ export function ContributionComposer({
               ? "Finish uploading photos…"
               : pending
                 ? "Sharing…"
-                : "Share tip"}
+                : mode === "update"
+                  ? "Share update"
+                  : "Share tip"}
           </Button>
         </div>
       </form>

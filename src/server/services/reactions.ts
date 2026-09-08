@@ -63,7 +63,12 @@ export async function removeConfirmation(
 ) {
   return db.transaction(async (tx) => {
     await activeProfile(tx, userId);
-    await visibleContribution(tx, id);
+    const tip = await visibleContribution(tx, id);
+    if (tip.revision !== revision)
+      throw new DomainError(
+        "CONFLICT",
+        "This tip was edited. Review the latest version before changing your confirmation.",
+      );
     await tx
       .delete(confirmations)
       .where(

@@ -3,7 +3,12 @@ import { and, eq, sql, desc, inArray, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import type { Database } from "../../db/client";
 import * as s from "../../db/schema";
-import { categories, categoryLabels, type Category } from "../../lib/constants";
+import {
+  categories,
+  categoryLabels,
+  type Category,
+  type PriceUnit,
+} from "../../lib/constants";
 import { freshness } from "../../lib/visit-month";
 import { DomainError } from "../result";
 import { visibleContribution } from "../services/contributions";
@@ -115,90 +120,105 @@ type Tip = typeof c.$inferSelect;
 export async function cardsForRows(db: Database, rows: Tip[]) {
   if (!rows.length) return [];
   const ids = rows.map((r) => r.id);
-  const [authors, confirm, helpful, updates, photos] = await Promise.all([
-    db
-      .select({ id: s.profiles.userId, name: s.profiles.displayName })
-      .from(s.profiles)
-      .where(
-        inArray(
-          s.profiles.userId,
-          rows.map((r) => r.authorId),
+  const [authors, destinations, confirm, helpful, updates, photos] =
+    await Promise.all([
+      db
+        .select({ id: s.profiles.userId, name: s.profiles.displayName })
+        .from(s.profiles)
+        .where(
+          inArray(
+            s.profiles.userId,
+            rows.map((r) => r.authorId),
+          ),
         ),
-      ),
-    db
-      .select({
-        id: s.confirmations.contributionId,
-        revision: s.confirmations.revision,
-        month: sql<string>`max(${s.confirmations.visitedMonth})`,
-        count: sql<number>`count(*)`.mapWith(Number),
-      })
-      .from(s.confirmations)
-      .innerJoin(
-        s.profiles,
-        and(
-          eq(s.profiles.userId, s.confirmations.userId),
-          eq(s.profiles.status, "active"),
+      db
+        .select({
+          id: s.destinations.id,
+          slug: s.destinations.slug,
+          name: s.destinations.name,
+        })
+        .from(s.destinations)
+        .where(
+          inArray(
+            s.destinations.id,
+            rows.map((r) => r.destinationId),
+          ),
         ),
-      )
-      .innerJoin(
-        c,
-        and(
-          eq(c.id, s.confirmations.contributionId),
-          eq(c.revision, s.confirmations.revision),
-          sql`${s.confirmations.userId} <> ${c.authorId}`,
-          sql`(${c.visitedMonth} is null or ${s.confirmations.visitedMonth} >= ${c.visitedMonth})`,
+      db
+        .select({
+          id: s.confirmations.contributionId,
+          revision: s.confirmations.revision,
+          month: sql<string>`max(${s.confirmations.visitedMonth})`,
+          count: sql<number>`count(*)`.mapWith(Number),
+        })
+        .from(s.confirmations)
+        .innerJoin(
+          s.profiles,
+          and(
+            eq(s.profiles.userId, s.confirmations.userId),
+            eq(s.profiles.status, "active"),
+          ),
+        )
+        .innerJoin(
+          c,
+          and(
+            eq(c.id, s.confirmations.contributionId),
+            eq(c.revision, s.confirmations.revision),
+            sql`${s.confirmations.userId} <> ${c.authorId}`,
+            sql`(${c.visitedMonth} is null or ${s.confirmations.visitedMonth} >= ${c.visitedMonth})`,
+          ),
+        )
+        .where(inArray(s.confirmations.contributionId, ids))
+        .groupBy(s.confirmations.contributionId, s.confirmations.revision),
+      db
+        .select({
+          id: s.helpfulVotes.contributionId,
+          count: sql<number>`count(*)`.mapWith(Number),
+        })
+        .from(s.helpfulVotes)
+        .innerJoin(
+          s.profiles,
+          and(
+            eq(s.profiles.userId, s.helpfulVotes.userId),
+            eq(s.profiles.status, "active"),
+          ),
+        )
+        .where(inArray(s.helpfulVotes.contributionId, ids))
+        .groupBy(s.helpfulVotes.contributionId),
+      db
+        .select({ id: c.parentContributionId, revision: c.parentRevision })
+        .from(c)
+        .where(
+          and(
+            inArray(c.parentContributionId, ids),
+            eq(c.status, "published"),
+            visible,
+          ),
         ),
-      )
-      .where(inArray(s.confirmations.contributionId, ids))
-      .groupBy(s.confirmations.contributionId, s.confirmations.revision),
-    db
-      .select({
-        id: s.helpfulVotes.contributionId,
-        count: sql<number>`count(*)`.mapWith(Number),
-      })
-      .from(s.helpfulVotes)
-      .innerJoin(
-        s.profiles,
-        and(
-          eq(s.profiles.userId, s.helpfulVotes.userId),
-          eq(s.profiles.status, "active"),
-        ),
-      )
-      .where(inArray(s.helpfulVotes.contributionId, ids))
-      .groupBy(s.helpfulVotes.contributionId),
-    db
-      .select({ id: c.parentContributionId, revision: c.parentRevision })
-      .from(c)
-      .where(
-        and(
-          inArray(c.parentContributionId, ids),
-          eq(c.status, "published"),
-          visible,
-        ),
-      ),
-    db
-      .select({
-        id: s.contributionPhotos.contributionId,
-        revision: s.contributionPhotos.revision,
-        path: s.uploadAssets.imagekitPath,
-        width: s.uploadAssets.width,
-        height: s.uploadAssets.height,
-        alt: s.contributionPhotos.altText,
-        position: s.contributionPhotos.position,
-      })
-      .from(s.contributionPhotos)
-      .innerJoin(
-        s.uploadAssets,
-        and(
-          eq(s.uploadAssets.id, s.contributionPhotos.assetId),
-          eq(s.uploadAssets.status, "attached"),
-        ),
-      )
-      .where(inArray(s.contributionPhotos.contributionId, ids))
-      .orderBy(s.contributionPhotos.position),
-  ]);
+      db
+        .select({
+          id: s.contributionPhotos.contributionId,
+          revision: s.contributionPhotos.revision,
+          path: s.uploadAssets.imagekitPath,
+          width: s.uploadAssets.width,
+          height: s.uploadAssets.height,
+          alt: s.contributionPhotos.altText,
+          position: s.contributionPhotos.position,
+        })
+        .from(s.contributionPhotos)
+        .innerJoin(
+          s.uploadAssets,
+          and(
+            eq(s.uploadAssets.id, s.contributionPhotos.assetId),
+            eq(s.uploadAssets.status, "attached"),
+          ),
+        )
+        .where(inArray(s.contributionPhotos.contributionId, ids))
+        .orderBy(s.contributionPhotos.position),
+    ]);
   return rows.map((t) => {
     const author = authors.find((a) => a.id === t.authorId),
+      destination = destinations.find((d) => d.id === t.destinationId),
       confirmation = confirm.find(
         (f) => f.id === t.id && f.revision === t.revision,
       ),
@@ -207,10 +227,14 @@ export async function cardsForRows(db: Database, rows: Tip[]) {
       t.placeName ||
       (t.fromName && t.toName
         ? `${t.fromName} → ${t.toName}`
-        : `${categoryLabels[t.category]} tip`);
+        : `${categoryLabels[t.category]} tip in ${destination?.name ?? "this destination"}`);
     return {
       id: t.id,
       destinationId: t.destinationId,
+      destination: {
+        slug: destination?.slug ?? "",
+        name: destination?.name ?? "Destination",
+      },
       category: t.category,
       title,
       body: t.body,
@@ -262,11 +286,34 @@ export async function cardsForRows(db: Database, rows: Tip[]) {
 export type ContributionCardDTO = Awaited<
   ReturnType<typeof cardsForRows>
 >[number];
+
+type Snapshot = Partial<{
+  body: string;
+  visitedMonth: string | null;
+  pricePaise: number | null;
+  priceUnit: PriceUnit | null;
+  priceUnitLabel: string | null;
+}>;
+
+function readSnapshot(value: string): Snapshot {
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return parsed && typeof parsed === "object" ? (parsed as Snapshot) : {};
+  } catch {
+    return {};
+  }
+}
+
 export async function contributionDetail(db: Database, id: string) {
   const tip = await visibleContribution(db, id);
   const [card] = await cardsForRows(db, [tip]);
   const [destination] = await db
-    .select({ slug: s.destinations.slug, name: s.destinations.name })
+    .select({
+      id: s.destinations.id,
+      slug: s.destinations.slug,
+      name: s.destinations.name,
+      state: s.destinations.state,
+    })
     .from(s.destinations)
     .where(eq(s.destinations.id, tip.destinationId));
   const [contact] = await db
@@ -275,13 +322,23 @@ export async function contributionDetail(db: Database, id: string) {
     .where(
       and(eq(s.contacts.contributionId, id), eq(s.contacts.status, "visible")),
     );
-  const updateRows = await db
-    .select()
-    .from(c)
-    .where(
-      and(eq(c.parentContributionId, id), eq(c.status, "published"), visible),
-    )
-    .orderBy(desc(c.createdAt));
+  const parentTip = tip.parentContributionId
+    ? await visibleContribution(db, tip.parentContributionId)
+    : null;
+  const root = parentTip ?? tip;
+  const updateRows = parentTip
+    ? []
+    : await db
+        .select()
+        .from(c)
+        .where(
+          and(
+            eq(c.parentContributionId, root.id),
+            eq(c.status, "published"),
+            visible,
+          ),
+        )
+        .orderBy(desc(c.createdAt));
   const revisions = await db
     .select({
       revision: s.contributionRevisions.revision,
@@ -289,9 +346,27 @@ export async function contributionDetail(db: Database, id: string) {
     })
     .from(s.contributionRevisions)
     .where(eq(s.contributionRevisions.contributionId, id));
+  const updateCards = await cardsForRows(db, updateRows);
+  const revisionSnapshots = new Map(
+    revisions.map((revision) => [
+      revision.revision,
+      readSnapshot(revision.snapshot),
+    ]),
+  );
+  const [parentCard] = parentTip ? await cardsForRows(db, [parentTip]) : [];
   return {
     ...card,
     destination,
+    isUpdate: !!parentTip,
+    parent: parentCard
+      ? {
+          id: parentCard.id,
+          revision: parentCard.revision,
+          title: parentCard.title,
+          body: parentCard.body,
+          price: parentCard.price,
+        }
+      : null,
     hasContact: !!contact,
     details: {
       placeName: tip.placeName,
@@ -306,12 +381,97 @@ export async function contributionDetail(db: Database, id: string) {
       locationText: tip.locationText,
       mapsUrl: tip.mapsUrl,
     },
-    updates: await cardsForRows(db, updateRows),
+    updates: updateCards.filter(
+      (update) => update.parentRevision === root.revision,
+    ),
+    earlierUpdates: updateCards.filter(
+      (update) => update.parentRevision !== root.revision,
+    ),
     previousRevisions: revisions
       .filter((r) => r.revision !== tip.revision)
-      .map((r) => ({
-        revision: r.revision,
-        body: String(JSON.parse(r.snapshot).body ?? ""),
-      })),
+      .sort((a, b) => b.revision - a.revision)
+      .map((r) => {
+        const snapshot = readSnapshot(r.snapshot);
+        return {
+          revision: r.revision,
+          body: String(snapshot.body ?? ""),
+          visitedMonth: snapshot.visitedMonth ?? null,
+          price:
+            snapshot.pricePaise == null || !snapshot.priceUnit
+              ? null
+              : {
+                  paise: snapshot.pricePaise,
+                  currency: "INR" as const,
+                  unit: snapshot.priceUnit,
+                  unitLabel: snapshot.priceUnitLabel ?? null,
+                },
+        };
+      }),
+    updateOriginalPrices: Object.fromEntries(
+      updateRows.map((update) => {
+        const snapshot = revisionSnapshots.get(update.parentRevision ?? -1);
+        return [
+          update.id,
+          update.parentRevision === root.revision
+            ? card.price
+            : snapshot?.pricePaise == null || !snapshot.priceUnit
+              ? null
+              : {
+                  paise: snapshot.pricePaise,
+                  currency: "INR" as const,
+                  unit: snapshot.priceUnit,
+                  unitLabel: snapshot.priceUnitLabel ?? null,
+                },
+        ];
+      }),
+    ),
+  };
+}
+
+export type ContributionDetailDTO = Awaited<
+  ReturnType<typeof contributionDetail>
+>;
+
+export async function viewerReactionState(
+  db: Database,
+  id: string,
+  userId?: string,
+) {
+  const tip = await visibleContribution(db, id);
+  if (!userId)
+    return {
+      authenticated: false,
+      isAuthor: false,
+      confirmationMonth: null,
+      helpful: false,
+    };
+  const [confirmation, helpful] = await Promise.all([
+    db
+      .select({ month: s.confirmations.visitedMonth })
+      .from(s.confirmations)
+      .where(
+        and(
+          eq(s.confirmations.contributionId, id),
+          eq(s.confirmations.revision, tip.revision),
+          eq(s.confirmations.userId, userId),
+        ),
+      )
+      .limit(1),
+    db
+      .select({ id: s.helpfulVotes.contributionId })
+      .from(s.helpfulVotes)
+      .where(
+        and(
+          eq(s.helpfulVotes.contributionId, id),
+          eq(s.helpfulVotes.userId, userId),
+        ),
+      )
+      .limit(1),
+  ]);
+  return {
+    authenticated: true,
+    isAuthor: tip.authorId === userId,
+    confirmationMonth: confirmation[0]?.month ?? null,
+    helpful: !!helpful[0],
   };
 }

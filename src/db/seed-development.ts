@@ -10,6 +10,7 @@ import {
   confirmations,
   contacts,
   uploadAssets,
+  session,
 } from "./schema";
 import { seedDestinations } from "./seed-destinations";
 import { categories, type Category, type PriceUnit } from "../lib/constants";
@@ -17,6 +18,9 @@ import { categories, type Category, type PriceUnit } from "../lib/constants";
 export const fixtureClock = new Date("2026-09-06T06:30:00Z");
 export const fixtureId = (n: number) =>
   `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+export const fixtureSessionToken = "fieldnotes-development-observer-session";
+export const fixtureNewObserverSessionToken =
+  "fieldnotes-development-new-observer-session";
 export function assertDevelopmentSeed(appEnv: string, url: string) {
   if (!["development", "test"].includes(appEnv) || !url.startsWith("file:"))
     throw new Error(
@@ -55,6 +59,28 @@ export async function seedDevelopment(
         })
         .onConflictDoNothing();
     }
+    await tx
+      .insert(session)
+      .values({
+        id: fixtureId(50),
+        token: fixtureSessionToken,
+        userId: fixtureId(4),
+        expiresAt: new Date(+fixtureClock + 365 * 86400000),
+        createdAt: fixtureClock,
+        updatedAt: fixtureClock,
+      })
+      .onConflictDoNothing();
+    await tx
+      .insert(session)
+      .values({
+        id: fixtureId(51),
+        token: fixtureNewObserverSessionToken,
+        userId: fixtureId(1),
+        expiresAt: new Date(+fixtureClock + 365 * 86400000),
+        createdAt: fixtureClock,
+        updatedAt: fixtureClock,
+      })
+      .onConflictDoNothing();
     const badami = (
       await tx
         .select()
@@ -69,6 +95,8 @@ export async function seedDevelopment(
       priceUnit?: PriceUnit;
       fromName?: string;
       toName?: string;
+      transportMode?: "bus";
+      durationMinutes?: number;
       walkMinutes?: number;
     }> = [
       {
@@ -89,6 +117,8 @@ export async function seedDevelopment(
         category: "transport",
         fromName: "Badami",
         toName: "Pattadakal",
+        transportMode: "bus",
+        durationMinutes: 40,
         pricePaise: 3500,
         priceUnit: "person_trip",
         body: "Fictional development example: the local bus cost ₹35 per person. Ask at the bus stand which platform serves Pattadakal.",
@@ -125,6 +155,8 @@ export async function seedDevelopment(
         placeName: e.placeName ?? null,
         fromName: e.fromName ?? null,
         toName: e.toName ?? null,
+        transportMode: e.transportMode ?? null,
+        durationMinutes: e.durationMinutes ?? null,
         walkMinutes: e.walkMinutes ?? null,
       };
       await tx
