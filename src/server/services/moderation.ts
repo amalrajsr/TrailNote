@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import type { Database, Transaction } from "../../db/client";
 import * as s from "../../db/schema";
@@ -17,7 +17,7 @@ async function moderator(db: Database | Transaction, userId: string) {
 
 export async function moderationQueues(db: Database, userId: string) {
   await moderator(db, userId);
-  const [contributions, contacts] = await Promise.all([
+  const [contributions, contacts, events] = await Promise.all([
     db
       .select({
         id: s.reports.id,
@@ -27,8 +27,14 @@ export async function moderationQueues(db: Database, userId: string) {
         details: s.reports.details,
         createdAt: s.reports.createdAt,
         status: s.reports.status,
+        resolutionNote: s.reports.resolutionNote,
+        resolvedAt: s.reports.resolvedAt,
         body: s.contributions.body,
         destination: s.destinations.name,
+        contributionStatus: s.contributions.status,
+        authorId: s.contributions.authorId,
+        authorName: s.profiles.displayName,
+        authorStatus: s.profiles.status,
       })
       .from(s.reports)
       .innerJoin(
@@ -39,8 +45,8 @@ export async function moderationQueues(db: Database, userId: string) {
         s.destinations,
         eq(s.destinations.id, s.contributions.destinationId),
       )
-      .where(eq(s.reports.status, "open"))
-      .orderBy(s.reports.createdAt),
+      .innerJoin(s.profiles, eq(s.profiles.userId, s.contributions.authorId))
+      .orderBy(desc(s.reports.createdAt)),
     db
       .select({
         id: s.contactRemovalRequests.id,
@@ -49,8 +55,11 @@ export async function moderationQueues(db: Database, userId: string) {
         requestText: s.contactRemovalRequests.requestText,
         createdAt: s.contactRemovalRequests.createdAt,
         status: s.contactRemovalRequests.status,
+        resolutionNote: s.contactRemovalRequests.resolutionNote,
+        resolvedAt: s.contactRemovalRequests.resolvedAt,
         body: s.contributions.body,
         destination: s.destinations.name,
+        contactStatus: s.contacts.status,
       })
       .from(s.contactRemovalRequests)
       .innerJoin(
@@ -61,10 +70,24 @@ export async function moderationQueues(db: Database, userId: string) {
         s.destinations,
         eq(s.destinations.id, s.contributions.destinationId),
       )
-      .where(eq(s.contactRemovalRequests.status, "open"))
-      .orderBy(s.contactRemovalRequests.createdAt),
+      .innerJoin(
+        s.contacts,
+        eq(s.contacts.id, s.contactRemovalRequests.contactId),
+      )
+      .orderBy(desc(s.contactRemovalRequests.createdAt)),
+    db
+      .select({
+        targetType: s.moderationEvents.targetType,
+        targetId: s.moderationEvents.targetId,
+        action: s.moderationEvents.action,
+        reason: s.moderationEvents.reason,
+        createdAt: s.moderationEvents.createdAt,
+      })
+      .from(s.moderationEvents)
+      .orderBy(desc(s.moderationEvents.createdAt))
+      .limit(100),
   ]);
-  return { contributions, contacts };
+  return { contributions, contacts, events };
 }
 
 export async function resolveReport(
@@ -76,6 +99,7 @@ export async function resolveReport(
   const input = z
     .object({
       reportId: z.uuid(),
+      expectedStatus: z.literal("open"),
       disposition: z.enum(["hide", "dismiss"]),
       reason,
     })
@@ -88,14 +112,14 @@ export async function resolveReport(
       .where(eq(s.reports.id, input.reportId));
     if (!report)
       throw new DomainError("NOT_FOUND", "This report is unavailable.");
-    if (report.status !== "open")
+    if (report.status !== input.expectedStatus)
       throw new DomainError("CONFLICT", "This report was already reviewed.");
     if (input.disposition === "hide")
       await tx
         .update(s.contributions)
         .set({ status: "hidden", updatedAt: now })
         .where(eq(s.contributions.id, report.contributionId));
-    await tx
+    const changed = await tx
       .update(s.reports)
       .set({
         status: input.disposition === "hide" ? "resolved" : "dismissed",
@@ -104,8 +128,14 @@ export async function resolveReport(
         resolvedAt: now,
       })
       .where(
-        and(eq(s.reports.id, input.reportId), eq(s.reports.status, "open")),
-      );
+        and(
+          eq(s.reports.id, input.reportId),
+          eq(s.reports.status, input.expectedStatus),
+        ),
+      )
+      .returning({ id: s.reports.id });
+    if (!changed.length)
+      throw new DomainError("CONFLICT", "This report was already reviewed.");
     await tx.insert(s.moderationEvents).values({
       moderatorId: userId,
       targetType: "contribution",
@@ -127,6 +157,7 @@ export async function resolveContactRemoval(
   const input = z
     .object({
       requestId: z.uuid(),
+      expectedStatus: z.literal("open"),
       disposition: z.enum(["hide", "dismiss"]),
       reason,
     })
@@ -139,14 +170,14 @@ export async function resolveContactRemoval(
       .where(eq(s.contactRemovalRequests.id, input.requestId));
     if (!request)
       throw new DomainError("NOT_FOUND", "This request is unavailable.");
-    if (request.status !== "open")
+    if (request.status !== input.expectedStatus)
       throw new DomainError("CONFLICT", "This request was already reviewed.");
     if (input.disposition === "hide")
       await tx
         .update(s.contacts)
         .set({ status: "hidden", updatedAt: now })
         .where(eq(s.contacts.id, request.contactId));
-    await tx
+    const changed = await tx
       .update(s.contactRemovalRequests)
       .set({
         status: input.disposition === "hide" ? "resolved" : "dismissed",
@@ -157,9 +188,12 @@ export async function resolveContactRemoval(
       .where(
         and(
           eq(s.contactRemovalRequests.id, input.requestId),
-          eq(s.contactRemovalRequests.status, "open"),
+          eq(s.contactRemovalRequests.status, input.expectedStatus),
         ),
-      );
+      )
+      .returning({ id: s.contactRemovalRequests.id });
+    if (!changed.length)
+      throw new DomainError("CONFLICT", "This request was already reviewed.");
     await tx.insert(s.moderationEvents).values({
       moderatorId: userId,
       targetType: "contact",
@@ -176,6 +210,7 @@ export async function setContributionVisibility(
   db: Database,
   userId: string,
   id: string,
+  expectedStatus: "hidden" | "published",
   status: "hidden" | "published",
   rawReason: string,
   now = Date.now(),
@@ -188,10 +223,26 @@ export async function setContributionVisibility(
       .from(s.contributions)
       .where(eq(s.contributions.id, id));
     if (!tip) throw new DomainError("NOT_FOUND", "This tip is unavailable.");
-    await tx
+    if (tip.status !== expectedStatus)
+      throw new DomainError(
+        "CONFLICT",
+        "This tip's status changed. Refresh and try again.",
+      );
+    const changed = await tx
       .update(s.contributions)
       .set({ status, updatedAt: now })
-      .where(eq(s.contributions.id, id));
+      .where(
+        and(
+          eq(s.contributions.id, id),
+          eq(s.contributions.status, expectedStatus),
+        ),
+      )
+      .returning({ id: s.contributions.id });
+    if (!changed.length)
+      throw new DomainError(
+        "CONFLICT",
+        "This tip's status changed. Refresh and try again.",
+      );
     await tx.insert(s.moderationEvents).values({
       moderatorId: userId,
       targetType: "contribution",
@@ -208,6 +259,7 @@ export async function setAccountStatus(
   db: Database,
   userId: string,
   targetUserId: string,
+  expectedStatus: "active" | "suspended",
   status: "active" | "suspended",
   rawReason: string,
   now = Date.now(),
@@ -215,13 +267,32 @@ export async function setAccountStatus(
   const actionReason = reason.parse(rawReason);
   return db.transaction(async (tx) => {
     await moderator(tx, userId);
+    const [profile] = await tx
+      .select({ status: s.profiles.status })
+      .from(s.profiles)
+      .where(eq(s.profiles.userId, targetUserId));
+    if (!profile)
+      throw new DomainError("NOT_FOUND", "This account is unavailable.");
+    if (profile.status !== expectedStatus)
+      throw new DomainError(
+        "CONFLICT",
+        "This account's status changed. Refresh and try again.",
+      );
     const changed = await tx
       .update(s.profiles)
       .set({ status, updatedAt: now })
-      .where(eq(s.profiles.userId, targetUserId))
+      .where(
+        and(
+          eq(s.profiles.userId, targetUserId),
+          eq(s.profiles.status, expectedStatus),
+        ),
+      )
       .returning({ id: s.profiles.userId });
     if (!changed.length)
-      throw new DomainError("NOT_FOUND", "This account is unavailable.");
+      throw new DomainError(
+        "CONFLICT",
+        "This account's status changed. Refresh and try again.",
+      );
     await tx.insert(s.moderationEvents).values({
       moderatorId: userId,
       targetType: "account",

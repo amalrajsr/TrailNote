@@ -255,6 +255,7 @@ describe("transactional contribution services", () => {
     await expect(
       resolveContactRemoval(conn.db, fixtureId(1), {
         requestId: request.id,
+        expectedStatus: "open",
         disposition: "hide",
         reason: "Contact owner requested removal.",
       }),
@@ -265,11 +266,28 @@ describe("transactional contribution services", () => {
       .where(eq(s.profiles.userId, fixtureId(1)));
     await resolveContactRemoval(conn.db, fixtureId(1), {
       requestId: request.id,
+      expectedStatus: "open",
       disposition: "hide",
       reason: "Contact owner requested removal.",
     });
+    await expect(
+      resolveContactRemoval(conn.db, fixtureId(1), {
+        requestId: request.id,
+        expectedStatus: "open",
+        disposition: "dismiss",
+        reason: "A stale moderator action.",
+      }),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
     await expect(revealContact(conn.db, fixtureId(100))).rejects.toMatchObject({
       code: "NOT_FOUND",
+    });
+    expect(
+      (await moderationQueues(conn.db, fixtureId(1))).contacts.find(
+        (entry) => entry.id === request.id,
+      ),
+    ).toMatchObject({
+      status: "resolved",
+      resolutionNote: "Contact owner requested removal.",
     });
   });
   it("keeps report queues private and applies moderator hide, restore, and suspension immediately", async () => {
@@ -297,9 +315,18 @@ describe("transactional contribution services", () => {
     expect(JSON.stringify(queue)).not.toContain("@example.test");
     await resolveReport(conn.db, fixtureId(1), {
       reportId: report!.id,
+      expectedStatus: "open",
       disposition: "hide",
       reason: "Needs correction before publication.",
     });
+    await expect(
+      resolveReport(conn.db, fixtureId(1), {
+        reportId: report!.id,
+        expectedStatus: "open",
+        disposition: "dismiss",
+        reason: "A stale moderator action.",
+      }),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
     await expect(visibleContribution(conn.db, tip.id)).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
@@ -307,6 +334,7 @@ describe("transactional contribution services", () => {
       conn.db,
       fixtureId(1),
       tip.id,
+      "hidden",
       "published",
       "Correction reviewed.",
     );
@@ -315,12 +343,52 @@ describe("transactional contribution services", () => {
       conn.db,
       fixtureId(1),
       tip.authorId,
+      "active",
       "suspended",
       "Repeated policy violations.",
     );
     await expect(visibleContribution(conn.db, tip.id)).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
+    await expect(
+      setAccountStatus(
+        conn.db,
+        fixtureId(1),
+        tip.authorId,
+        "active",
+        "suspended",
+        "A stale moderator action.",
+      ),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+    await setAccountStatus(
+      conn.db,
+      fixtureId(1),
+      tip.authorId,
+      "suspended",
+      "active",
+      "Suspension reviewed.",
+    );
+    await expect(visibleContribution(conn.db, tip.id)).resolves.toBeDefined();
+    const reviewedQueue = await moderationQueues(conn.db, fixtureId(1));
+    expect(
+      reviewedQueue.contributions.find((entry) => entry.id === report!.id),
+    ).toMatchObject({
+      status: "resolved",
+      resolutionNote: "Needs correction before publication.",
+    });
+    expect(reviewedQueue.events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ targetId: tip.id, action: "restore" }),
+        expect.objectContaining({
+          targetId: tip.authorId,
+          action: "suspend",
+        }),
+        expect.objectContaining({
+          targetId: tip.authorId,
+          action: "restore",
+        }),
+      ]),
+    );
   });
   it("erases an account graph without leaving a public update whose parent is gone", async () => {
     const root = await visibleContribution(conn.db, fixtureId(102));

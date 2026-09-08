@@ -7,6 +7,8 @@ import { DomainError, type ActionResult } from "../../src/server/result";
 import {
   resolveContactRemoval,
   resolveReport,
+  setAccountStatus,
+  setContributionVisibility,
 } from "../../src/server/services/moderation";
 
 async function moderatorId() {
@@ -46,7 +48,12 @@ export async function reviewReport(
   reason: string,
 ) {
   return action((db, userId) =>
-    resolveReport(db, userId, { reportId, disposition, reason }),
+    resolveReport(db, userId, {
+      reportId,
+      expectedStatus: "open",
+      disposition,
+      reason,
+    }),
   );
 }
 export async function reviewContactRequest(
@@ -55,6 +62,31 @@ export async function reviewContactRequest(
   reason: string,
 ) {
   return action((db, userId) =>
-    resolveContactRemoval(db, userId, { requestId, disposition, reason }),
+    resolveContactRemoval(db, userId, {
+      requestId,
+      expectedStatus: "open",
+      disposition,
+      reason,
+    }),
+  );
+}
+export async function changeTipVisibility(
+  id: string,
+  expectedStatus: "hidden" | "published",
+  status: "hidden" | "published",
+  reason: string,
+) {
+  return action((db, userId) =>
+    setContributionVisibility(db, userId, id, expectedStatus, status, reason),
+  );
+}
+export async function changeAccountStatus(
+  id: string,
+  expectedStatus: "active" | "suspended",
+  status: "active" | "suspended",
+  reason: string,
+) {
+  return action((db, userId) =>
+    setAccountStatus(db, userId, id, expectedStatus, status, reason),
   );
 }
