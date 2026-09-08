@@ -26,6 +26,7 @@ import {
   type ComposerActionState,
 } from "../../../app/destinations/[slug]/add/actions";
 import { shareUpdate } from "../../../app/tips/[id]/update/actions";
+import { shareEdit } from "../../../app/tips/[id]/edit/actions";
 
 type Destination = {
   id: string;
@@ -63,6 +64,7 @@ type Draft = {
   locationText: string;
   mapsUrl: string;
   phone: string;
+  publicServiceContact: boolean;
   photos: UploadedPhoto[];
 };
 
@@ -109,6 +111,7 @@ function makeDraft(category: Category, mutationId: string): Draft {
     locationText: "",
     mapsUrl: "",
     phone: "",
+    publicServiceContact: false,
     photos: [],
   };
 }
@@ -129,26 +132,44 @@ export function ContributionComposer({
   signedIn,
   mode = "create",
   original,
+  initialDraft,
+  edit,
 }: {
   destination: Destination;
   initialCategory: Category;
   initialMutationId: string;
   signedIn: boolean;
-  mode?: "create" | "update";
+  mode?: "create" | "update" | "edit";
   original?: OriginalTipSummary;
+  initialDraft?: Partial<Draft>;
+  edit?: {
+    id: string;
+    revision: number;
+    parentContributionId: string | null;
+    parentRevision: number | null;
+  };
 }) {
   const router = useRouter();
   const storageKey =
     mode === "update" && original
       ? `fieldnotes:draft:v1:${destination.id}:update-${original.id}`
-      : `fieldnotes:draft:${destination.slug}`;
-  const [draft, setDraft] = useState(() =>
-    makeDraft(initialCategory, initialMutationId),
-  );
+      : mode === "edit" && edit
+        ? `fieldnotes:draft:v1:${destination.id}:edit-${edit.id}`
+        : `fieldnotes:draft:${destination.slug}`;
+  const [draft, setDraft] = useState(() => ({
+    ...makeDraft(initialCategory, initialMutationId),
+    ...initialDraft,
+    mutationId: initialMutationId,
+  }));
   const [restored, setRestored] = useState(false);
   const [details, setDetails] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
-  const submitAction = mode === "update" ? shareUpdate : shareContribution;
+  const submitAction =
+    mode === "update"
+      ? shareUpdate
+      : mode === "edit"
+        ? shareEdit
+        : shareContribution;
   const [state, action, pending] = useActionState(
     submitAction,
     initialActionState,
@@ -238,20 +259,30 @@ export function ContributionComposer({
       `/sign-in?returnTo=${encodeURIComponent(
         mode === "update" && original
           ? `/tips/${original.id}/update`
-          : `/destinations/${destination.slug}/add`,
+          : mode === "edit" && edit
+            ? `/tips/${edit.id}/edit`
+            : `/destinations/${destination.slug}/add`,
       )}&draft=1`,
     );
-  }, [destination.slug, draft, mode, original, router, storageKey]);
+  }, [destination.slug, draft, edit, mode, original, router, storageKey]);
 
   if (state.status === "success" && state.tipId) {
     return (
       <section className="form-card field-hint" aria-live="polite">
         <Check size={48} aria-hidden="true" />
-        <h2>{mode === "update" ? "Update shared" : "Tip added"}</h2>
+        <h2>
+          {mode === "update"
+            ? "Update shared"
+            : mode === "edit"
+              ? "Changes saved"
+              : "Tip added"}
+        </h2>
         <p className="muted">
           {mode === "update"
             ? "Thanks for helping travelers understand what changed."
-            : "Thanks for sharing something practical."}
+            : mode === "edit"
+              ? "A new version is now visible to travelers."
+              : "Thanks for sharing something practical."}
         </p>
         <div className="row">
           <Link className="btn secondary" href={`/tips/${state.tipId}`}>
@@ -349,13 +380,23 @@ export function ContributionComposer({
         <input
           type="hidden"
           name="parentContributionId"
-          value={original?.id ?? ""}
+          value={original?.id ?? edit?.parentContributionId ?? ""}
         />
         <input
           type="hidden"
           name="parentRevision"
-          value={original?.revision ?? ""}
+          value={original?.revision ?? edit?.parentRevision ?? ""}
         />
+        {edit && (
+          <>
+            <input type="hidden" name="id" value={edit.id} />
+            <input
+              type="hidden"
+              name="expectedRevision"
+              value={edit.revision}
+            />
+          </>
+        )}
         <input
           type="hidden"
           name="visitedMonth"
@@ -390,7 +431,7 @@ export function ContributionComposer({
               facts blank when you did not observe a new value.
             </p>
           </section>
-        ) : (
+        ) : mode === "create" ? (
           <fieldset className="composer-categories">
             <legend className="label">What did you discover?</legend>
             <div className="pills">
@@ -419,7 +460,7 @@ export function ContributionComposer({
               ))}
             </div>
           </fieldset>
-        )}
+        ) : null}
 
         <div className="category-fields">
           {(category === "stay" ||
@@ -674,8 +715,19 @@ export function ContributionComposer({
               />
             </Field>
             <label className="check-row">
-              <input type="checkbox" name="publicServiceContact" /> I confirm
-              this is a public service number and I have permission to share it.
+              <input
+                type="checkbox"
+                name="publicServiceContact"
+                checked={draft.publicServiceContact}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    publicServiceContact: event.target.checked,
+                  }))
+                }
+              />{" "}
+              I confirm this is a public service number and I have permission to
+              share it.
             </label>
           </div>
         </details>
@@ -698,7 +750,9 @@ export function ContributionComposer({
                 ? "Sharing…"
                 : mode === "update"
                   ? "Share update"
-                  : "Share tip"}
+                  : mode === "edit"
+                    ? "Save changes"
+                    : "Share tip"}
           </Button>
         </div>
       </form>

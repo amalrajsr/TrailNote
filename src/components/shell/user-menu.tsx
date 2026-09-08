@@ -16,7 +16,7 @@ export function AccountMenu({ name }: { name: string }) {
       }
       items={[
         { label: "My contributions", href: "/me" },
-        { label: "Community guidelines", href: "/guidelines" },
+        { label: "Community guidelines", href: "/community-guidelines" },
         {
           label: "Sign out",
           onSelect: async () => {

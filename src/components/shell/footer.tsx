@@ -10,7 +10,7 @@ export function Footer() {
           </p>
         </div>
         <nav className="footer-links" aria-label="Footer">
-          <Link href="/guidelines">Guidelines</Link>
+          <Link href="/community-guidelines">Guidelines</Link>
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>
           <Link href="/contact-removal">Contact removal</Link>

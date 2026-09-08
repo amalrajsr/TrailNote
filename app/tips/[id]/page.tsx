@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { CopyLink } from "../../../src/components/contributions/copy-link";
 import { PhotoGallery } from "../../../src/components/contributions/photo-gallery";
 import { ReactionControls } from "../../../src/components/contributions/reaction-controls";
+import { ContactReveal } from "../../../src/components/contributions/contact-reveal";
+import { ReportTip } from "../../../src/components/contributions/report-tip";
 import { CategoryIcon } from "../../../src/components/ui/category-icon";
 import { getDatabase } from "../../../src/db";
 import { categoryLabels } from "../../../src/lib/constants";
@@ -180,7 +182,9 @@ function DetailCard({
           initialHelpfulCount={detail.helpfulCount}
           intent={intent}
         />
+        <ReportTip id={detail.id} revision={detail.revision} />
       </section>
+      {detail.hasContact && <ContactReveal contributionId={detail.id} />}
     </article>
   );
 }

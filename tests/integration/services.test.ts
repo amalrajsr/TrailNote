@@ -19,6 +19,19 @@ import {
   setHelpful,
 } from "../../src/server/services/reactions";
 import { contributionDetail } from "../../src/server/queries/contributions";
+import { revealContact } from "../../src/server/services/contacts";
+import {
+  moderationQueues,
+  resolveContactRemoval,
+  resolveReport,
+  setAccountStatus,
+  setContributionVisibility,
+} from "../../src/server/services/moderation";
+import {
+  reportContribution,
+  submitContactRemoval,
+} from "../../src/server/services/reports";
+import { deleteAccount } from "../../src/server/services/accounts";
 let conn: Awaited<ReturnType<typeof connectDatabase>>,
   dir: string,
   destinationId: string;
@@ -221,5 +234,118 @@ describe("transactional contribution services", () => {
         .from(s.helpfulVotes)
         .where(eq(s.helpfulVotes.contributionId, tip.id)),
     ).toHaveLength(1);
+  });
+  it("keeps contacts out of detail DTOs until a rate-limited reveal and lets a moderator hide them", async () => {
+    await conn.db
+      .update(s.contacts)
+      .set({ status: "visible" })
+      .where(eq(s.contacts.contributionId, fixtureId(100)));
+    const detail = await contributionDetail(conn.db, fixtureId(100));
+    expect(JSON.stringify(detail)).not.toContain("+919000000000");
+    const contact = await revealContact(conn.db, fixtureId(100));
+    expect(contact.phone).toBe("+919000000000");
+    const request = await submitContactRemoval(conn.db, {
+      contributionId: fixtureId(100),
+      contactId: contact.id,
+      requestText:
+        "This public service number no longer belongs to this place.",
+      replyEmail: "reader@example.test",
+      honeypot: "",
+    });
+    await expect(
+      resolveContactRemoval(conn.db, fixtureId(1), {
+        requestId: request.id,
+        disposition: "hide",
+        reason: "Contact owner requested removal.",
+      }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await conn.db
+      .update(s.profiles)
+      .set({ role: "moderator" })
+      .where(eq(s.profiles.userId, fixtureId(1)));
+    await resolveContactRemoval(conn.db, fixtureId(1), {
+      requestId: request.id,
+      disposition: "hide",
+      reason: "Contact owner requested removal.",
+    });
+    await expect(revealContact(conn.db, fixtureId(100))).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+  });
+  it("keeps report queues private and applies moderator hide, restore, and suspension immediately", async () => {
+    const tip = await visibleContribution(conn.db, fixtureId(101));
+    await reportContribution(conn.db, fixtureId(4), {
+      id: tip.id,
+      revision: tip.revision,
+      reason: "inaccurate",
+      details: "The details need a moderator review.",
+    });
+    await expect(moderationQueues(conn.db, fixtureId(1))).rejects.toMatchObject(
+      {
+        code: "FORBIDDEN",
+      },
+    );
+    await conn.db
+      .update(s.profiles)
+      .set({ role: "moderator" })
+      .where(eq(s.profiles.userId, fixtureId(1)));
+    const queue = await moderationQueues(conn.db, fixtureId(1));
+    const report = queue.contributions.find(
+      (entry) => entry.contributionId === tip.id,
+    );
+    expect(report?.details).toBe("The details need a moderator review.");
+    expect(JSON.stringify(queue)).not.toContain("@example.test");
+    await resolveReport(conn.db, fixtureId(1), {
+      reportId: report!.id,
+      disposition: "hide",
+      reason: "Needs correction before publication.",
+    });
+    await expect(visibleContribution(conn.db, tip.id)).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+    await setContributionVisibility(
+      conn.db,
+      fixtureId(1),
+      tip.id,
+      "published",
+      "Correction reviewed.",
+    );
+    await expect(visibleContribution(conn.db, tip.id)).resolves.toBeDefined();
+    await setAccountStatus(
+      conn.db,
+      fixtureId(1),
+      tip.authorId,
+      "suspended",
+      "Repeated policy violations.",
+    );
+    await expect(visibleContribution(conn.db, tip.id)).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+  });
+  it("erases an account graph without leaving a public update whose parent is gone", async () => {
+    const root = await visibleContribution(conn.db, fixtureId(102));
+    const update = await visibleContribution(conn.db, fixtureId(200));
+    const result = await deleteAccount(conn.db, root.authorId, async () => {});
+    expect(result.deletedContributions).toBeGreaterThan(0);
+    await expect(visibleContribution(conn.db, root.id)).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+    await expect(visibleContribution(conn.db, update.id)).rejects.toMatchObject(
+      {
+        code: "NOT_FOUND",
+      },
+    );
+    expect(
+      (await conn.client.execute("PRAGMA foreign_key_check")).rows,
+    ).toEqual([]);
+  });
+  it("erases an authored update even when its root belongs to another traveler", async () => {
+    await deleteAccount(conn.db, fixtureId(2), async () => {});
+    await expect(
+      visibleContribution(conn.db, fixtureId(200)),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(
+      (await conn.client.execute("PRAGMA foreign_key_check")).rows,
+    ).toEqual([]);
   });
 });

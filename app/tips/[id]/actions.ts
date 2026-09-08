@@ -17,6 +17,7 @@ import {
   viewerReactionState,
 } from "../../../src/server/queries/contributions";
 import { visibleContribution } from "../../../src/server/services/contributions";
+import { reportContribution } from "../../../src/server/services/reports";
 
 const targetSchema = z.object({
   id: z.uuid(),
@@ -146,6 +147,28 @@ export async function markHelpful(
     await setHelpful(db, user.id, parsed.id, parsed.helpful);
     await refreshAffected(parsed.id);
     return resultFor(parsed.id, user.id);
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+export async function reportTip(
+  id: string,
+  revision: number,
+  reason: string,
+  details: string,
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const user = await requireActionViewer();
+    const { db } = await getDatabase();
+    const result = await reportContribution(db, user.id, {
+      id,
+      revision,
+      reason,
+      details,
+    });
+    revalidatePath(`/tips/${id}`);
+    return { ok: true, data: result };
   } catch (error) {
     return failure(error);
   }

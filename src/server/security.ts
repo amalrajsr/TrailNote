@@ -20,7 +20,7 @@ export function privateHeaders(extra?: HeadersInit) {
   };
 }
 
-export function anonymousKey(request: Request) {
+export function anonymousKey(request: Pick<Request, "headers">) {
   const address =
     request.headers.get("x-real-ip") ??
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
