@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, MapPin, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import type { SearchDestination } from "../../lib/destination-search";
@@ -139,7 +139,7 @@ export function DestinationSearch({
           autoComplete="off"
           maxLength={80}
           value={query}
-          placeholder="Try Badami, Hampi, Varkala…"
+          placeholder="Search Hampi, Ooty, Varkala…"
           onFocus={() => setOpen(true)}
           onBlur={() => window.setTimeout(() => setOpen(false), 120)}
           onChange={(event) => {
@@ -220,18 +220,23 @@ export function DestinationSearch({
                 onPointerDown={(event) => event.preventDefault()}
                 onClick={() => void choose(destination)}
               >
-                {destination.displayName}
-                <small>
-                  {destination.secondaryText}
-                  {!destination.trailnoteSlug && (
-                    <>
-                      {destination.secondaryText && " · "}
-                      {saving === destination.providerPlaceId
-                        ? "Adding destination…"
-                        : "Add to TrailNote"}
-                    </>
-                  )}
-                </small>
+                <span className="result-icon" aria-hidden="true">
+                  <MapPin size={18} strokeWidth={1.75} />
+                </span>
+                <span className="result-copy">
+                  <strong>{destination.displayName}</strong>
+                  <small>
+                    {destination.secondaryText}
+                    {!destination.trailnoteSlug && (
+                      <>
+                        {destination.secondaryText && " · "}
+                        {saving === destination.providerPlaceId
+                          ? "Adding destination…"
+                          : "Add to TrailNote"}
+                      </>
+                    )}
+                  </small>
+                </span>
               </li>
             ))
           ) : (

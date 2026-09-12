@@ -11,7 +11,7 @@ export function TipCard({ tip }: { tip: ContributionCardDTO }) {
   return (
     <article className="tip-card">
       <div className="row between">
-        <div className="category-label">
+        <div className={`category-label ${tip.category}`}>
           <CategoryIcon category={tip.category} />
           {categoryLabels[tip.category]}
         </div>

@@ -16,6 +16,7 @@ import { CategoryIcon } from "../../../src/components/ui/category-icon";
 import { TipCard } from "../../../src/components/contributions/card";
 import { EmptyState } from "../../../src/components/ui/primitives";
 import { SortSelect } from "../../../src/components/destinations/sort";
+import { MapIllustration } from "../../../src/components/destinations/map-illustration";
 export async function generateMetadata({
   params,
 }: {
@@ -61,10 +62,12 @@ export default async function DestinationPage({
       </nav>
       <div className="dest-heading">
         <div>
+          <p className="eyebrow">{destination.state} · India</p>
           <h1>{destination.name}</h1>
           <p>Small discoveries. Useful details. Shared by travelers.</p>
           <div className="dest-meta">
-            {destination.publishedRootTipCount} traveler tips ·{" "}
+            {destination.publishedRootTipCount} traveler{" "}
+            {destination.publishedRootTipCount === 1 ? "note" : "notes"} ·{" "}
             {destination.state}, India
           </div>
         </div>
@@ -74,28 +77,31 @@ export default async function DestinationPage({
         </Link>
       </div>
       <nav className="filters" aria-label="Tip categories">
-        <div className="pills">
-          {["all", ...categories].map((key) => (
-            <Link
-              className={`pill ${(category ?? "all") === key ? "selected" : ""}`}
-              aria-current={(category ?? "all") === key ? "page" : undefined}
-              key={key}
-              href={`/destinations/${slug}?${new URLSearchParams({ ...(key !== "all" ? { category: key } : {}), sort })}#tips`}
-            >
-              <CategoryIcon category={key as Category | "all"} />
-              {key === "all"
-                ? "All"
-                : key === "general"
-                  ? "Tips"
-                  : categoryLabels[key as Category]}
-              <span className="sr-only">
+        <div className="filters-row">
+          <div className="pills">
+            {["all", ...categories].map((key) => (
+              <Link
+                className={`pill ${(category ?? "all") === key ? "selected" : ""}`}
+                aria-current={(category ?? "all") === key ? "page" : undefined}
+                key={key}
+                href={`/destinations/${slug}?${new URLSearchParams({ ...(key !== "all" ? { category: key } : {}), sort })}#tips`}
+              >
+                <CategoryIcon category={key as Category | "all"} />
                 {key === "all"
-                  ? destination.publishedRootTipCount
-                  : (counts.find((c) => c.category === key)?.count ?? 0)}{" "}
-                tips
-              </span>
-            </Link>
-          ))}
+                  ? "All"
+                  : key === "general"
+                    ? "Tips"
+                    : categoryLabels[key as Category]}
+                <span className="sr-only">
+                  {key === "all"
+                    ? destination.publishedRootTipCount
+                    : (counts.find((c) => c.category === key)?.count ?? 0)}{" "}
+                  tips
+                </span>
+              </Link>
+            ))}
+          </div>
+          <SortSelect sort={sort} />
         </div>
       </nav>
       <div className="two-col">
@@ -106,7 +112,10 @@ export default async function DestinationPage({
                 ? `${categoryLabels[category]} tips`
                 : "Latest from travelers"}
             </h2>
-            <SortSelect sort={sort} />
+            <span>
+              {listing.cards.length}{" "}
+              {listing.cards.length === 1 ? "note" : "notes"}
+            </span>
           </div>
           <div className="stack">
             {listing.cards.length ? (
@@ -140,16 +149,19 @@ export default async function DestinationPage({
             </div>
           )}
         </section>
-        <aside className="side-stack">
-          <div className="side-panel">
-            <Compass size={20} aria-hidden />
-            <h2>Been here recently?</h2>
+        <aside className="side-stack destination-aside">
+          <MapIllustration compact activeSlug={destination.slug} />
+          <div className="map-info">
+            <strong>
+              {destination.name}, {destination.state}
+            </strong>
             <p>
-              A fare, a place to stay, a little local advice. Your experience
-              could make someone&apos;s trip easier.
+              Geographic context stays visible while traveler notes do the real
+              work.
             </p>
             <Link className="quiet" href={add}>
-              Share what you learned →
+              <Compass size={18} aria-hidden="true" />
+              Share what you learned
             </Link>
           </div>
           <div className="side-note">

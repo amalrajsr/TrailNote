@@ -104,7 +104,7 @@ function DetailCard({
   return (
     <article className="detail-main">
       <div className="row between detail-label-row">
-        <div className="category-label">
+        <div className={`category-label ${detail.category}`}>
           <CategoryIcon category={detail.category} />
           {categoryLabels[detail.category]}
         </div>

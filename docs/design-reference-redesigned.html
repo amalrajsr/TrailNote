@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TrailNote — redesigned visual reference</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --canvas:#f7faf7;
+      --surface:#fff;
+      --surface-soft:#f0f4f0;
+      --surface-raised:#fff;
+      --ink:#17251d;
+      --ink-muted:#5c6c62;
+      --ink-subtle:#7a887f;
+      --brand:#245c43;
+      --brand-hover:#1b4c36;
+      --brand-soft:#e6f1e9;
+      --brand-faint:#f0f7f2;
+      --brand-border:#c9ddcf;
+      --on-brand:#fff;
+      --accent:#b45a3c;
+      --accent-soft:#f8ebe4;
+      --transport:#4f7181;
+      --transport-soft:#e9f0f3;
+      --sand:#9a7b3f;
+      --sand-soft:#f5f0e4;
+      --border:#dce4dd;
+      --control-border:#829087;
+      --focus:#245c43;
+      --warning:#866313;
+      --warning-soft:#fbf3d8;
+      --danger:#b42318;
+      --danger-soft:#fff0ed;
+      --success:#245c43;
+      --success-soft:#e6f1e9;
+      --map-surface:#e6f1e9;
+      --map-surface-soft:#f0f7f2;
+      --map-water:#dce9ed;
+      --map-line:#a9c1ae;
+      --scrim:rgb(23 37 29 / 52%);
+      --shadow-card:0 4px 16px rgb(23 37 29 / 5%);
+      --shadow-card-hover:0 8px 24px rgb(23 37 29 / 8%);
+      --shadow-popover:0 16px 42px rgb(23 37 29 / 13%);
+      --shadow-map:0 12px 36px rgb(23 37 29 / 9%);
+      --radius-control:12px;
+      --radius-card:18px;
+      --radius-feature:26px;
+      --radius-pill:999px;
+      --font-ui:"Commissioner",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      --font-display:"Commissioner",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--canvas);color:var(--ink);font:400 16px/1.625 var(--font-ui)}
+    button,input,select,textarea{font:inherit}
+    button,a,input,textarea,select{-webkit-tap-highlight-color:transparent}
+    button,a{touch-action:manipulation}
+    button{cursor:pointer}
+    a{color:inherit;text-decoration:none}
+    button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+      outline:2px solid var(--focus);outline-offset:3px
+    }
+    h1,h2,h3,p{margin:0}
+    h1,h2,h3{font-family:var(--font-display)}
+    .icon{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+    .container{width:min(1200px,calc(100% - 64px));margin:auto}
+    .screen{display:none}
+    .screen.active{display:block}
+    .muted{color:var(--ink-muted)}
+    .small{font-size:13px;line-height:20px}
+    .eyebrow{font-size:12px;line-height:18px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--brand)}
+    .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .between{justify-content:space-between}
+
+    .preview{
+      background:#e9eef1;border-bottom:1px solid #ccd4d8;color:#26343d;padding:8px 16px;
+      display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;font-size:12px
+    }
+    .preview a{padding:6px 9px;border-radius:7px;font-weight:700}
+    .preview a[aria-current=page]{background:#26343d;color:#fff}
+    .clean .preview,.clean .reference-note{display:none}
+    .reference-note{text-align:center;padding:14px;border-top:1px dashed var(--border);color:var(--ink-muted);font-size:12px}
+
+    .skip{position:absolute;top:-100px;left:16px;z-index:100}
+    .skip:focus{top:16px;background:#fff;padding:12px;border-radius:8px}
+
+    .site-header{
+      height:72px;position:sticky;top:0;z-index:30;background:rgb(247 250 247 / 94%);
+      backdrop-filter:blur(10px);border-bottom:1px solid var(--border)
+    }
+    .header-inner{height:100%;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .wordmark{display:inline-flex;align-items:center;gap:10px;font-size:27px;line-height:32px;font-weight:700;letter-spacing:-1px}
+    .wordmark .icon{width:28px;height:28px;color:var(--brand);stroke-width:1.55}
+    .nav{display:flex;align-items:center;gap:24px;font-size:14px;font-weight:650}
+    .nav>a{min-height:44px;display:inline-flex;align-items:center}
+
+    .btn{
+      min-height:48px;padding:12px 20px;border-radius:12px;border:1px solid transparent;
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--brand);
+      color:#fff;font-size:14px;font-weight:700;transition:background 120ms,transform 120ms,box-shadow 120ms
+    }
+    .btn:hover{background:var(--brand-hover)}
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{background:#fff;color:var(--ink);border-color:var(--control-border)}
+    .btn.secondary:hover{background:var(--surface-soft)}
+    .quiet{
+      min-height:44px;padding:10px;border:0;background:transparent;border-radius:10px;
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;color:var(--ink-muted);
+      font-size:13px;font-weight:650
+    }
+    .quiet:hover{background:var(--brand-soft);color:var(--brand)}
+
+    .site-footer{margin-top:56px;background:var(--surface-soft);border-top:1px solid var(--border);padding:30px 0}
+    .footer-grid{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:56px;align-items:start}
+    .footer-brand strong{font-size:22px}
+    .footer-brand p{font-size:13px;color:var(--ink-muted);margin-top:5px;max-width:420px}
+    .footer-col{display:grid;gap:8px;font-size:13px}
+    .footer-col strong{font-size:12px;text-transform:uppercase;letter-spacing:1px}
+    .footer-col a{color:var(--ink-muted);min-height:28px;display:flex;align-items:center}
+
+    .map-shell{
+      position:relative;overflow:hidden;background:linear-gradient(145deg,var(--map-surface-soft),var(--map-surface));
+      border:1px solid var(--brand-border);border-radius:var(--radius-feature);box-shadow:var(--shadow-map)
+    }
+    .map-grid{
+      position:absolute;inset:0;opacity:.25;
+      background-image:
+        linear-gradient(to right,rgb(36 92 67 / 13%) 1px,transparent 1px),
+        linear-gradient(to bottom,rgb(36 92 67 / 13%) 1px,transparent 1px);
+      background-size:34px 34px
+    }
+    .map-water{
+      position:absolute;left:23%;right:-14%;bottom:-18%;height:44%;border-radius:50% 50% 0 0;background:var(--map-water)
+    }
+    .india-shape{
+      position:absolute;left:15%;top:8%;width:67%;height:80%;
+      clip-path:polygon(40% 0,60% 7%,66% 18%,78% 24%,72% 39%,81% 47%,69% 57%,72% 74%,57% 82%,50% 100%,43% 81%,27% 74%,18% 58%,22% 44%,12% 32%,23% 19%,32% 11%);
+      background:linear-gradient(180deg,#f3f8f1,#dce8d9);border:1px solid rgb(36 92 67 / 18%)
+    }
+    .marker{position:absolute;display:flex;align-items:center;gap:7px;border:0;background:transparent;color:var(--ink);font-size:12px;font-weight:700;padding:0}
+    .marker-dot{width:12px;height:12px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 5px rgb(36 92 67 / 13%)}
+    .marker.active .marker-dot{animation:pulse 1.2s ease 1}
+    .marker.active span{color:var(--brand)}
+    .marker.manali{left:42%;top:18%}.marker.jaipur{left:31%;top:35%}.marker.varanasi{left:61%;top:39%}
+    .marker.badami{left:35%;top:60%}.marker.hampi{left:42%;top:63%}.marker.ooty{left:40%;top:74%}.marker.munnar{left:46%;top:78%}.marker.varkala{left:44%;top:87%}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgb(36 92 67 / 25%)}50%{box-shadow:0 0 0 12px rgb(36 92 67 / 0%)}100%{box-shadow:0 0 0 5px rgb(36 92 67 / 13%)}}
+
+    .home-hero{display:grid;grid-template-columns:minmax(0,1fr) 500px;gap:64px;align-items:center;padding:60px 0 54px}
+    .home-copy{max-width:660px}
+    .home-copy h1{font-size:63px;line-height:68px;font-weight:500;letter-spacing:-2.2px;margin-top:14px}
+    .home-copy h1 span{color:var(--brand)}
+    .home-copy .intro{margin-top:20px;max-width:560px;color:var(--ink-muted);font-size:18px;line-height:29px}
+    .search-block{position:relative;margin-top:28px;max-width:640px}
+    .label{display:block;font-size:14px;line-height:20px;font-weight:650;margin-bottom:8px}
+    .search{height:64px;padding:8px 10px 8px 18px;display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--control-border);border-radius:14px;box-shadow:var(--shadow-card)}
+    .search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);font-size:16px}
+    .search .btn{width:46px;min-width:46px;padding:10px}
+    .search-popover{position:absolute;left:0;right:0;top:96px;padding:8px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-popover);z-index:50}
+    .search-popover[hidden]{display:none}
+    .search-result{width:100%;min-height:66px;padding:10px 12px;border:0;border-radius:10px;background:transparent;display:flex;gap:12px;align-items:center;text-align:left;color:var(--ink)}
+    .search-result:hover,.search-result.active{background:var(--brand-faint)}
+    .result-icon{width:36px;height:36px;border-radius:10px;background:var(--brand-soft);display:grid;place-items:center;color:var(--brand)}
+    .result-copy strong{display:block;font-size:15px}
+    .result-copy small{display:block;color:var(--ink-muted);font-size:12px;margin-top:2px}
+    .home-links{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:13px;color:var(--ink-muted)}
+    .home-links a{min-height:44px;display:inline-flex;align-items:center;padding:0 4px;text-decoration:underline;text-underline-offset:4px}
+
+    .hero-map{height:430px}
+    .map-card{position:absolute;left:22px;right:22px;bottom:22px;padding:14px 16px;background:rgb(255 255 255 / 92%);backdrop-filter:blur(8px);border:1px solid rgb(255 255 255 / 80%);border-radius:16px;box-shadow:var(--shadow-card)}
+    .map-card .eyebrow{font-size:10px;letter-spacing:1.1px}
+    .map-card strong{display:block;font-size:20px;line-height:27px;font-weight:600;margin-top:4px}
+    .map-card p{font-size:12px;color:var(--ink-muted);margin-top:2px}
+
+    .home-section{padding-top:10px}
+    .section-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:22px}
+    .section-head h2{font-size:28px;line-height:36px;font-weight:600;letter-spacing:-.5px}
+    .section-head p{color:var(--ink-muted);margin-top:4px}
+    .fresh-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+    .place-card{position:relative;min-height:175px;padding:22px;background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-card);transition:border-color 120ms,transform 120ms,box-shadow 120ms}
+    .place-card:hover{border-color:var(--brand);transform:translateY(-2px);box-shadow:var(--shadow-card-hover)}
+    .place-card:before{content:"";position:absolute;width:120px;height:120px;border-radius:50%;right:-30px;top:-35px;background:var(--brand-soft)}
+    .place-card h3{position:relative;font-size:23px;line-height:31px;font-weight:600}
+    .place-card .state{position:relative;font-size:13px;color:var(--ink-muted);margin-top:2px}
+    .place-meta{position:relative;margin-top:28px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .mini-tag{font-size:11px;line-height:18px;padding:4px 7px;border-radius:999px;background:var(--surface-soft);color:var(--ink-muted)}
+    .mini-tag.transport{background:var(--transport-soft);color:var(--transport)}
+    .mini-tag.food{background:var(--accent-soft);color:var(--accent)}
+    .mini-tag.stay{background:var(--sand-soft);color:var(--sand)}
+    .place-count{position:relative;margin-top:12px;font-size:12px;font-weight:700;color:var(--brand)}
+    .home-cta{margin-top:46px;padding:30px 32px;border-radius:24px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .home-cta h2{font-size:29px;line-height:37px;font-weight:600}
+    .home-cta p{margin-top:4px;color:#dce8df}
+    .home-cta .btn{background:#fff;color:var(--brand)}
+
+    .page-top{padding-top:28px}
+    .breadcrumb{display:flex;align-items:center;gap:8px;min-height:24px;margin-bottom:18px;font-size:13px;color:var(--ink-muted)}
+    .breadcrumb a:hover{text-decoration:underline}
+    .dest-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
+    .dest-title h1{font-size:58px;line-height:62px;font-weight:500;letter-spacing:-1.8px}
+    .dest-title p{margin-top:10px;color:var(--ink-muted)}
+    .dest-stats{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:var(--ink-muted)}
+    .dest-filters{margin-top:26px;padding:18px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+    .filters-row{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+    .pills{display:flex;gap:8px;flex-wrap:wrap}
+    .pill{min-height:44px;padding:10px 14px;border-radius:999px;border:1px solid var(--border);background:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;color:var(--ink-muted);font-size:13px;font-weight:700}
+    .pill:hover{border-color:var(--brand);color:var(--brand)}
+    .pill.selected{background:var(--brand);border-color:var(--brand);color:#fff}
+    .pill .icon{width:17px;height:17px}
+    .sort{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-muted)}
+    .sort select{min-height:44px;border:1px solid var(--control-border);border-radius:10px;background:#fff;padding:9px 11px;color:var(--ink)}
+    .destination-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:30px;margin-top:24px}
+    .feed-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px}
+    .feed-head h2{font-size:20px;line-height:28px;font-weight:600}
+    .feed-head span{font-size:13px;color:var(--ink-muted)}
+
+    .tip-card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:22px 24px;box-shadow:var(--shadow-card)}
+    .tip-card+.tip-card{margin-top:15px}
+    .tip-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+    .category-label{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;font-weight:800}
+    .category-label.transport{color:var(--transport)}
+    .category-label.stay{color:var(--sand)}
+    .category-label.food{color:var(--accent)}
+    .category-label.explore{color:var(--brand)}
+    .category-label.general{color:#687369}
+    .cat-mark{width:4px;height:22px;border-radius:4px;background:currentColor}
+    .badge{min-height:28px;padding:4px 8px;border-radius:7px;background:var(--brand-soft);color:var(--brand);display:inline-flex;align-items:center;gap:5px;font-size:12px;line-height:18px;font-weight:650}
+    .badge.warning{background:var(--warning-soft);color:var(--warning)}
+    .tip-card h3{font-size:21px;line-height:29px;font-weight:600;margin-top:12px}
+    .tip-card h3 a:hover{text-decoration:underline;text-underline-offset:4px}
+    .price{font-size:30px;line-height:35px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:8px}
+    .price small{font-size:13px;line-height:20px;font-weight:500;color:var(--ink-muted);margin-left:4px}
+    .tip-body{margin-top:11px;font-size:16px;line-height:26px}
+    .tip-meta{margin-top:15px;font-size:13px;color:var(--ink-muted)}
+    .tip-confirm{margin-top:4px;font-size:13px;color:var(--brand);font-weight:650}
+    .tip-actions{margin-top:16px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .tip-actions .more{margin-left:auto}
+    .sticky-map{position:sticky;top:96px}
+    .sticky-map .map-shell{height:430px}
+    .map-info{margin-top:12px;padding:18px;background:var(--brand-faint);border:1px solid var(--border);border-radius:16px}
+    .map-info strong{font-size:21px;line-height:28px;font-weight:600}
+    .map-info p{font-size:13px;color:var(--ink-muted);margin-top:5px}
+    .map-info .quiet{padding-left:0;color:var(--brand);font-weight:700;margin-top:6px}
+
+    .composer-wrap{max-width:760px;margin:28px auto 0}
+    .back{min-height:44px;display:inline-flex;align-items:center;color:var(--ink-muted);font-size:13px;margin-bottom:14px}
+    .composer-wrap h1{font-size:42px;line-height:50px;font-weight:500;letter-spacing:-1px}
+    .composer-wrap>.muted{margin-top:6px}
+    .context{margin-top:18px;display:flex;align-items:center;gap:8px;color:var(--brand);font-size:14px;font-weight:650}
+    .composer-categories{margin-top:24px}
+    .composer-categories .label{margin-bottom:10px}
+    .form-card{margin-top:18px;padding:26px;background:#fff;border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow-card)}
+    .field+.field{margin-top:22px}
+    .optional{font-size:12px;font-weight:500;color:var(--ink-muted)}
+    .field-input,textarea{width:100%;min-height:48px;border:1px solid var(--control-border);border-radius:12px;background:#fff;padding:12px 14px;color:var(--ink);font-size:16px}
+    textarea{min-height:150px;resize:vertical;line-height:25px}
+    .field-foot{display:flex;justify-content:space-between;gap:12px;margin-top:8px;color:var(--ink-muted);font-size:12px}
+    .visited-row{display:grid;grid-template-columns:130px 1fr;align-items:center;gap:14px;margin-top:22px}
+    .optional-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+    .optional-row .quiet{padding-left:0;color:var(--brand);font-weight:700}
+    .input-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .category-fields:empty{display:none}
+    .category-fields{margin-bottom:22px}
+    .composer-footer{margin-top:22px;padding-top:18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .composer-footer small{color:var(--ink-muted)}
+
+    .detail-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:30px}
+    .detail-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:30px}
+    .detail-card h1{font-size:34px;line-height:42px;font-weight:600;margin-top:14px}
+    .detail-card>.price{font-size:42px;line-height:48px;margin-top:14px}
+    .detail-mode{margin-top:6px;color:var(--ink-muted)}
+    .detail-text{margin-top:22px;font-size:18px;line-height:30px}
+    .author{display:flex;align-items:center;gap:12px;margin-top:24px;font-size:14px}
+    .avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--surface-soft);color:var(--brand);font-weight:750}
+    .facts{display:grid;grid-template-columns:1fr 1fr;gap:18px;border-top:1px solid var(--border);padding-top:22px;margin-top:24px}
+    .fact-label{font-size:12px;color:var(--ink-muted);margin-bottom:3px}
+    .fact-value{font-size:15px}
+    .detail-actions{margin-top:26px;padding-top:22px;border-top:1px solid var(--border)}
+    .detail-actions h2{font-size:16px;margin-bottom:12px}
+    .fresh-panel{position:sticky;top:96px;background:var(--brand-faint);border:1px solid var(--border);border-radius:18px;padding:22px}
+    .fresh-panel h2{font-size:24px;line-height:31px;font-weight:600}
+    .fresh-line{margin-top:15px;font-size:14px}
+    .fresh-line small{display:block;color:var(--ink-muted);font-size:12px;margin-bottom:3px}
+    .fresh-panel p{font-size:13px;line-height:21px;color:var(--ink-muted);margin-top:18px}
+    .updates{margin-top:28px}
+    .updates h2{font-size:23px;line-height:31px;font-weight:600;margin-bottom:16px}
+    .update-card{background:#fff;border:1px solid var(--border);border-left:4px solid #c8a467;border-radius:0 14px 14px 0;padding:18px 20px;margin-left:7px}
+    .update-card p{margin-top:10px}
+    .update-prices{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--ink-muted)}
+    .update-prices strong{display:block;color:var(--ink);font-size:18px;margin-top:2px}
+
+    .document-page{width:min(720px,calc(100% - 32px));margin:0 auto;padding:52px 0 78px}
+    .document-header{padding-bottom:28px;border-bottom:1px solid var(--border);margin-bottom:36px}
+    .document-header h1{font-size:43px;line-height:50px;font-weight:500;letter-spacing:-1.2px}
+    .document-header p{margin-top:12px;color:var(--ink-muted);font-size:17px;line-height:28px}
+    .document-meta{margin-top:12px;font-size:12px;color:var(--ink-subtle)}
+    .doc-section+.doc-section{margin-top:36px}
+    .doc-section h2{font-size:22px;line-height:30px;font-weight:600;margin-bottom:10px}
+    .doc-section p{font-size:16px;line-height:28px;color:#28382f}
+    .doc-section p+p{margin-top:14px}
+    .doc-list{margin:14px 0 0;padding-left:20px}
+    .doc-list li{margin-top:8px;line-height:26px}
+
+    .guideline-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px}
+    .principle-card{padding:22px;background:#fff;border:1px solid var(--border);border-radius:18px}
+    .principle-card.good{background:var(--brand-faint)}
+    .principle-card.bad{background:#fff8f6}
+    .principle-card h2{font-size:20px;line-height:28px}
+    .principle-list{display:grid;gap:12px;margin-top:16px}
+    .principle-row{display:flex;gap:10px;align-items:flex-start}
+    .principle-mark{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;font-size:13px;font-weight:800}
+    .principle-card.good .principle-mark{background:var(--brand-soft);color:var(--brand)}
+    .principle-card.bad .principle-mark{background:var(--danger-soft);color:var(--danger)}
+
+    .task-page{width:min(680px,calc(100% - 32px));margin:0 auto;padding:48px 0 72px}
+    .task-page h1{font-size:42px;line-height:50px;font-weight:500;letter-spacing:-1px}
+    .task-lead{margin-top:10px;color:var(--ink-muted);font-size:16px;line-height:27px}
+    .instruction-panel{margin-top:28px;padding:24px;background:var(--brand-faint);border:1px solid var(--brand-border);border-radius:20px}
+    .instruction-panel h2{font-size:20px;line-height:28px;font-weight:600}
+    .steps{display:grid;gap:14px;margin-top:18px}
+    .step{display:grid;grid-template-columns:32px minmax(0,1fr);gap:12px;align-items:start}
+    .step-number{width:32px;height:32px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700}
+    .step strong{display:block;font-size:14px;margin-top:2px}
+    .step p{font-size:13px;color:var(--ink-muted);margin-top:2px}
+    .task-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+
+    .notice{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 15px;border-radius:12px;max-width:calc(100% - 32px);width:max-content;font-size:13px;box-shadow:var(--shadow-popover);z-index:90}
+    .notice[hidden]{display:none}
+
+    @media(max-width:1180px){
+      .home-hero{grid-template-columns:minmax(0,1fr) 430px;gap:42px}
+      .home-copy h1{font-size:56px;line-height:61px}
+    }
+    @media(max-width:1023px){
+      .container{width:calc(100% - 48px)}
+      .home-hero{grid-template-columns:1fr;gap:28px}
+      .hero-map{height:380px}
+      .fresh-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .destination-layout,.detail-layout{grid-template-columns:1fr}
+      .sticky-map,.fresh-panel{position:static}
+      .sticky-map .map-shell{height:300px}
+    }
+    @media(max-width:767px){
+      .container{width:calc(100% - 32px)}
+      .site-header{height:64px}
+      .wordmark{font-size:25px}
+      .nav .desktop-link{display:none}
+      .home-hero{padding:32px 0 38px}
+      .home-copy h1{font-size:41px;line-height:45px;letter-spacing:-1.1px}
+      .home-copy .intro{font-size:16px;line-height:26px}
+      .search{height:56px;padding-left:12px}
+      .search-popover{top:88px}
+      .hero-map{height:315px}
+      .marker span{display:none}
+      .section-head{display:block}
+      .fresh-grid{grid-template-columns:1fr 1fr;gap:12px}
+      .place-card{min-height:165px;padding:18px}
+      .place-card h3{font-size:20px}
+      .home-cta{display:block;padding:24px}
+      .home-cta .btn{width:100%;margin-top:18px}
+      .page-top{padding-top:22px}
+      .dest-head{display:block}
+      .dest-title h1{font-size:40px;line-height:45px}
+      .dest-head>.btn{width:100%;margin-top:18px}
+      .filters-row{display:block}
+      .pills{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+      .sort{margin-top:14px}
+      .tip-card{padding:19px}
+      .price{font-size:26px;line-height:32px}
+      .sticky-map .map-shell{height:250px}
+      .composer-wrap{margin-top:20px}
+      .composer-wrap h1{font-size:32px;line-height:39px}
+      .form-card{padding:20px}
+      .visited-row{grid-template-columns:1fr;gap:7px}
+      .composer-footer{position:sticky;bottom:0;z-index:45;background:#fff;margin-left:-20px;margin-right:-20px;padding:16px 20px max(16px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:stretch}
+      .composer-footer .btn{width:100%}
+      .input-grid{grid-template-columns:1fr}
+      .detail-card{padding:20px}
+      .detail-card h1{font-size:29px;line-height:36px}
+      .detail-card>.price{font-size:34px;line-height:41px}
+      .detail-text{font-size:16px;line-height:27px}
+      .facts{grid-template-columns:1fr}
+      .document-page,.task-page{padding-top:36px}
+      .document-header h1,.task-page h1{font-size:34px;line-height:41px}
+      .guideline-grid{grid-template-columns:1fr}
+      .footer-grid{grid-template-columns:1fr 1fr;gap:24px}
+      .footer-brand{grid-column:1/-1}
+    }
+    @media(max-width:420px){
+      .fresh-grid{grid-template-columns:1fr}
+      .pills{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .footer-grid{grid-template-columns:1fr}
+      .footer-brand{grid-column:auto}
+    }
+    @media(prefers-reduced-motion:reduce){
+      *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+    }
+  </style>
+</head>
+<body>
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute"><defs>
+    <symbol id="compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="m16.5 7.5-3 6-6 3 3-6 6-3Z"/></symbol>
+    <symbol id="search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></symbol>
+    <symbol id="arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></symbol>
+    <symbol id="up-right" viewBox="0 0 24 24"><path d="M6 18 18 6M6 6h12v12"/></symbol>
+    <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="pin" viewBox="0 0 24 24"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0Z"/><circle cx="12" cy="10" r="2"/></symbol>
+    <symbol id="bed" viewBox="0 0 24 24"><path d="M3 18V6m18 12V9H3m0 6h18M3 18v3m18-3v3M7 9V5h10v4"/></symbol>
+    <symbol id="food" viewBox="0 0 24 24"><path d="M4 3v5c0 3 6 3 6 0V3M7 3v18M17 3c-4 3-4 10 1 10V3Zm1 10v8"/></symbol>
+    <symbol id="bus" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="16" rx="3"/><path d="M5 11h14M8 19v2m8-2v2M9 7h6M8 15h1m6 0h1"/></symbol>
+    <symbol id="mountain" viewBox="0 0 24 24"><path d="m2 20 7-14 4 7 3-5 6 12H2Zm5-10 2 3 2-3"/></symbol>
+    <symbol id="tip" viewBox="0 0 24 24"><path d="M9 18h6m-5 3h4M8 14c-5-4-2-11 4-11s9 7 4 11l-1 2H9l-1-2Z"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="helpful" viewBox="0 0 24 24"><path d="M7 10v11H3V10h4Zm0 1 5-8c3 0 3 3 1 6h5c2 0 3 1 2 4l-2 6c0 1-1 2-3 2H7"/></symbol>
+    <symbol id="more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+    <symbol id="flag" viewBox="0 0 24 24"><path d="M5 21V3c5-3 9 3 14 0v10c-5 3-9-3-14 0"/></symbol>
+    <symbol id="image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 5-5 4 4 4-7 5 6"/></symbol>
+  </defs></svg>
+
+  <div class="preview">
+    <span>REDESIGNED REFERENCE · synthetic fixtures</span>
+    <a href="#home" data-view="home">Home</a>
+    <a href="#destination" data-view="destination">Destination</a>
+    <a href="#composer" data-view="composer">Composer</a>
+    <a href="#detail" data-view="detail">Detail</a>
+    <a href="#privacy" data-view="privacy">Privacy</a>
+    <a href="#terms" data-view="terms">Terms</a>
+    <a href="#guidelines" data-view="guidelines">Guidelines</a>
+    <a href="#contact-removal" data-view="contact-removal">Contact removal</a>
+  </div>
+
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#home" data-view="home" class="wordmark"><svg class="icon"><use href="#compass"/></svg>TrailNote</a>
+      <nav class="nav" aria-label="Main navigation">
+        <a class="desktop-link" href="#home" data-view="home">Explore</a>
+        <a class="desktop-link" href="#composer" data-view="composer">Share a tip</a>
+        <button class="btn secondary" data-demo="Google-only sign in. Reading never requires an account.">Sign in</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+
+    <section id="home" class="screen active">
+      <div class="container">
+        <div class="home-hero">
+          <div class="home-copy">
+            <div class="eyebrow">Traveler knowledge for India</div>
+            <h1>Tell the next traveller<br><span>what you wish someone had told you.</span></h1>
+            <p class="intro">Practical notes from people who were actually there — what they paid, how they got around, and the little things worth knowing.</p>
+
+            <form class="search-block" id="home-search-form">
+              <label class="label" for="home-search">Where are you going?</label>
+              <div class="search">
+                <svg class="icon"><use href="#search"/></svg>
+                <input id="home-search" autocomplete="off" placeholder="Search Hampi, Ooty, Varkala…">
+                <button class="btn" aria-label="Search"><svg class="icon"><use href="#arrow"/></svg></button>
+              </div>
+
+              <div class="search-popover" id="search-popover" hidden>
+                <button type="button" class="search-result active" data-place="ooty">
+                  <div class="result-icon"><svg class="icon"><use href="#pin"/></svg></div>
+                  <div class="result-copy"><strong>Ooty</strong><small>Udhagamandalam, Tamil Nadu</small></div>
+                </button>
+                <button type="button" class="search-result" data-place="hampi">
+                  <div class="result-icon"><svg class="icon"><use href="#pin"/></svg></div>
+                  <div class="result-copy"><strong>Hampi</strong><small>Karnataka</small></div>
+                </button>
+                <button type="button" class="search-result" data-place="varkala">
+                  <div class="result-icon"><svg class="icon"><use href="#pin"/></svg></div>
+                  <div class="result-copy"><strong>Varkala</strong><small>Kerala</small></div>
+                </button>
+              </div>
+
+              <div class="home-links">
+                <span>A few places to start:</span>
+                <a href="#destination" data-view="destination">Badami</a>
+                <a href="#destination" data-view="destination">Hampi</a>
+                <a href="#destination" data-view="destination">Varkala</a>
+                <a href="#destination" data-view="destination">Gokarna</a>
+              </div>
+            </form>
+          </div>
+
+          <div class="map-shell hero-map" aria-label="Stylized India map">
+            <div class="map-grid"></div><div class="map-water"></div><div class="india-shape"></div>
+            <button class="marker manali"><i class="marker-dot"></i><span>Manali</span></button>
+            <button class="marker jaipur"><i class="marker-dot"></i><span>Jaipur</span></button>
+            <button class="marker varanasi"><i class="marker-dot"></i><span>Varanasi</span></button>
+            <button class="marker badami active"><i class="marker-dot"></i><span>Badami</span></button>
+            <button class="marker hampi"><i class="marker-dot"></i><span>Hampi</span></button>
+            <button class="marker ooty"><i class="marker-dot"></i><span>Ooty</span></button>
+            <button class="marker munnar"><i class="marker-dot"></i><span>Munnar</span></button>
+            <button class="marker varkala"><i class="marker-dot"></i><span>Varkala</span></button>
+            <div class="map-card">
+              <div class="eyebrow">From one traveler to another</div>
+              <strong>Useful details, grounded in a place.</strong>
+              <p>The map helps you explore. Traveler notes do the real work.</p>
+            </div>
+          </div>
+        </div>
+
+        <section class="home-section">
+          <div class="section-head">
+            <div><h2>Fresh from travelers</h2><p>Places where useful notes have recently been shared or updated.</p></div>
+          </div>
+
+          <div class="fresh-grid">
+            <a class="place-card" href="#destination" data-view="destination"><h3>Badami</h3><div class="state">Karnataka</div><div class="place-meta"><span class="mini-tag transport">Transport</span><span class="mini-tag stay">Stay</span><span class="mini-tag food">Food</span></div><div class="place-count">18 traveler notes</div></a>
+            <a class="place-card" href="#destination" data-view="destination"><h3>Hampi</h3><div class="state">Karnataka</div><div class="place-meta"><span class="mini-tag food">Food</span><span class="mini-tag">Explore</span></div><div class="place-count">24 traveler notes</div></a>
+            <a class="place-card" href="#destination" data-view="destination"><h3>Varkala</h3><div class="state">Kerala</div><div class="place-meta"><span class="mini-tag stay">Stay</span><span class="mini-tag">Tips</span></div><div class="place-count">16 traveler notes</div></a>
+            <a class="place-card" href="#destination" data-view="destination"><h3>Gokarna</h3><div class="state">Karnataka</div><div class="place-meta"><span class="mini-tag">Explore</span><span class="mini-tag food">Food</span></div><div class="place-count">12 traveler notes</div></a>
+            <a class="place-card" href="#destination" data-view="destination"><h3>Munnar</h3><div class="state">Kerala</div><div class="place-meta"><span class="mini-tag transport">Transport</span><span class="mini-tag">Tips</span></div><div class="place-count">9 traveler notes</div></a>
+            <a class="place-card" href="#destination" data-view="destination"><h3>Mysuru</h3><div class="state">Karnataka</div><div class="place-meta"><span class="mini-tag food">Food</span><span class="mini-tag stay">Stay</span></div><div class="place-count">14 traveler notes</div></a>
+          </div>
+
+          <div class="home-cta">
+            <div><h2>Know something useful?</h2><p>A fare, a room rate, a shortcut, a good meal — one detail is enough.</p></div>
+            <a class="btn" href="#composer" data-view="composer"><svg class="icon"><use href="#plus"/></svg>Share a tip</a>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section id="destination" class="screen">
+      <div class="container page-top">
+        <div class="breadcrumb"><a href="#home" data-view="home">Explore</a><span>/</span><span>Karnataka</span></div>
+        <div class="dest-head">
+          <div class="dest-title">
+            <div class="eyebrow">Karnataka · India</div>
+            <h1>Badami</h1>
+            <p>Small discoveries. Useful details. Shared by travelers.</p>
+            <div class="dest-stats"><span>18 traveler notes</span><span>•</span><span>Recently updated</span></div>
+          </div>
+          <a class="btn" href="#composer" data-view="composer"><svg class="icon"><use href="#plus"/></svg>Add a tip</a>
+        </div>
+
+        <div class="dest-filters">
+          <div class="filters-row">
+            <div class="pills" id="filter-pills"></div>
+            <label class="sort">Sort by <select><option>Recent visits</option><option>Newest shared</option></select></label>
+          </div>
+        </div>
+
+        <div class="destination-layout">
+          <div><div class="feed-head"><h2 id="feed-heading">Latest from travelers</h2><span id="feed-count">5 notes</span></div><div id="tip-list"></div></div>
+          <aside class="sticky-map">
+            <div class="map-shell"><div class="map-grid"></div><div class="india-shape" style="left:6%;top:-12%;width:88%;height:120%;opacity:.58"></div><button class="marker badami active" style="left:48%;top:46%"><i class="marker-dot"></i><span>Badami</span></button></div>
+            <div class="map-info"><strong>Badami, Karnataka</strong><p>The map keeps geographic context visible while the traveler notes stay primary.</p><button class="quiet" data-demo="Production MapLibre would zoom or open a fuller map view.">Open map view <svg class="icon"><use href="#up-right"/></svg></button></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="composer" class="screen">
+      <div class="container"><div class="composer-wrap">
+        <a class="back" href="#destination" data-view="destination">← Back to Badami</a>
+        <h1>Help the next traveller.</h1>
+        <p class="muted">One useful detail is enough.</p>
+        <div class="context"><svg class="icon"><use href="#pin"/></svg>Badami, Karnataka</div>
+
+        <div class="composer-categories"><div class="label">What did you discover?</div><div class="pills" id="composer-pills"></div></div>
+
+        <form class="form-card" id="composer-form">
+          <div class="category-fields" id="category-fields"></div>
+          <div class="field">
+            <label class="label" for="tip-text">What should the next traveler know?</label>
+            <textarea id="tip-text" placeholder="A bus fare, a good meal, a useful contact, or something you wish you'd known…"></textarea>
+            <div class="field-foot"><span>Specific details help more than a review.</span><span id="tip-counter">0 / 1,000</span></div>
+          </div>
+          <div class="visited-row">
+            <label class="label" for="visited">Visited</label>
+            <select id="visited" class="field-input"><option>This month (Sep 2026)</option><option>Last month (Aug 2026)</option><option>Choose a month…</option><option>Not sure</option></select>
+          </div>
+          <div class="optional-row">
+            <button type="button" class="quiet" data-demo="Reveal only optional fields relevant to the selected category."><svg class="icon"><use href="#plus"/></svg>Add details</button>
+            <button type="button" class="quiet" data-demo="Authenticate before file selection and allow up to 3 optimized photos."><svg class="icon"><use href="#image"/></svg>Add photos</button>
+          </div>
+          <div class="composer-footer"><small>Shared from your own experience.</small><button class="btn">Share tip <svg class="icon"><use href="#arrow"/></svg></button></div>
+        </form>
+      </div></div>
+    </section>
+
+    <section id="detail" class="screen">
+      <div class="container page-top">
+        <div class="breadcrumb"><a href="#destination" data-view="destination">Badami</a><span>/</span><span>Transport</span></div>
+        <div class="detail-layout">
+          <div>
+            <article class="detail-card">
+              <div class="tip-top"><div class="category-label transport"><span class="cat-mark"></span>Transport</div><span class="badge warning"><svg class="icon" style="width:14px"><use href="#flag"/></svg>Change reported</span></div>
+              <h1>Badami → Pattadakal</h1>
+              <div class="price">₹35 <small>/ person / trip</small></div>
+              <p class="detail-mode">Local bus · About 40 minutes</p>
+              <p class="detail-text">The local bus was an easy way to get to Pattadakal. I paid ₹35 from the main bus stand. Autos quoted much more, and buses were frequent during the day.</p>
+              <p class="detail-text">Ask the conductor for the stop near the temples. Keep some change for the fare.</p>
+              <div class="author"><div class="avatar">A</div><div>Shared by Amal<br><span class="small muted">Visited August 2026</span></div></div>
+              <div class="facts"><div><div class="fact-label">From</div><div class="fact-value">Badami bus stand</div></div><div><div class="fact-label">To</div><div class="fact-value">Pattadakal</div></div><div><div class="fact-label">Transport</div><div class="fact-value">Local bus</div></div><div><div class="fact-label">Approximate duration</div><div class="fact-value">40 minutes</div></div></div>
+              <div class="detail-actions"><h2>Know this information?</h2><div class="row"><button class="btn secondary" data-demo="A non-author confirms the current revision and can correct the visit month or undo."><svg class="icon"><use href="#check"/></svg>Still accurate</button><a class="quiet" href="#composer" data-view="composer"><svg class="icon"><use href="#flag"/></svg>Changed</a><button class="quiet" data-demo="Helpful is independent of freshness."><svg class="icon"><use href="#helpful"/></svg>Helpful 12</button><button class="quiet" data-demo="Report opens a reason selector with optional context.">Report</button></div></div>
+            </article>
+
+            <section class="updates">
+              <h2>Traveler updates <span class="small muted">1</span></h2>
+              <article class="update-card"><div class="row between"><strong style="font-size:14px">Priya</strong><span class="small muted">Visited Sep 2026</span></div><p>I took this bus in September and paid ₹40. The journey still took about 40 minutes.</p><div class="update-prices"><div>Original report<strong>₹35 <small>/ person / trip</small></strong></div><div>Update reported<strong>₹40 <small>/ person / trip</small></strong></div></div></article>
+            </section>
+          </div>
+
+          <aside><div class="fresh-panel"><h2>How recent is this?</h2><span class="badge warning" style="margin-top:14px"><svg class="icon" style="width:14px"><use href="#flag"/></svg>Change reported</span><div class="fresh-line"><small>Originally visited</small>August 2026</div><div class="fresh-line"><small>Last confirmed</small>September 2026</div><div class="fresh-line">7 travelers confirmed this version</div><p>A traveler has reported a change. Read the update before relying on the original fare.</p></div></aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="privacy" class="screen">
+      <article class="document-page">
+        <header class="document-header"><div class="eyebrow">Privacy</div><h1>Privacy at TrailNote</h1><p>How TrailNote handles the information you share while keeping public traveler knowledge useful.</p><div class="document-meta">Last updated September 2026</div></header>
+        <section class="doc-section"><h2>What we collect</h2><p>TrailNote stores account information needed for Google sign-in, traveler tips you publish, and operational records needed to keep the service reliable and safe.</p></section>
+        <section class="doc-section"><h2>What appears publicly</h2><p>Public contribution pages show the display name you use on TrailNote, the practical details you choose to share, the visit month when provided, and whether a public service contact is available.</p><p>Your sign-in email and authentication details are not shown on public traveler pages.</p></section>
+        <section class="doc-section"><h2>Public service contacts</h2><p>Phone numbers are stored separately from public contribution data. A reader must deliberately choose to reveal an available public business or service number before it is returned.</p></section>
+        <section class="doc-section"><h2>Photos</h2><p>Uploaded traveler photos are processed before storage. TrailNote is designed to remove unnecessary metadata such as location metadata from accepted images before they are attached to public tips.</p></section>
+        <section class="doc-section"><h2>Operational data</h2><p>Operational logs may record request timing, error codes and service diagnostics. TrailNote should not intentionally log tip bodies, phone numbers, email addresses, image buffers, OAuth tokens or secrets.</p></section>
+        <section class="doc-section"><h2>Your choices</h2><p>Authors can edit or delete their own contributions. Public service contacts can be reported for review without requiring the affected person to create an account.</p></section>
+        <section class="doc-section"><h2>Contact and removal</h2><p>If you believe a public business or service number should not appear on TrailNote, use the contact-removal flow linked from the relevant contribution so the exact number can be identified safely.</p></section>
+      </article>
+    </section>
+
+    <section id="terms" class="screen">
+      <article class="document-page">
+        <header class="document-header"><div class="eyebrow">Terms</div><h1>Terms for using TrailNote</h1><p>TrailNote is a community-maintained collection of practical travel information. These terms explain the basic expectations for reading and contributing.</p><div class="document-meta">Last updated September 2026</div></header>
+        <section class="doc-section"><h2>Use traveler information with judgment</h2><p>Prices, routes, opening conditions and availability can change. TrailNote presents what travelers report from their own experiences; it does not guarantee that a contribution remains current.</p></section>
+        <section class="doc-section"><h2>Share your own experience</h2><p>Contributions should be based on something you actually experienced or observed. Do not copy reviews, descriptions or photos from another person or website.</p></section>
+        <section class="doc-section"><h2>Respect people and privacy</h2><p>Do not publish private personal information. Public-facing business or service contact details should only be shared when you are comfortable making that information available to other travelers.</p></section>
+        <section class="doc-section"><h2>Moderation</h2><p>TrailNote may hide contributions or contacts that are spam, unsafe, inaccurate, abusive or privacy-invasive. Moderation actions should be recorded internally and handled consistently.</p></section>
+        <section class="doc-section"><h2>Your content</h2><p>You remain responsible for the information you contribute. You may edit or delete your own published traveler tips subject to the product's revision and moderation rules.</p></section>
+      </article>
+    </section>
+
+    <section id="guidelines" class="screen">
+      <article class="document-page">
+        <header class="document-header"><div class="eyebrow">Community</div><h1>Community guidelines</h1><p>TrailNote is most useful when every contribution gives the next traveler one practical thing they can actually use.</p></header>
+
+        <div class="guideline-grid">
+          <section class="principle-card good">
+            <h2>Good contributions</h2>
+            <div class="principle-list">
+              <div class="principle-row"><span class="principle-mark">✓</span><div><strong>Share first-hand details</strong><div class="small muted">What you paid, saw, used or learned yourself.</div></div></div>
+              <div class="principle-row"><span class="principle-mark">✓</span><div><strong>Include when you visited</strong><div class="small muted">Freshness helps the next traveler judge the information.</div></div></div>
+              <div class="principle-row"><span class="principle-mark">✓</span><div><strong>Be specific</strong><div class="small muted">A route, fare, room type, useful contact or practical warning.</div></div></div>
+              <div class="principle-row"><span class="principle-mark">✓</span><div><strong>Report changes</strong><div class="small muted">If something changed, add an update instead of erasing history.</div></div></div>
+            </div>
+          </section>
+
+          <section class="principle-card bad">
+            <h2>Don't use TrailNote for</h2>
+            <div class="principle-list">
+              <div class="principle-row"><span class="principle-mark">×</span><div><strong>Advertising</strong><div class="small muted">TrailNote is not a promotional listing directory.</div></div></div>
+              <div class="principle-row"><span class="principle-mark">×</span><div><strong>Copied reviews</strong><div class="small muted">Do not repost text or images from elsewhere.</div></div></div>
+              <div class="principle-row"><span class="principle-mark">×</span><div><strong>Private information</strong><div class="small muted">Do not publish personal numbers or sensitive details.</div></div></div>
+              <div class="principle-row"><span class="principle-mark">×</span><div><strong>Harassment</strong><div class="small muted">Keep contributions about useful travel information.</div></div></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="doc-section"><h2>When information changes</h2><p>Use the Changed action to add a new observation. TrailNote keeps the earlier report visible so travelers can see what changed and when.</p></section>
+      </article>
+    </section>
+
+    <section id="contact-removal" class="screen">
+      <div class="task-page">
+        <div class="eyebrow">Contact review</div>
+        <h1>Request contact removal</h1>
+        <p class="task-lead">If a public business or service number was shared on TrailNote and you'd like us to review it, start from the traveler tip where the number appears.</p>
+
+        <section class="instruction-panel">
+          <h2>How removal requests work</h2>
+          <div class="steps">
+            <div class="step"><div class="step-number">1</div><div><strong>Open the relevant traveler tip</strong><p>Find the contribution where the contact is attached.</p></div></div>
+            <div class="step"><div class="step-number">2</div><div><strong>Reveal the contact</strong><p>The number stays hidden from the initial public page data.</p></div></div>
+            <div class="step"><div class="step-number">3</div><div><strong>Choose “Report this number”</strong><p>This lets TrailNote identify the exact contact without asking you to paste the number here.</p></div></div>
+          </div>
+        </section>
+
+        <div class="task-actions"><a class="btn" href="#home" data-view="home">Explore tips</a><a class="btn secondary" href="#privacy" data-view="privacy">Read privacy</a></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand"><strong>TrailNote</strong><p>Tell the next traveller what you wish someone had told you.</p></div>
+      <div class="footer-col"><strong>Explore</strong><a href="#home" data-view="home">Search destinations</a><a href="#composer" data-view="composer">Share a tip</a></div>
+      <div class="footer-col"><strong>Community</strong><a href="#guidelines" data-view="guidelines">Guidelines</a><a href="#privacy" data-view="privacy">Privacy</a><a href="#terms" data-view="terms">Terms</a><a href="#contact-removal" data-view="contact-removal">Contact removal</a></div>
+    </div>
+  </footer>
+
+  <div class="reference-note">Visual specification only. All people, prices, tips and counts are synthetic fixtures. Use ?clean=1#privacy to hide reference chrome.</div>
+  <div class="notice" id="notice" role="status" hidden></div>
+
+  <script>
+    const categories=[['all','All','compass'],['stay','Stay','bed'],['food','Food','food'],['transport','Transport','bus'],['explore','Explore','mountain'],['general','Tips','tip']];
+    const composerCats=[['general','Quick tip','tip'],...categories.filter(c=>!['all','general'].includes(c[0]))];
+
+    const tips=[
+      {category:'transport',title:'Badami → Pattadakal',price:'₹35',unit:'/ person / trip',body:'Autos quoted much more. I paid ₹35 for the local bus from the main bus stand, and the journey took about 40 minutes.',author:'Amal',date:'Aug 2026',fresh:'Change reported',warning:true,confirmed:'Last confirmed Sep 2026 · 7 travelers',helpful:12},
+      {category:'stay',title:'ABC Lodge',price:'₹650',unit:'/ room / night',body:'Called directly and got a better rate than online. A private room, about a 10-minute walk from the bus stand.',author:'Neha',date:'Aug 2026',fresh:'Recent visit',helpful:8},
+      {category:'food',title:'Krishna Bhavan',price:'₹90',unit:'/ meal',body:'The South Indian meals were filling. Go before 1:30 PM because some dishes sell out by the afternoon.',author:'Arjun',date:'Aug 2026',fresh:'Recent visit',helpful:6},
+      {category:'explore',title:'Sunset viewpoint',price:'Free',unit:'entry',body:'About a 20-minute walk. It was quieter than the main viewpoint when I visited in the evening.',author:'Neha',date:'Aug 2026',fresh:'Recent visit',helpful:4},
+      {category:'general',title:'Carry small notes for the bus',price:null,unit:'',body:'It made buying a ticket much easier on the morning trip. Some conductors did not have change for larger notes.',author:'Arjun',date:'Sep 2026',fresh:'Recently confirmed',helpful:3}
+    ];
+
+    const icon=id=>`<svg class="icon" aria-hidden="true"><use href="#${id}"/></svg>`;
+
+    document.getElementById('filter-pills').innerHTML=categories.map(([k,l,i],idx)=>`<button class="pill ${idx===0?'selected':''}" data-category="${k}" aria-pressed="${idx===0}">${icon(i)}${l}</button>`).join('');
+    document.getElementById('composer-pills').innerHTML=composerCats.map(([k,l,i],idx)=>`<button type="button" class="pill ${idx===0?'selected':''}" data-compose="${k}" aria-pressed="${idx===0}">${icon(i)}${l}</button>`).join('');
+
+    function renderTips(category='all'){
+      const filtered=category==='all'?tips:tips.filter(t=>t.category===category);
+      document.getElementById('feed-heading').textContent=category==='all'?'Latest from travelers':`${categories.find(c=>c[0]===category)?.[1] || ''} notes`;
+      document.getElementById('feed-count').textContent=`${filtered.length} ${filtered.length===1?'note':'notes'}`;
+
+      document.getElementById('tip-list').innerHTML=filtered.map(t=>`
+        <article class="tip-card">
+          <div class="tip-top">
+            <div class="category-label ${t.category}"><span class="cat-mark"></span>${categories.find(c=>c[0]===t.category)[1]}</div>
+            <span class="badge ${t.warning?'warning':''}">${icon(t.warning?'flag':'clock')}${t.fresh}</span>
+          </div>
+          <h3><a href="#detail" data-view="detail">${t.title}</a></h3>
+          ${t.price?`<div class="price">${t.price} <small>${t.unit}</small></div>`:''}
+          <p class="tip-body">${t.body}</p>
+          <div class="tip-meta">Visited ${t.date} · ${t.author}</div>
+          ${t.confirmed?`<div class="tip-confirm">${t.confirmed}</div>`:''}
+          <div class="tip-actions">
+            <button class="quiet" data-demo="Confirm the current revision after sign-in.">${icon('check')}Still accurate</button>
+            <button class="quiet" data-demo="Helpful never changes freshness.">${icon('helpful')}Helpful ${t.helpful}</button>
+            <button class="quiet more" data-demo="Production menu: Changed / Report, or Edit / Delete for the author.">${icon('more')}</button>
+          </div>
+        </article>
+      `).join('') || `<article class="tip-card"><h3>No notes here yet</h3><p class="tip-body muted">Know something useful? Help the next traveler.</p></article>`;
+    }
+
+    renderTips();
+
+    const notice=document.getElementById('notice');
+    let noticeTimer;
+
+    function showNotice(msg){
+      notice.textContent=msg;
+      notice.hidden=false;
+      clearTimeout(noticeTimer);
+      noticeTimer=setTimeout(()=>notice.hidden=true,5200);
+    }
+
+    function setView(view){
+      const allowed=['home','destination','composer','detail','privacy','terms','guidelines','contact-removal'];
+      if(!allowed.includes(view))view='home';
+
+      document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===view));
+      document.querySelectorAll('.preview [data-view]').forEach(a=>a.setAttribute('aria-current',a.dataset.view===view?'page':'false'));
+      window.scrollTo(0,0);
+      document.title=`TrailNote — ${view} redesigned reference`;
+    }
+
+    function field(id,label,placeholder=''){
+      return `<div class="field"><label class="label" for="${id}">${label} <span class="optional">(optional)</span></label><input id="${id}" class="field-input" placeholder="${placeholder}"></div>`;
+    }
+
+    function priceField(unit){
+      return `<div class="field"><label class="label" for="category-price">What did you pay? <span class="optional">(optional)</span></label><div class="input-grid"><input id="category-price" class="field-input" inputmode="decimal" placeholder="₹ Amount"><select class="field-input" aria-label="Price unit"><option>${unit}</option><option>Other unit</option></select></div></div>`;
+    }
+
+    document.addEventListener('click',e=>{
+      const view=e.target.closest('[data-view]');
+      if(view){e.preventDefault();location.hash=view.dataset.view;setView(view.dataset.view);return}
+
+      const demo=e.target.closest('[data-demo]');
+      if(demo){e.preventDefault();showNotice(demo.dataset.demo);return}
+
+      const cat=e.target.closest('[data-category]');
+      if(cat){
+        document.querySelectorAll('[data-category]').forEach(b=>{
+          const active=b===cat;
+          b.classList.toggle('selected',active);
+          b.setAttribute('aria-pressed',active);
+        });
+        renderTips(cat.dataset.category);
+        return;
+      }
+
+      const compose=e.target.closest('[data-compose]');
+      if(compose){
+        document.querySelectorAll('[data-compose]').forEach(b=>{
+          const active=b===compose;
+          b.classList.toggle('selected',active);
+          b.setAttribute('aria-pressed',active);
+        });
+
+        const key=compose.dataset.compose;
+        const target=document.getElementById('category-fields');
+
+        target.innerHTML=
+          key==='general'
+            ?''
+            :key==='transport'
+              ?`<div class="input-grid">${field('from','From','Badami')}${field('to','To','Pattadakal')}</div><div class="field"><label class="label" for="mode">Transport <span class="optional">(optional)</span></label><select id="mode" class="field-input"><option>Choose a mode</option><option>Local bus</option><option>Shared jeep</option><option>Auto</option></select></div>${priceField('Per person / trip')}`
+              :field('place',key==='stay'?'Where did you stay?':'Place',key==='stay'?'Property name':'Place name')
+                +(key==='food'?field('dish','What did you try?','Dish or meal'):'')
+                +priceField(key==='stay'?'Per room / night':key==='food'?'Per meal':'Entry / person');
+
+        return;
+      }
+
+      const result=e.target.closest('[data-place]');
+      if(result){
+        document.querySelectorAll('.marker').forEach(m=>m.classList.remove('active'));
+        const marker=document.querySelector(`.marker.${result.dataset.place}`);
+        if(marker)marker.classList.add('active');
+        document.getElementById('search-popover').hidden=true;
+        showNotice(`${result.querySelector('strong').textContent} selected. Production map would smoothly zoom to its coordinates.`);
+      }
+    });
+
+    const homeSearch=document.getElementById('home-search');
+
+    homeSearch.addEventListener('input',()=>{
+      document.getElementById('search-popover').hidden=homeSearch.value.trim().length<2;
+    });
+
+    homeSearch.addEventListener('focus',()=>{
+      if(homeSearch.value.trim().length>=2)document.getElementById('search-popover').hidden=false;
+    });
+
+    document.getElementById('home-search-form').addEventListener('submit',e=>{
+      e.preventDefault();
+      location.hash='destination';
+      setView('destination');
+    });
+
+    document.getElementById('composer-form').addEventListener('submit',e=>{
+      e.preventDefault();
+      showNotice('Reference only. Production validates, signs in if needed, preserves the draft, then publishes explicitly.');
+    });
+
+    document.getElementById('tip-text').addEventListener('input',e=>{
+      document.getElementById('tip-counter').textContent=`${Array.from(e.target.value).length} / 1,000`;
+    });
+
+    window.addEventListener('hashchange',()=>setView(location.hash.slice(1)));
+
+    if(new URLSearchParams(location.search).has('clean')){
+      document.documentElement.classList.add('clean');
+    }
+
+    setView(location.hash.slice(1)||'home');
+  </script>
+</body>
+</html>
