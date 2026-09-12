@@ -3,6 +3,7 @@ import {
   sqliteTable,
   text,
   integer,
+  real,
   check,
   index,
   uniqueIndex,
@@ -62,8 +63,13 @@ export const destinations = sqliteTable(
     id: id(),
     slug: text("slug").notNull().unique(),
     name: text("name").notNull(),
+    canonicalName: text("canonical_name"),
     state: text("state").notNull(),
     countryCode: text("country_code").notNull().default("IN"),
+    latitude: real("latitude"),
+    longitude: real("longitude"),
+    provider: text("provider", { enum: ["geoapify"] }),
+    providerPlaceId: text("provider_place_id"),
     normalizedName: text("normalized_name").notNull(),
     description: text("description").notNull(),
     heroPath: text("hero_path"),
@@ -72,9 +78,21 @@ export const destinations = sqliteTable(
   },
   (t) => [
     check("destination_country", sql`${t.countryCode} = 'IN'`),
+    check(
+      "destination_coordinates",
+      sql`(${t.latitude} is null and ${t.longitude} is null) or (${t.latitude} is not null and ${t.longitude} is not null and ${t.latitude} between -90 and 90 and ${t.longitude} between -180 and 180)`,
+    ),
+    check(
+      "destination_provider",
+      sql`(${t.provider} is null and ${t.providerPlaceId} is null) or (${t.provider} is not null and ${t.provider} = 'geoapify' and ${t.providerPlaceId} is not null)`,
+    ),
     check("destination_description", sql`length(${t.description}) <= 240`),
     check("destination_enabled", sql`${t.enabled} in (0,1)`),
     index("destination_name_idx").on(t.normalizedName),
+    uniqueIndex("destination_provider_place_unique").on(
+      t.provider,
+      t.providerPlaceId,
+    ),
   ],
 );
 

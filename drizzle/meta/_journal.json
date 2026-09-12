@@ -15,6 +15,13 @@
       "when": 1788759715023,
       "tag": "0001_goofy_hairball",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1789203717549,
+      "tag": "0002_familiar_hemingway",
+      "breakpoints": true
     }
   ]
 }

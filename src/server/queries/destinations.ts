@@ -2,8 +2,8 @@ import "server-only";
 import { and, eq, sql, asc } from "drizzle-orm";
 import type { Database } from "../../db/client";
 import { destinations as d, contributions as c } from "../../db/schema";
-export const normalizeSearch = (s: string) =>
-  s.normalize("NFKC").toLowerCase().trim().replace(/\s+/g, " ");
+import { normalizeDestinationText } from "../../lib/destination-search";
+export const normalizeSearch = normalizeDestinationText;
 const likeEscape = (s: string) => s.replace(/[!%_]/g, "!$&");
 const rootCount =
   sql<number>`(select count(*) from contributions c join profiles p on p.user_id = c.author_id and p.status = 'active' where c.destination_id = destinations.id and c.status = 'published' and c.parent_contribution_id is null)`.mapWith(
@@ -13,7 +13,12 @@ const shape = {
   id: d.id,
   slug: d.slug,
   name: d.name,
+  canonicalName: d.canonicalName,
   state: d.state,
+  latitude: d.latitude,
+  longitude: d.longitude,
+  provider: d.provider,
+  providerPlaceId: d.providerPlaceId,
   description: d.description,
   heroPath: d.heroPath,
   publishedRootTipCount: rootCount,
@@ -48,11 +53,11 @@ export async function searchDestinations(db: Database, raw: string) {
     .where(
       and(
         eq(d.enabled, true),
-        sql`(${d.normalizedName} like ${contains} escape '!' or exists (select 1 from destination_aliases a where a.destination_id = ${d.id} and a.normalized_alias like ${contains} escape '!'))`,
+        sql`(${d.normalizedName} like ${contains} escape '!' or ${d.canonicalName} like ${contains} escape '!' or exists (select 1 from destination_aliases a where a.destination_id = ${d.id} and a.normalized_alias like ${contains} escape '!'))`,
       ),
     )
     .orderBy(
-      sql`case when ${d.normalizedName} = ${q} or exists (select 1 from destination_aliases a where a.destination_id = ${d.id} and a.normalized_alias = ${q}) then 0 when ${d.normalizedName} like ${prefix} escape '!' or exists (select 1 from destination_aliases a where a.destination_id = ${d.id} and a.normalized_alias like ${prefix} escape '!') then 1 else 2 end`,
+      sql`case when ${d.normalizedName} = ${q} or ${d.canonicalName} = ${q} or exists (select 1 from destination_aliases a where a.destination_id = ${d.id} and a.normalized_alias = ${q}) then 0 when ${d.normalizedName} like ${prefix} escape '!' or ${d.canonicalName} like ${prefix} escape '!' or exists (select 1 from destination_aliases a where a.destination_id = ${d.id} and a.normalized_alias like ${prefix} escape '!') then 1 else 2 end`,
       asc(d.name),
       asc(d.id),
     )

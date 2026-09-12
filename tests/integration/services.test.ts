@@ -32,6 +32,8 @@ import {
   submitContactRemoval,
 } from "../../src/server/services/reports";
 import { deleteAccount } from "../../src/server/services/accounts";
+import { saveGeoapifyDestination } from "../../src/server/services/destination-search";
+import { searchDestinations } from "../../src/server/queries/destinations";
 let conn: Awaited<ReturnType<typeof connectDatabase>>,
   dir: string,
   destinationId: string;
@@ -58,6 +60,67 @@ const input = () => ({
   photos: [],
 });
 describe("transactional contribution services", () => {
+  it("saves a verified destination once with searchable canonical and alias names", async () => {
+    await conn.db.insert(s.destinations).values({
+      slug: "ooty",
+      name: "Other Ooty",
+      state: "Rajasthan",
+      normalizedName: "other ooty",
+      description: "",
+    });
+    const destination = {
+      provider: "geoapify" as const,
+      providerPlaceId: "geoapify-ooty",
+      displayName: "Ooty",
+      canonicalName: "Udhagamandalam",
+      secondaryText: "Udhagamandalam, Tamil Nadu",
+      state: "Tamil Nadu",
+      country: "India",
+      latitude: 11.41,
+      longitude: 76.7,
+      aliases: ["Ooty", "Ootacamund"],
+      resultType: "city",
+      matchType: "alias-exact" as const,
+    };
+
+    const saved = await saveGeoapifyDestination(conn.db, destination);
+    expect(saved).toMatchObject({
+      slug: "ooty-tamil-nadu",
+      created: true,
+    });
+    expect(await saveGeoapifyDestination(conn.db, destination)).toEqual({
+      id: saved.id,
+      slug: saved.slug,
+      created: false,
+    });
+    expect(
+      await conn.db
+        .select()
+        .from(s.destinations)
+        .where(eq(s.destinations.id, saved.id)),
+    ).toMatchObject([
+      {
+        name: "Ooty",
+        canonicalName: "Udhagamandalam",
+        latitude: 11.41,
+        longitude: 76.7,
+        providerPlaceId: "geoapify-ooty",
+      },
+    ]);
+    expect(
+      await conn.db
+        .select({ alias: s.destinationAliases.alias })
+        .from(s.destinationAliases)
+        .where(eq(s.destinationAliases.destinationId, saved.id)),
+    ).toEqual([{ alias: "Ootacamund" }]);
+    expect((await searchDestinations(conn.db, "Udhagamandalam"))[0]?.slug).toBe(
+      saved.slug,
+    );
+    expect((await searchDestinations(conn.db, "Ootacamund"))[0]?.slug).toBe(
+      saved.slug,
+    );
+  });
+
   it("replays create once, rejects changed payload, and retains the original digest after edit", async () => {
     const key = crypto.randomUUID(),
       raw = input();

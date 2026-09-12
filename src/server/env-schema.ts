@@ -24,6 +24,7 @@ const environmentSchema = z.object({
   GOOGLE_CLIENT_SECRET: optionalValue,
   IMAGEKIT_PRIVATE_KEY: optionalValue,
   NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT: optionalUrl,
+  GEOAPIFY_API_KEY: optionalValue,
   RATE_LIMIT_SECRET: optionalValue,
   CRON_SECRET: optionalValue,
   NEXT_PUBLIC_APP_URL: optionalUrl,

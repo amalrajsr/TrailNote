@@ -3,13 +3,7 @@
 import { ArrowRight, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
-
-type DestinationResult = {
-  id: string;
-  slug: string;
-  name: string;
-  state: string;
-};
+import type { SearchDestination } from "../../lib/destination-search";
 
 type SearchState = "idle" | "loading" | "ready" | "error";
 
@@ -22,11 +16,15 @@ export function DestinationSearch({
   const id = useId();
   const request = useRef(0);
   const [query, setQuery] = useState(initialQuery);
-  const [results, setResults] = useState<DestinationResult[]>([]);
+  const [results, setResults] = useState<SearchDestination[]>([]);
   const [state, setState] = useState<SearchState>("idle");
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(-1);
   const [retry, setRetry] = useState(0);
+  const [saving, setSaving] = useState<string>();
+  const [errorMessage, setErrorMessage] = useState(
+    "Couldn't load destinations right now. Please try again.",
+  );
 
   useEffect(() => {
     const version = ++request.current;
@@ -41,27 +39,30 @@ export function DestinationSearch({
 
       try {
         const response = await fetch(
-          `/api/destinations?q=${encodeURIComponent(query)}`,
+          `/api/places/search?q=${encodeURIComponent(query)}`,
           { signal: abort.signal },
         );
 
         if (!response.ok) throw new Error("Destination search failed");
 
         const data = (await response.json()) as {
-          destinations: DestinationResult[];
+          results: SearchDestination[];
         };
 
         if (version === request.current) {
-          setResults(data.destinations);
+          setResults(data.results);
           setHighlight(-1);
           setState("ready");
         }
       } catch {
         if (!abort.signal.aborted && version === request.current) {
+          setErrorMessage(
+            "Couldn't load destinations right now. Please try again.",
+          );
           setState("error");
         }
       }
-    }, 250);
+    }, 350);
 
     return () => {
       window.clearTimeout(timer);
@@ -69,9 +70,41 @@ export function DestinationSearch({
     };
   }, [query, retry]);
 
-  function choose(slug: string) {
-    setOpen(false);
-    router.push(`/destinations/${slug}`);
+  async function choose(destination: SearchDestination) {
+    if (destination.trailnoteSlug) {
+      setOpen(false);
+      router.push(`/destinations/${destination.trailnoteSlug}`);
+      return;
+    }
+    if (!destination.providerPlaceId || saving) return;
+
+    setSaving(destination.providerPlaceId);
+    try {
+      const response = await fetch("/api/places", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: query.trim(),
+          providerPlaceId: destination.providerPlaceId,
+        }),
+      });
+      if (response.status === 401) {
+        router.push(
+          `/sign-in?returnTo=${encodeURIComponent(`/search?q=${encodeURIComponent(query.trim())}`)}`,
+        );
+        return;
+      }
+      if (!response.ok) throw new Error("Destination save failed");
+      const data = (await response.json()) as {
+        destination: { slug: string };
+      };
+      router.push(`/destinations/${data.destination.slug}`);
+    } catch {
+      setSaving(undefined);
+      setErrorMessage("Couldn't add that destination. Please try again.");
+      setState("error");
+      setOpen(true);
+    }
   }
 
   const showResults = open && query.trim().length >= 2;
@@ -84,7 +117,7 @@ export function DestinationSearch({
         const selected = results[highlight];
         if (selected && showResults && state === "ready") {
           event.preventDefault();
-          choose(selected.slug);
+          void choose(selected);
         }
       }}
     >
@@ -113,6 +146,9 @@ export function DestinationSearch({
             setQuery(event.target.value);
             setHighlight(-1);
             setState("idle");
+            setErrorMessage(
+              "Couldn't load destinations right now. Please try again.",
+            );
             setResults([]);
             setOpen(true);
           }}
@@ -128,7 +164,9 @@ export function DestinationSearch({
               setHighlight((current) =>
                 event.key === "ArrowDown"
                   ? Math.min(current + 1, results.length - 1)
-                  : Math.max(current - 1, 0),
+                  : current <= 0
+                    ? results.length - 1
+                    : current - 1,
               );
             }
           }}
@@ -155,11 +193,14 @@ export function DestinationSearch({
             </li>
           ) : state === "error" ? (
             <li role="presentation" className="search-option">
-              Couldn&apos;t load destinations. Try again.
+              {errorMessage}
               <button
                 type="button"
                 className="quiet"
-                onClick={() => setRetry((value) => value + 1)}
+                onClick={() => {
+                  setState("idle");
+                  setRetry((value) => value + 1);
+                }}
               >
                 Retry
               </button>
@@ -170,18 +211,33 @@ export function DestinationSearch({
                 role="option"
                 aria-selected={highlight === index}
                 id={`${id}-${index}`}
-                key={destination.id}
+                key={
+                  destination.providerPlaceId ??
+                  destination.trailnoteSlug ??
+                  `${destination.canonicalName}-${destination.latitude}-${destination.longitude}`
+                }
                 className="search-option"
                 onPointerDown={(event) => event.preventDefault()}
-                onClick={() => choose(destination.slug)}
+                onClick={() => void choose(destination)}
               >
-                {destination.name}
-                <small>{destination.state}</small>
+                {destination.displayName}
+                <small>
+                  {destination.secondaryText}
+                  {!destination.trailnoteSlug && (
+                    <>
+                      {destination.secondaryText && " · "}
+                      {saving === destination.providerPlaceId
+                        ? "Adding destination…"
+                        : "Add to TrailNote"}
+                    </>
+                  )}
+                </small>
               </li>
             ))
           ) : (
             <li role="presentation" className="search-option">
-              We haven&apos;t added this destination yet. Try a nearby town.
+              We couldn&apos;t find that destination. Try another spelling or
+              nearby town.
             </li>
           )}
         </ul>
