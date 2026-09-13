@@ -241,7 +241,7 @@ export async function cardsForRows(db: Database, rows: Tip[]) {
       t.placeName ||
       (t.fromName && t.toName
         ? `${t.fromName} → ${t.toName}`
-        : `${categoryLabels[t.category]} tip in ${destination?.name ?? "this destination"}`);
+        : `${categoryLabels[t.category]}${t.category === "general" ? "" : " tip"} in ${destination?.name ?? "this destination"}`);
     return {
       id: t.id,
       destinationId: t.destinationId,
@@ -252,6 +252,20 @@ export async function cardsForRows(db: Database, rows: Tip[]) {
       category: t.category,
       title,
       body: t.body,
+      details: {
+        placeName: t.placeName,
+        roomType: t.roomType,
+        bookingMethod: t.bookingMethod,
+        dish: t.dish,
+        fromName: t.fromName,
+        toName: t.toName,
+        transportMode: t.transportMode,
+        durationMinutes: t.durationMinutes,
+        walkMinutes: t.walkMinutes,
+        timingNote: t.timingNote,
+        boardingPoint: t.boardingPoint,
+        locationText: t.locationText,
+      },
       price:
         t.pricePaise === null
           ? null

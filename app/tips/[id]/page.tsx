@@ -158,26 +158,29 @@ function DetailCard({
         </p>
       </div>
       {facts.length > 0 && (
-        <dl className="facts">
-          {facts.map(([label, value, href]) => (
-            <div key={label}>
-              <dt className="fact-label">{label}</dt>
-              <dd className="fact-value">
-                {href ? (
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow ugc"
-                  >
-                    {value} <span aria-hidden="true">↗</span>
-                  </a>
-                ) : (
-                  value
-                )}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <section className="facts-section" aria-labelledby="useful-details">
+          <h2 id="useful-details">Useful details</h2>
+          <dl className="facts">
+            {facts.map(([label, value, href]) => (
+              <div key={label}>
+                <dt className="fact-label">{label}</dt>
+                <dd className="fact-value">
+                  {href ? (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow ugc"
+                    >
+                      {value} <span aria-hidden="true">↗</span>
+                    </a>
+                  ) : (
+                    value
+                  )}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
       )}
       {detail.photos.length > 0 && <PhotoGallery photos={detail.photos} />}
       <section
@@ -364,10 +367,16 @@ export default async function TipDetailPage({
         <span>{categoryLabels[detail.category]}</span>
       </nav>
       <div className="two-col detail-grid">
-        <DetailCard detail={detail} reaction={reaction} intent={query.intent} />
+        <div>
+          <DetailCard
+            detail={detail}
+            reaction={reaction}
+            intent={query.intent}
+          />
+          <Updates detail={detail} />
+        </div>
         <FreshnessPanel detail={detail} />
       </div>
-      <Updates detail={detail} />
     </main>
   );
 }

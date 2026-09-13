@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Plus, Compass, Clock3 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { getDatabase } from "../../../src/db";
 import {
   destinationBySlug,
@@ -16,7 +16,6 @@ import { CategoryIcon } from "../../../src/components/ui/category-icon";
 import { InfiniteTipFeed } from "../../../src/components/contributions/infinite-tip-feed";
 import { EmptyState } from "../../../src/components/ui/primitives";
 import { SortSelect } from "../../../src/components/destinations/sort";
-import { MapIllustration } from "../../../src/components/destinations/map-illustration";
 export async function generateMetadata({
   params,
 }: {
@@ -106,7 +105,7 @@ export default async function DestinationPage({
           <SortSelect sort={sort} />
         </div>
       </nav>
-      <div className="two-col">
+      <div className="two-col destination-grid">
         <section id="tips">
           <div className="list-heading">
             <h2>
@@ -146,34 +145,26 @@ export default async function DestinationPage({
             </EmptyState>
           )}
         </section>
-        <aside className="side-stack destination-aside">
-          <MapIllustration
-            compact
-            activeSlug={destination.slug}
-            destinations={[destination]}
-          />
-          <div className="map-info">
-            <strong>
-              {destination.name}, {destination.state}
-            </strong>
-            <p>
-              Geographic context stays visible while traveler notes do the real
-              work.
-            </p>
-            <Link className="quiet" href={add}>
-              <Compass size={18} aria-hidden="true" />
-              Share what you learned
-            </Link>
-          </div>
-          <div className="side-note">
-            <h3>
-              <Clock3 size={20} aria-hidden />A note on prices
-            </h3>
-            <p>
-              These are amounts travelers reported paying. Prices and
-              availability can change.
-            </p>
-          </div>
+        <aside className="side-panel destination-aside">
+          <h2>Good to know</h2>
+          <p>
+            Prices and practical details come directly from travelers and can
+            change over time.
+          </p>
+          <dl className="reading-guide">
+            <div>
+              <dt>Primary value</dt>
+              <dd>Price or fare</dd>
+            </div>
+            <div>
+              <dt>Quick facts</dt>
+              <dd>Useful details at a glance</dd>
+            </div>
+            <div>
+              <dt>Traveler note</dt>
+              <dd>The full experience, in their words</dd>
+            </div>
+          </dl>
         </aside>
       </div>
     </main>

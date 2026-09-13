@@ -949,6 +949,10 @@ main {
 .two-col > * {
   min-width: 0;
 }
+.destination-grid,
+.detail-grid {
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
 .list-heading {
   display: flex;
   justify-content: space-between;
@@ -1006,25 +1010,25 @@ main {
   content: "";
 }
 .category-label.transport {
-  color: var(--ink-muted);
+  color: var(--transport);
 }
 .category-label.transport::before {
   background: var(--transport);
 }
 .category-label.stay {
-  color: var(--ink-muted);
+  color: var(--sand);
 }
 .category-label.stay::before {
   background: var(--sand);
 }
 .category-label.food {
-  color: var(--ink-muted);
+  color: var(--accent);
 }
 .category-label.food::before {
   background: var(--accent);
 }
 .category-label.explore {
-  color: var(--ink-muted);
+  color: var(--brand);
 }
 .category-label.explore::before {
   background: var(--brand);
@@ -1084,6 +1088,19 @@ main {
   line-height: 20px;
   font-weight: 400;
   color: var(--ink-muted);
+}
+.tip-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  line-height: 20px;
+}
+.tip-facts span + span::before {
+  margin-right: 8px;
+  content: "·";
 }
 .tip-copy {
   margin-top: 12px;
@@ -1162,6 +1179,43 @@ main {
   top: 96px;
   align-self: start;
   padding-top: 0;
+}
+.destination-aside {
+  position: sticky;
+  top: 100px;
+  align-self: start;
+  padding: 20px;
+  border-color: var(--brand-border);
+  background: var(--brand-faint);
+}
+.destination-aside h2 {
+  margin-top: 0;
+  font: 600 20px/28px var(--font-display);
+}
+.destination-aside > p {
+  margin-top: 7px;
+  font-size: 13px;
+  line-height: 21px;
+}
+.reading-guide {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 0;
+}
+.reading-guide > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 20px;
+}
+.reading-guide dt {
+  color: var(--ink-muted);
+}
+.reading-guide dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
 }
 .destination-map {
   height: 430px;
@@ -2246,8 +2300,8 @@ textarea.field-input {
 }
 .detail-main h1 {
   margin-top: 16px;
-  font-size: 32px;
-  line-height: 40px;
+  font-size: 36px;
+  line-height: 43px;
   font-weight: 600;
 }
 .detail-main > .price {
@@ -2299,13 +2353,20 @@ textarea.field-input {
   color: var(--brand);
   overflow: hidden;
 }
+.facts-section {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  margin-top: 26px;
+}
+.facts-section h2 {
+  font-size: 18px;
+  line-height: 26px;
+}
 .facts {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  border-top: 1px solid var(--border);
-  padding-top: 24px;
-  margin-top: 24px;
+  gap: 18px 26px;
+  margin: 16px 0 0;
 }
 .facts div {
   min-width: 0;
@@ -2426,6 +2487,18 @@ textarea.field-input {
 .updates {
   margin-top: 32px;
   max-width: calc(100% - 352px);
+}
+.detail-grid .updates {
+  max-width: none;
+}
+.detail-grid .updates h2 {
+  font-size: 23px;
+  line-height: 31px;
+  margin-bottom: 14px;
+}
+.detail-grid .timeline {
+  margin-left: 0;
+  border-left: 0;
 }
 .updates h2 {
   font-size: 26px;
@@ -3059,6 +3132,9 @@ summary {
     order: -1;
     padding-top: 0;
   }
+  .destination-aside {
+    position: static;
+  }
   .destination-map {
     height: 300px;
   }
@@ -3299,8 +3375,8 @@ summary {
     padding: 20px;
   }
   .detail-main h1 {
-    font-size: 28px;
-    line-height: 36px;
+    font-size: 30px;
+    line-height: 38px;
   }
   .detail-main > .price {
     font-size: 32px;

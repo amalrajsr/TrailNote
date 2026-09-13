@@ -147,6 +147,9 @@ describe("migrated database contract", () => {
     expect(
       listing.cards.every((tip) => tip.parentContributionId === null),
     ).toBe(true);
+    expect(listing.cards.find((tip) => tip.category === "general")?.title).toBe(
+      "General tip in Badami",
+    );
 
     const nextListing = await listContributions(db, {
       destinationId: badami!.id,

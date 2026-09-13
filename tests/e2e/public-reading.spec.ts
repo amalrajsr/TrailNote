@@ -100,40 +100,18 @@ test("homepage shows six location tiles and links to full search", async ({
   );
 });
 
-test("destination map projects its database coordinates onto the India outline", async ({
+test("destination feed explains how traveler notes are structured", async ({
   page,
 }) => {
   await page.goto("/destinations/badami");
 
-  const map = page.locator(".destination-map");
-  await expect(map.locator(".india-shape")).toHaveCSS(
-    "mask-image",
-    /india-outline\.svg/,
-  );
-  const marker = map.getByRole("link", { name: "Badami, Karnataka" });
-  const position = await marker.evaluate((element) => {
-    const markerElement = element as HTMLElement;
-    const declaredLeft = Number.parseFloat(
-      markerElement.style.getPropertyValue("--marker-left"),
-    );
-    const declaredTop = Number.parseFloat(
-      markerElement.style.getPropertyValue("--marker-top"),
-    );
-    const parent = markerElement.parentElement!;
-    return {
-      declaredLeft,
-      declaredTop,
-      renderedLeft: (markerElement.offsetLeft / parent.clientWidth) * 100,
-      renderedTop: (markerElement.offsetTop / parent.clientHeight) * 100,
-    };
-  });
-
-  expect(Math.abs(position.renderedLeft - position.declaredLeft)).toBeLessThan(
-    0.5,
-  );
-  expect(Math.abs(position.renderedTop - position.declaredTop)).toBeLessThan(
-    0.5,
-  );
+  const guide = page.locator(".destination-aside");
+  await expect(
+    guide.getByRole("heading", { name: "Good to know" }),
+  ).toBeVisible();
+  await expect(guide.getByText("Primary value")).toBeVisible();
+  await expect(guide.getByText("Quick facts")).toBeVisible();
+  await expect(guide.getByText("Traveler note")).toBeVisible();
 });
 
 test("destination search supports aliases and keyboard selection", async ({
@@ -177,7 +155,7 @@ test("destination filters keep URL state and show only the selected category", a
   ).toHaveAttribute("aria-current", "page");
 });
 
-test("destination tips infinitely load inside their own scroll region", async ({
+test("destination tips load as the page approaches the end of the feed", async ({
   page,
 }) => {
   await page.goto("/destinations/badami");
@@ -186,11 +164,11 @@ test("destination tips infinitely load inside their own scroll region", async ({
   await expect(feed).toBeVisible();
   expect(
     await feed.evaluate((element) => getComputedStyle(element).overflowY),
-  ).toBe("auto");
+  ).toBe("visible");
   await expect(feed.locator(".tip-card")).toHaveCount(12);
 
-  await feed.evaluate((element) => {
-    element.scrollTop = element.scrollHeight;
+  await page.evaluate(() => {
+    window.scrollTo(0, document.documentElement.scrollHeight);
   });
 
   await expect(feed.locator(".tip-card")).toHaveCount(17);

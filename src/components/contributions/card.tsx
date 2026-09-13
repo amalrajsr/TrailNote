@@ -1,20 +1,44 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Clock3, Flag } from "lucide-react";
+import { Check, Clock3, Flag, MoreHorizontal, ThumbsUp } from "lucide-react";
 import { CategoryIcon } from "../ui/category-icon";
 import { categoryLabels } from "../../lib/constants";
 import { formatMoney, priceSuffix } from "../../lib/money";
 import { formatMonth } from "../../lib/visit-month";
 import type { ContributionCardDTO } from "../../server/queries/contributions";
-import { ProfileAvatar } from "../profiles/avatar";
+
+const humanize = (value: string) =>
+  value
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+
+function quickFacts(tip: ContributionCardDTO) {
+  const facts = tip.details;
+  const values: string[] = [];
+  if (facts.transportMode) values.push(humanize(facts.transportMode));
+  if (facts.roomType) values.push(humanize(facts.roomType));
+  if (facts.dish) values.push(facts.dish);
+  if (facts.durationMinutes) values.push(`About ${facts.durationMinutes} min`);
+  else if (facts.walkMinutes) values.push(`${facts.walkMinutes} min walk`);
+  if (facts.bookingMethod) values.push(humanize(facts.bookingMethod));
+  if (facts.timingNote) values.push(facts.timingNote);
+  if (facts.boardingPoint) values.push(facts.boardingPoint);
+  else if (facts.locationText) values.push(facts.locationText);
+  return values.slice(0, 3);
+}
+
 export function TipCard({ tip }: { tip: ContributionCardDTO }) {
   const photo = tip.photos[0];
+  const facts = quickFacts(tip);
   return (
     <article className="tip-card">
       <div className="row between">
         <div className={`category-label ${tip.category}`}>
           <CategoryIcon category={tip.category} />
-          {categoryLabels[tip.category]}
+          {tip.category === "general"
+            ? "Quick tip"
+            : categoryLabels[tip.category]}
         </div>
         <span className={`badge ${tip.freshness.tone}`}>
           {tip.changeReported ? (
@@ -38,40 +62,33 @@ export function TipCard({ tip }: { tip: ContributionCardDTO }) {
       <h3>
         <Link href={`/tips/${tip.id}`}>{tip.title}</Link>
       </h3>
-      {tip.price && (
+      {tip.category !== "general" && tip.price && (
         <div className="price">
           {formatMoney(tip.price.paise, tip.price.unit)}
           <span>{priceSuffix(tip.price.unit, tip.price.unitLabel)}</span>
         </div>
       )}
+      {facts.length > 0 && (
+        <p className="tip-facts">
+          {facts.map((fact) => (
+            <span key={fact}>{fact}</span>
+          ))}
+        </p>
+      )}
       <p className="tip-copy">
         {Array.from(tip.body).slice(0, 230).join("")}
         {Array.from(tip.body).length > 230 ? "…" : ""}
       </p>
-      <div className="tip-meta tip-author-meta">
-        <Link
-          className="tip-author-avatar-link"
-          href={`/users/${tip.author.id}`}
-          aria-label={`View @${tip.author.username}'s profile`}
-        >
-          <ProfileAvatar
-            name={tip.author.displayName}
-            avatar={tip.author.avatar}
-            className="tip-author-avatar"
-            sizes="28px"
-          />
+      <p className="tip-meta">
+        {tip.visitedMonth
+          ? `Visited ${formatMonth(tip.visitedMonth)}`
+          : formatMonth(null)}{" "}
+        ·{" "}
+        <Link className="author-link" href={`/users/${tip.author.id}`}>
+          {tip.author.displayName}{" "}
+          <span className="profile-handle">@{tip.author.username}</span>
         </Link>
-        <p>
-          {tip.visitedMonth
-            ? `Visited ${formatMonth(tip.visitedMonth)}`
-            : formatMonth(null)}{" "}
-          ·{" "}
-          <Link className="author-link" href={`/users/${tip.author.id}`}>
-            {tip.author.displayName}{" "}
-            <span className="profile-handle">@{tip.author.username}</span>
-          </Link>
-        </p>
-      </div>
+      </p>
       {tip.lastConfirmedMonth && (
         <p className="tip-confirm">
           Last confirmed {formatMonth(tip.lastConfirmedMonth)} ·{" "}
@@ -80,13 +97,19 @@ export function TipCard({ tip }: { tip: ContributionCardDTO }) {
       )}
       <div className="tip-actions">
         <Link className="quiet" href={`/tips/${tip.id}?intent=confirm`}>
+          <Check size={18} aria-hidden="true" />
           Still accurate
         </Link>
         <Link className="quiet" href={`/tips/${tip.id}?intent=helpful`}>
+          <ThumbsUp size={18} aria-hidden="true" />
           Helpful {tip.helpfulCount}
         </Link>
-        <Link className="quiet more" href={`/tips/${tip.id}`}>
-          Read tip →
+        <Link
+          className="quiet more"
+          href={`/tips/${tip.id}`}
+          aria-label="Read tip"
+        >
+          <MoreHorizontal size={20} aria-hidden="true" />
         </Link>
       </div>
     </article>
