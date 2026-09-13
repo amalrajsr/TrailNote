@@ -49,12 +49,14 @@ export function Field({
   label,
   optional,
   error,
+  helper,
   children,
 }: {
   id: string;
   label: string;
   optional?: boolean;
   error?: string;
+  helper?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -62,6 +64,7 @@ export function Field({
       <label className="label" htmlFor={id}>
         {label} {optional && <span className="optional">(optional)</span>}
       </label>
+      {helper && <p className="field-helper">{helper}</p>}
       {children}
       {error && (
         <p id={`${id}-error`} className="field-error">

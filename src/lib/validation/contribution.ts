@@ -59,6 +59,8 @@ export const contributionInput = z
     transportMode: optionalChoice(transportModes),
     durationMinutes: minutes,
     walkMinutes: minutes,
+    timingNote: nullableText(240),
+    boardingPoint: nullableText(200),
     locationText: nullableText(200),
     mapsUrl: nullableText(1000).refine(
       (v) => v === null || validMapsUrl(v),
@@ -128,7 +130,13 @@ export const contributionInput = z
     fromName: v.category === "transport" ? v.fromName : null,
     toName: v.category === "transport" ? v.toName : null,
     transportMode: v.category === "transport" ? v.transportMode : null,
-    durationMinutes: v.category === "transport" ? v.durationMinutes : null,
+    durationMinutes: ["transport", "explore"].includes(v.category)
+      ? v.durationMinutes
+      : null,
     walkMinutes: v.category === "explore" ? v.walkMinutes : null,
+    timingNote: ["stay", "food", "transport", "explore"].includes(v.category)
+      ? v.timingNote
+      : null,
+    boardingPoint: v.category === "transport" ? v.boardingPoint : null,
   }));
 export type ContributionInput = z.output<typeof contributionInput>;

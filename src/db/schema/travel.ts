@@ -166,6 +166,8 @@ export const contributions = sqliteTable(
     transportMode: text("transport_mode", { enum: transportModes }),
     durationMinutes: integer("duration_minutes"),
     walkMinutes: integer("walk_minutes"),
+    timingNote: text("timing_note"),
+    boardingPoint: text("boarding_point"),
     locationText: text("location_text"),
     mapsUrl: text("maps_url"),
     parentContributionId: text("parent_contribution_id").references(
@@ -235,6 +237,8 @@ export const contributions = sqliteTable(
       check(`contribution_short_text_${i}`, sql`length(${c}) <= 120`),
     ),
     check("contribution_location", sql`length(${t.locationText}) <= 200`),
+    check("contribution_timing", sql`length(${t.timingNote}) <= 240`),
+    check("contribution_boarding", sql`length(${t.boardingPoint}) <= 200`),
     index("contribution_destination_category_idx").on(
       t.destinationId,
       t.status,

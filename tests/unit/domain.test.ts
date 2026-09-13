@@ -11,7 +11,13 @@ describe("travel domain rules", () => {
       "person_night",
       "other",
     ]);
-    expect(priceUnitsByCategory.food).toEqual(["meal", "item", "other"]);
+    expect(priceUnitsByCategory.food).toEqual([
+      "breakfast",
+      "lunch",
+      "dinner",
+      "snacks",
+      "other",
+    ]);
     expect(priceUnitsByCategory.transport).toEqual([
       "person_trip",
       "vehicle_trip",

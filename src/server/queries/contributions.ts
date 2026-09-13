@@ -402,6 +402,8 @@ export async function contributionDetail(db: Database, id: string) {
       transportMode: tip.transportMode,
       durationMinutes: tip.durationMinutes,
       walkMinutes: tip.walkMinutes,
+      timingNote: tip.timingNote,
+      boardingPoint: tip.boardingPoint,
       locationText: tip.locationText,
       mapsUrl: tip.mapsUrl,
     },

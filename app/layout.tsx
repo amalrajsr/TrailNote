@@ -23,9 +23,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${commissioner.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <a className="skip" href="#main">
-          Skip to content
-        </a>
         <Header />
         {children}
         <Footer />

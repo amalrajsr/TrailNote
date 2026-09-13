@@ -17,6 +17,11 @@ export const priceUnits = [
   "room_night",
   "bed_night",
   "person_night",
+  "breakfast",
+  "lunch",
+  "dinner",
+  "snacks",
+  // Retain legacy units so existing contributions remain valid.
   "meal",
   "item",
   "person_trip",
@@ -27,7 +32,7 @@ export const priceUnits = [
 export type PriceUnit = (typeof priceUnits)[number];
 export const priceUnitsByCategory = {
   stay: ["room_night", "bed_night", "person_night", "other"],
-  food: ["meal", "item", "other"],
+  food: ["breakfast", "lunch", "dinner", "snacks", "other"],
   transport: ["person_trip", "vehicle_trip", "other"],
   explore: ["entry_person", "other"],
   general: priceUnits,
@@ -36,6 +41,10 @@ export const unitLabels: Record<PriceUnit, string> = {
   room_night: "/ room / night",
   bed_night: "/ bed / night",
   person_night: "/ person / night",
+  breakfast: "/ breakfast",
+  lunch: "/ lunch",
+  dinner: "/ dinner",
+  snacks: "/ snacks",
   meal: "/ meal",
   item: "/ item",
   person_trip: "/ person / trip",

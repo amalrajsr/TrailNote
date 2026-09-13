@@ -96,7 +96,7 @@ h2 {
   text-wrap: balance;
 }
 .container {
-  width: min(1200px, calc(100% - 64px));
+  width: min(1200px, calc(100% - 48px));
   margin-inline: auto;
 }
 .muted,
@@ -3085,7 +3085,7 @@ summary {
 }
 @media (max-width: 767px) {
   .container {
-    width: calc(100% - 32px);
+    width: calc(100% - 24px);
   }
   .site-header {
     height: 64px;
@@ -3498,6 +3498,368 @@ summary {
   }
   .success-categories button:first-child {
     grid-column: 1 / -1;
+  }
+}
+
+/* Composer design reference: scoped visual treatment for the contribution flow. */
+.composer-page {
+  width: min(1200px, calc(100% - 48px));
+  padding: 38px 0 72px;
+}
+.composer-page .composer-wrap {
+  max-width: none;
+  margin: 0;
+}
+body:has(.composer-page) .nav .desktop-link:nth-child(2) {
+  display: none;
+}
+body:has(.composer-page) .site-footer .footer-col {
+  display: none;
+}
+body:has(.composer-page) .site-footer .footer-grid {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+body:has(.composer-page) .site-footer .footer-grid::after {
+  content: "Composer design reference · reader-first contribution flow";
+  align-self: end;
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+.composer-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 32px;
+  align-items: start;
+  justify-content: center;
+}
+.composer-main .page-title {
+  font-size: 44px;
+  line-height: 51px;
+  font-weight: 500;
+  letter-spacing: -1.4px;
+}
+.composer-intro {
+  margin-top: 7px;
+  color: var(--ink-muted);
+  font-size: 17px;
+}
+.composer-main .context {
+  margin-top: 18px;
+  color: var(--brand);
+  font-size: 14px;
+  font-weight: 650;
+}
+.composer-categories {
+  margin: 28px 0 0;
+  padding: 0;
+  border: 0;
+}
+.composer-section-label {
+  display: block;
+  margin-bottom: 10px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 700;
+}
+.composer-category-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+.composer-category {
+  min-height: 48px;
+  padding: 10px 11px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  transition:
+    border-color var(--motion-fast) var(--ease),
+    background var(--motion-fast) var(--ease),
+    color var(--motion-fast) var(--ease);
+}
+.composer-category:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.composer-category.selected {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: var(--on-brand);
+}
+.composer-main .form-card {
+  margin-top: 18px;
+  padding: 26px;
+  border-radius: 22px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+}
+.composer-main .category-fields {
+  display: contents;
+}
+.composer-main .category-fields > .field:has(#body) {
+  order: 1;
+}
+.composer-main details {
+  order: 2;
+}
+.composer-main .category-fields > .visited-row,
+.composer-main .category-fields > .field:has(#visitedMonthCustom) {
+  order: 3;
+}
+.composer-main .reader-preview {
+  order: 4;
+}
+.composer-main .photo-uploader {
+  order: 5;
+}
+.composer-main .composer-footer {
+  order: 6;
+}
+.composer-main .category-fields > .field:first-child,
+.composer-main .category-fields > .input-grid:first-child {
+  margin-top: 0;
+}
+.composer-main .category-fields > .field:has(#body) {
+  margin-top: 0;
+}
+.composer-main .field label[for="body"] {
+  margin-bottom: 0;
+  font-size: 21px;
+  line-height: 29px;
+  font-weight: 600;
+}
+.composer-main .field-helper {
+  margin-top: 6px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  line-height: 21px;
+}
+.composer-main textarea.field-input {
+  min-height: 172px;
+  margin-top: 14px;
+  line-height: 25px;
+}
+.composer-main .field-foot {
+  margin-top: 8px;
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+.composer-main .usefulness-guidance {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-size: 13px;
+  line-height: 20px;
+}
+.composer-main details {
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+}
+.composer-main details summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 14px;
+  font-weight: 700;
+}
+.composer-main details summary::-webkit-details-marker {
+  display: none;
+}
+.composer-main details summary::after {
+  content: "⌄";
+  float: right;
+  color: var(--ink-muted);
+}
+.composer-main details[open] summary::after {
+  content: "⌃";
+}
+.composer-main details > .stack {
+  margin-top: 18px;
+}
+.composer-main .details-copy {
+  margin-top: 4px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  line-height: 21px;
+}
+.composer-detail-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.composer-detail-chip {
+  min-height: 40px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+.composer-detail-chip:hover,
+.composer-detail-chip.active {
+  border-color: var(--brand-border);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+.composer-main .visited-row {
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+  grid-template-columns: 160px minmax(0, 1fr);
+}
+.composer-main .visited-title label {
+  display: block;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+.composer-main .visited-title small {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+.reader-preview {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid var(--brand-border);
+  border-radius: 14px;
+  background: var(--brand-faint);
+}
+.reader-preview-label {
+  color: var(--brand);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.reader-preview-meta {
+  margin-top: 8px;
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+.reader-preview-text {
+  margin-top: 7px;
+  font-size: 14px;
+  line-height: 22px;
+}
+.composer-help {
+  position: sticky;
+  top: 102px;
+  padding: 22px;
+  border: 1px solid var(--brand-border);
+  border-radius: 20px;
+  background: var(--brand-faint);
+}
+.composer-help h2 {
+  font-size: 21px;
+  line-height: 29px;
+  font-weight: 600;
+}
+.composer-help > p {
+  margin-top: 6px;
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+.composer-help-list {
+  display: grid;
+  gap: 13px;
+  margin-top: 18px;
+}
+.composer-help-item {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+}
+.composer-help-icon {
+  width: 28px;
+  height: 28px;
+  position: relative;
+  flex: 0 0 auto;
+  border: 1px solid var(--brand-border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--brand);
+  font-size: 0;
+}
+.composer-help-icon::before {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  content: attr(data-marker);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+}
+.composer-help-item strong,
+.composer-help-item span {
+  display: block;
+}
+.composer-help-item strong {
+  font-size: 13px;
+}
+.composer-help-item div span {
+  margin-top: 2px;
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+.composer-help-note {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--brand-border);
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 650;
+}
+@media (max-width: 1000px) {
+  .composer-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .composer-help {
+    display: none;
+  }
+}
+@media (max-width: 767px) {
+  .composer-page {
+    width: calc(100% - 24px);
+    padding-top: 24px;
+  }
+  .composer-main .page-title {
+    font-size: 34px;
+    line-height: 40px;
+  }
+  .composer-intro {
+    font-size: 15px;
+  }
+  .composer-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .composer-main .form-card {
+    padding: 20px;
+  }
+  .composer-main .field label[for="body"] {
+    font-size: 19px;
+    line-height: 26px;
+  }
+  .reader-preview {
+    display: none;
   }
 }
 @media (max-width: 420px) {

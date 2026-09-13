@@ -65,6 +65,8 @@ type Draft = {
   transportMode: string;
   durationMinutes: string;
   walkMinutes: string;
+  timingNote: string;
+  boardingPoint: string;
   locationText: string;
   mapsUrl: string;
   phone: string;
@@ -77,9 +79,80 @@ const categoryNames: Record<Category, string> = {
   ...categoryLabels,
   general: "Quick tip",
 };
+const categoryCopy: Record<
+  Category,
+  { prompt: string; helper: string; placeholder: string }
+> = {
+  general: {
+    prompt: "What do you wish you knew before coming here?",
+    helper: "A small detail can save someone time, money, or confusion.",
+    placeholder: "The ticket counter only accepted cash when I visited.",
+  },
+  stay: {
+    prompt: "What should someone know before staying here?",
+    helper:
+      "Room price, booking method, location, contact, or something unexpected.",
+    placeholder:
+      "I called directly and got the room for ₹650, cheaper than the online rate.",
+  },
+  food: {
+    prompt: "What did you eat, and what should someone know?",
+    helper: "Dish, price, portion size, timing, or what to order.",
+    placeholder: "The meals were ₹90 and sold out by around 1:30 PM.",
+  },
+  transport: {
+    prompt: "How did you get there, and what would make the journey easier?",
+    helper: "Route, fare, travel time, boarding point, or last service.",
+    placeholder:
+      "The local bus to Pattadakal cost ₹35 and took around 40 minutes.",
+  },
+  explore: {
+    prompt: "What should someone know before visiting this place?",
+    helper:
+      "Entry fee, best time, route, time needed, or something easy to miss.",
+    placeholder: "Go before 4 PM — the last entry was earlier than I expected.",
+  },
+};
+const genericTipPatterns = [
+  /^nice[.! ]*$/i,
+  /^good[.! ]*$/i,
+  /^great[.! ]*$/i,
+  /^amazing[.! ]*$/i,
+  /^beautiful[.! ]*$/i,
+  /^awesome[.! ]*$/i,
+  /^must visit[.! ]*$/i,
+  /^worth visiting[.! ]*$/i,
+];
+const detailPrompts: Record<Category, string[]> = {
+  general: [],
+  stay: ["price", "booking", "contact", "location", "photo"],
+  food: ["price", "dish", "timing", "location", "photo"],
+  transport: [
+    "price",
+    "route",
+    "duration",
+    "boarding",
+    "timing",
+    "location",
+    "photo",
+  ],
+  explore: ["price", "timing", "duration", "location", "photo"],
+};
+const detailLabels: Record<string, string> = {
+  price: "₹ Price",
+  booking: "How you booked",
+  location: "Location",
+  contact: "Contact",
+  dish: "What you ordered",
+  timing: "Timing",
+  route: "Route",
+  duration: "Travel time",
+  boarding: "Boarding point",
+  photo: "Photo",
+};
 const defaultUnits: Record<Category, string> = {
   stay: "room_night",
-  food: "meal",
+  food: "",
   transport: "person_trip",
   explore: "entry_person",
   general: "",
@@ -99,6 +172,37 @@ function previousMonth(month: string) {
   return value === 1
     ? `${year - 1}-12`
     : `${year}-${String(value - 1).padStart(2, "0")}`;
+}
+
+function previewMonth(value: string) {
+  if (!value) return "Not sure";
+  const [year, month] = value.split("-").map(Number);
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    year: "numeric",
+  }).format(new Date(year, month - 1, 1));
+}
+
+function initialDetailKeys(initialDraft?: Partial<Draft>) {
+  if (!initialDraft) return [];
+  return Object.entries({
+    price: initialDraft.price,
+    place: initialDraft.placeName,
+    booking: initialDraft.bookingMethod || initialDraft.roomType,
+    location:
+      initialDraft.locationText ||
+      initialDraft.mapsUrl ||
+      initialDraft.placeName,
+    contact: initialDraft.phone,
+    dish: initialDraft.dish,
+    timing: initialDraft.timingNote,
+    route: initialDraft.fromName || initialDraft.toName,
+    duration: initialDraft.durationMinutes || initialDraft.walkMinutes,
+    boarding: initialDraft.boardingPoint,
+    photo: initialDraft.photos?.length,
+  })
+    .filter(([, value]) => !!value)
+    .map(([key]) => key);
 }
 
 function makeDraft(category: Category, mutationId: string): Draft {
@@ -121,6 +225,8 @@ function makeDraft(category: Category, mutationId: string): Draft {
     transportMode: "",
     durationMinutes: "",
     walkMinutes: "",
+    timingNote: "",
+    boardingPoint: "",
     locationText: "",
     mapsUrl: "",
     phone: "",
@@ -175,9 +281,13 @@ export function ContributionComposer({
     mutationId: initialMutationId,
   }));
   const [restored, setRestored] = useState(false);
-  const [details, setDetails] = useState(false);
+  const [details, setDetails] = useState(true);
+  const [enabledDetails, setEnabledDetails] = useState<string[]>(() =>
+    initialDetailKeys(initialDraft),
+  );
   const [photoBusy, setPhotoBusy] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
+  const [showUsefulnessGuidance, setShowUsefulnessGuidance] = useState(false);
   const [clientFieldErrors, setClientFieldErrors] = useState<
     Record<string, string[]>
   >({});
@@ -204,7 +314,9 @@ export function ContributionComposer({
       return {
         success: false as const,
         fieldErrors: {
-          price: [error instanceof Error ? error.message : "Enter a valid price."],
+          price: [
+            error instanceof Error ? error.message : "Enter a valid price.",
+          ],
         },
       };
     }
@@ -227,8 +339,12 @@ export function ContributionComposer({
       fromName: draft.fromName,
       toName: draft.toName,
       transportMode: draft.transportMode,
-      durationMinutes: draft.durationMinutes ? Number(draft.durationMinutes) : null,
+      durationMinutes: draft.durationMinutes
+        ? Number(draft.durationMinutes)
+        : null,
       walkMinutes: draft.walkMinutes ? Number(draft.walkMinutes) : null,
+      timingNote: draft.timingNote,
+      boardingPoint: draft.boardingPoint,
       locationText: draft.locationText,
       mapsUrl: draft.mapsUrl,
       phone: draft.phone,
@@ -252,6 +368,16 @@ export function ContributionComposer({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     setShowValidation(true);
     setClientFieldErrors({});
+    const body = draft.body.trim();
+    if (
+      body.length < 12 ||
+      genericTipPatterns.some((pattern) => pattern.test(body))
+    ) {
+      event.preventDefault();
+      setShowUsefulnessGuidance(true);
+      return;
+    }
+    setShowUsefulnessGuidance(false);
     const result = validateDraft();
     if (!result.success) {
       event.preventDefault();
@@ -275,6 +401,7 @@ export function ContributionComposer({
               phone: "",
               photos: Array.isArray(parsed.photos) ? parsed.photos : [],
             }));
+            setEnabledDetails(initialDetailKeys(parsed));
             setRestored(true);
           });
         }
@@ -431,13 +558,19 @@ export function ContributionComposer({
   };
   const setValue = (name: string, value: string) =>
     setDraft((current) => ({ ...current, [name]: value }));
+  const toggleDetail = (key: string) =>
+    setEnabledDetails((current) =>
+      current.includes(key)
+        ? current.filter((value) => value !== key)
+        : [...current, key],
+    );
+  const detailEnabled = (key: string) => enabledDetails.includes(key);
   const category = draft.category;
   const currentYear = month.slice(0, 4);
   const currentMonthValue = month.slice(5, 7);
   const [visitedYear, visitedMonthValue] = draft.visitedMonth.split("-");
   const selectableMonths = monthOptions.filter(
-    ({ value }) =>
-      visitedYear !== currentYear || value <= currentMonthValue,
+    ({ value }) => visitedYear !== currentYear || value <= currentMonthValue,
   );
   const visitedYears = Array.from(
     { length: Number(currentYear) - 1999 },
@@ -509,6 +642,39 @@ export function ContributionComposer({
       {restored && (
         <p className="status-message">Your saved draft was restored.</p>
       )}
+      {mode === "create" && (
+        <fieldset className="composer-categories">
+          <legend className="composer-section-label">
+            What are you sharing?
+          </legend>
+          <div className="composer-category-grid">
+            {[
+              "general",
+              ...categories.filter((value) => value !== "general"),
+            ].map((value) => (
+              <button
+                type="button"
+                className={`composer-category ${category === value ? "selected" : ""}`}
+                aria-pressed={category === value}
+                key={value}
+                onClick={() => {
+                  setEnabledDetails([]);
+                  setDraft((current) => ({
+                    ...current,
+                    category: value as Category,
+                    price: "",
+                    priceUnit: defaultUnits[value as Category],
+                    priceUnitLabel: "",
+                  }));
+                }}
+              >
+                <CategoryIcon category={value as Category} />
+                {categoryNames[value as Category]}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
       <form
         action={action}
         className="form-card"
@@ -551,15 +717,16 @@ export function ContributionComposer({
         />
 
         {showValidation &&
-          (state.status === "error" || Object.keys(clientFieldErrors).length > 0) && (
-          <div
-            ref={summaryRef}
-            tabIndex={-1}
-            className="error-notice"
-            role="alert"
-          >
-            {state.message ?? "Review the highlighted fields and try again."}
-          </div>
+          (state.status === "error" ||
+            Object.keys(clientFieldErrors).length > 0) && (
+            <div
+              ref={summaryRef}
+              tabIndex={-1}
+              className="error-notice"
+              role="alert"
+            >
+              {state.message ?? "Review the highlighted fields and try again."}
+            </div>
           )}
 
         {mode === "update" && original ? (
@@ -575,125 +742,54 @@ export function ContributionComposer({
               facts blank when you did not observe a new value.
             </p>
           </section>
-        ) : mode === "create" ? (
-          <fieldset className="composer-categories">
-            <legend className="label">What did you discover?</legend>
-            <div className="pills">
-              {[
-                "general",
-                ...categories.filter((value) => value !== "general"),
-              ].map((value) => (
-                <button
-                  type="button"
-                  className={`pill ${category === value ? "selected" : ""}`}
-                  aria-pressed={category === value}
-                  key={value}
-                  onClick={() =>
-                    setDraft((current) => ({
-                      ...current,
-                      category: value as Category,
-                      price: "",
-                      priceUnit: defaultUnits[value as Category],
-                      priceUnitLabel: "",
-                    }))
-                  }
-                >
-                  <CategoryIcon category={value as Category} />
-                  {categoryNames[value as Category]}
-                </button>
-              ))}
-            </div>
-          </fieldset>
         ) : null}
 
         <div className="category-fields">
-          {(category === "stay" ||
-            category === "food" ||
-            category === "explore") && (
-            <Field
-              id="placeName"
-              label={category === "stay" ? "Where did you stay?" : "Place"}
-              optional
-              error={error("placeName")}
-            >
-              <Input
-                id="placeName"
-                name="placeName"
-                value={draft.placeName}
-                onChange={(event) => setValue("placeName", event.target.value)}
-                aria-describedby={
-                  error("placeName") ? "placeName-error" : undefined
-                }
-                aria-invalid={!!error("placeName")}
-              />
-            </Field>
-          )}
-          {category === "food" && (
-            <Field
-              id="dish"
-              label="What did you try?"
-              optional
-              error={error("dish")}
-            >
-              <Input
-                id="dish"
-                name="dish"
-                value={draft.dish}
-                onChange={(event) => setValue("dish", event.target.value)}
-              />
-            </Field>
-          )}
-          {category === "transport" && (
-            <div className="input-grid">
-              <Field id="fromName" label="From" optional>
-                <Input
-                  id="fromName"
-                  name="fromName"
-                  value={draft.fromName}
-                  onChange={(event) => setValue("fromName", event.target.value)}
-                />
-              </Field>
-              <Field id="toName" label="To" optional>
-                <Input
-                  id="toName"
-                  name="toName"
-                  value={draft.toName}
-                  onChange={(event) => setValue("toName", event.target.value)}
-                />
-              </Field>
-            </div>
-          )}
-
-          {category !== "general" && priceFields}
-
           <Field
             id="body"
             label={
               mode === "update"
                 ? "Tell travelers what's different"
-                : "What should the next traveler know?"
+                : categoryCopy[category].prompt
             }
             error={error("body")}
+            helper={categoryCopy[category].helper}
           >
             <Textarea
               id="body"
               name="body"
               maxLength={1000}
               required
-              placeholder="A bus fare, a good meal, a useful contact, or something you wish you'd known…"
+              placeholder={categoryCopy[category].placeholder}
               value={draft.body}
-              onChange={(event) => setValue("body", event.target.value)}
-              aria-describedby={`body-help${error("body") ? " body-error" : ""}`}
+              onChange={(event) => {
+                setValue("body", event.target.value);
+                setShowUsefulnessGuidance(false);
+              }}
+              aria-describedby={`body-help${error("body") ? " body-error" : ""}${showUsefulnessGuidance ? " body-usefulness" : ""}`}
               aria-invalid={!!error("body")}
             />
             <div id="body-help" className="field-foot">
-              <span>Specific details help more than a review.</span>
+              <span>Specific details are more useful than reviews.</span>
               <span>{Array.from(draft.body).length} / 1,000</span>
             </div>
+            {showUsefulnessGuidance && (
+              <p
+                id="body-usefulness"
+                className="usefulness-guidance"
+                role="alert"
+              >
+                Give the next traveler one detail they can use — for example a
+                price, route, timing, place, or something to avoid.
+              </p>
+            )}
           </Field>
 
           <div className="visited-row">
-            <label htmlFor="visitedChoice">Visited</label>
+            <div className="visited-title">
+              <label htmlFor="visitedChoice">When were you there?</label>
+              <small>Freshness helps the next traveler judge the tip.</small>
+            </div>
             <Select
               id="visitedChoice"
               value={draft.visitedChoice}
@@ -701,10 +797,8 @@ export function ContributionComposer({
                 setValue("visitedChoice", event.target.value)
               }
             >
-              <option value={month}>This month ({formatMonth(month)})</option>
-              <option value={lastMonth}>
-                Last month ({formatMonth(lastMonth)})
-              </option>
+              <option value={month}>{formatMonth(month)}</option>
+              <option value={lastMonth}>{formatMonth(lastMonth)}</option>
               <option value="custom">Choose a month…</option>
               <option value="">Not sure</option>
             </Select>
@@ -753,81 +847,216 @@ export function ContributionComposer({
           )}
         </div>
 
-        <details
-          open={details}
-          onToggle={(event) => setDetails(event.currentTarget.open)}
-        >
-          <summary>Add details</summary>
-          <div className="stack">
-            {category === "general" && priceFields}
-            {category === "stay" && (
-              <div className="input-grid">
-                <Field id="roomType" label="Room type" optional>
-                  <Select
-                    id="roomType"
-                    name="roomType"
-                    value={draft.roomType}
-                    onChange={(event) =>
-                      setValue("roomType", event.target.value)
+        {category !== "general" && (
+          <details
+            open={details}
+            onToggle={(event) => setDetails(event.currentTarget.open)}
+          >
+            <summary>Anything else worth adding?</summary>
+            <p className="details-copy">
+              Optional prompts to help you remember useful details. You
+              don&apos;t need to fill everything.
+            </p>
+            <div
+              className="composer-detail-chips"
+              aria-label="Optional details"
+            >
+              {detailPrompts[category].map((key) => (
+                <button
+                  type="button"
+                  className={`composer-detail-chip ${detailEnabled(key) ? "active" : ""}`}
+                  aria-pressed={detailEnabled(key)}
+                  key={key}
+                  onClick={() => toggleDetail(key)}
+                >
+                  {detailLabels[key]}
+                </button>
+              ))}
+            </div>
+            <div className="stack">
+              {(category === "stay" ||
+                category === "food" ||
+                category === "explore") &&
+                detailEnabled("location") && (
+                  <Field
+                    id="placeName"
+                    label={
+                      category === "stay" ? "Where did you stay?" : "Place"
                     }
+                    optional
+                    error={error("placeName")}
                   >
-                    <option value="">Not provided</option>
-                    <option value="private">Private room</option>
-                    <option value="dorm">Dorm bed</option>
-                    <option value="shared">Shared room</option>
-                    <option value="other">Other</option>
-                  </Select>
+                    <Input
+                      id="placeName"
+                      name="placeName"
+                      value={draft.placeName}
+                      onChange={(event) =>
+                        setValue("placeName", event.target.value)
+                      }
+                      aria-describedby={
+                        error("placeName") ? "placeName-error" : undefined
+                      }
+                      aria-invalid={!!error("placeName")}
+                    />
+                  </Field>
+                )}
+              {category === "food" && detailEnabled("dish") && (
+                <Field
+                  id="dish"
+                  label="What did you try?"
+                  optional
+                  error={error("dish")}
+                >
+                  <Input
+                    id="dish"
+                    name="dish"
+                    value={draft.dish}
+                    onChange={(event) => setValue("dish", event.target.value)}
+                  />
                 </Field>
-                <Field id="bookingMethod" label="Booking method" optional>
-                  <Select
-                    id="bookingMethod"
-                    name="bookingMethod"
-                    value={draft.bookingMethod}
-                    onChange={(event) =>
-                      setValue("bookingMethod", event.target.value)
+              )}
+              {category === "transport" && detailEnabled("route") && (
+                <div className="input-grid">
+                  <Field id="fromName" label="From" optional>
+                    <Input
+                      id="fromName"
+                      name="fromName"
+                      value={draft.fromName}
+                      onChange={(event) =>
+                        setValue("fromName", event.target.value)
+                      }
+                    />
+                  </Field>
+                  <Field id="toName" label="To" optional>
+                    <Input
+                      id="toName"
+                      name="toName"
+                      value={draft.toName}
+                      onChange={(event) =>
+                        setValue("toName", event.target.value)
+                      }
+                    />
+                  </Field>
+                </div>
+              )}
+              {detailEnabled("price") && priceFields}
+              {category === "stay" && detailEnabled("booking") && (
+                <div className="input-grid">
+                  <Field id="roomType" label="Room type" optional>
+                    <Select
+                      id="roomType"
+                      name="roomType"
+                      value={draft.roomType}
+                      onChange={(event) =>
+                        setValue("roomType", event.target.value)
+                      }
+                    >
+                      <option value="">Not provided</option>
+                      <option value="private">Private room</option>
+                      <option value="dorm">Dorm bed</option>
+                      <option value="shared">Shared room</option>
+                      <option value="other">Other</option>
+                    </Select>
+                  </Field>
+                  <Field id="bookingMethod" label="Booking method" optional>
+                    <Select
+                      id="bookingMethod"
+                      name="bookingMethod"
+                      value={draft.bookingMethod}
+                      onChange={(event) =>
+                        setValue("bookingMethod", event.target.value)
+                      }
+                    >
+                      <option value="">Not provided</option>
+                      <option value="direct_call">Direct call</option>
+                      <option value="walk_in">Walk in</option>
+                      <option value="online">Online</option>
+                      <option value="other">Other</option>
+                    </Select>
+                  </Field>
+                </div>
+              )}
+              {category === "transport" && detailEnabled("duration") && (
+                <div className="input-grid">
+                  <Field id="transportMode" label="Mode" optional>
+                    <Select
+                      id="transportMode"
+                      name="transportMode"
+                      value={draft.transportMode}
+                      onChange={(event) =>
+                        setValue("transportMode", event.target.value)
+                      }
+                    >
+                      <option value="">Not provided</option>
+                      {[
+                        "bus",
+                        "train",
+                        "shared_jeep",
+                        "auto",
+                        "taxi",
+                        "ferry",
+                        "rental",
+                        "other",
+                      ].map((value) => (
+                        <option value={value} key={value}>
+                          {value.replace("_", " ")}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                  <Field
+                    id="durationMinutes"
+                    label="Approximate duration (minutes)"
+                    optional
+                    error={error("durationMinutes")}
+                  >
+                    <Input
+                      id="durationMinutes"
+                      name="durationMinutes"
+                      type="number"
+                      min="1"
+                      max="2880"
+                      value={draft.durationMinutes}
+                      aria-invalid={!!error("durationMinutes")}
+                      aria-describedby={
+                        error("durationMinutes")
+                          ? "durationMinutes-error"
+                          : undefined
+                      }
+                      onChange={(event) =>
+                        setValue("durationMinutes", event.target.value)
+                      }
+                    />
+                  </Field>
+                </div>
+              )}
+              {category === "transport" && detailEnabled("boarding") && (
+                <Field
+                  id="boardingPoint"
+                  label="Where did you board?"
+                  optional
+                  error={error("boardingPoint")}
+                >
+                  <Input
+                    id="boardingPoint"
+                    name="boardingPoint"
+                    value={draft.boardingPoint}
+                    aria-invalid={!!error("boardingPoint")}
+                    aria-describedby={
+                      error("boardingPoint") ? "boardingPoint-error" : undefined
                     }
-                  >
-                    <option value="">Not provided</option>
-                    <option value="direct_call">Direct call</option>
-                    <option value="walk_in">Walk in</option>
-                    <option value="online">Online</option>
-                    <option value="other">Other</option>
-                  </Select>
-                </Field>
-              </div>
-            )}
-            {category === "transport" && (
-              <div className="input-grid">
-                <Field id="transportMode" label="Mode" optional>
-                  <Select
-                    id="transportMode"
-                    name="transportMode"
-                    value={draft.transportMode}
                     onChange={(event) =>
-                      setValue("transportMode", event.target.value)
+                      setValue("boardingPoint", event.target.value)
                     }
-                  >
-                    <option value="">Not provided</option>
-                    {[
-                      "bus",
-                      "train",
-                      "shared_jeep",
-                      "auto",
-                      "taxi",
-                      "ferry",
-                      "rental",
-                      "other",
-                    ].map((value) => (
-                      <option value={value} key={value}>
-                        {value.replace("_", " ")}
-                      </option>
-                    ))}
-                  </Select>
+                  />
                 </Field>
+              )}
+              {category === "explore" && detailEnabled("duration") && (
                 <Field
                   id="durationMinutes"
-                  label="Approximate duration (minutes)"
+                  label="Time needed (minutes)"
                   optional
+                  error={error("durationMinutes")}
                 >
                   <Input
                     id="durationMinutes"
@@ -836,82 +1065,145 @@ export function ContributionComposer({
                     min="1"
                     max="2880"
                     value={draft.durationMinutes}
+                    aria-invalid={!!error("durationMinutes")}
+                    aria-describedby={
+                      error("durationMinutes")
+                        ? "durationMinutes-error"
+                        : undefined
+                    }
                     onChange={(event) =>
                       setValue("durationMinutes", event.target.value)
                     }
                   />
                 </Field>
-              </div>
-            )}
-            {category === "explore" && (
-              <Field id="walkMinutes" label="Walking time (minutes)" optional>
-                <Input
-                  id="walkMinutes"
-                  name="walkMinutes"
-                  type="number"
-                  min="1"
-                  max="2880"
-                  value={draft.walkMinutes}
-                  onChange={(event) =>
-                    setValue("walkMinutes", event.target.value)
-                  }
-                />
-              </Field>
-            )}
-            <Field id="locationText" label="Location" optional>
-              <Input
-                id="locationText"
-                name="locationText"
-                value={draft.locationText}
-                onChange={(event) =>
-                  setValue("locationText", event.target.value)
-                }
-              />
-            </Field>
-            <Field id="mapsUrl" label="Google Maps link" optional>
-              <Input
-                id="mapsUrl"
-                name="mapsUrl"
-                type="url"
-                value={draft.mapsUrl}
-                onChange={(event) => setValue("mapsUrl", event.target.value)}
-              />
-            </Field>
-            <Field id="phone" label="Public service contact" optional>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                value={draft.phone}
-                onChange={(event) => setValue("phone", event.target.value)}
-              />
-            </Field>
-            <label className="check-row">
-              <input
-                type="checkbox"
-                name="publicServiceContact"
-                checked={draft.publicServiceContact}
-                onChange={(event) =>
-                  setDraft((current) => ({
-                    ...current,
-                    publicServiceContact: event.target.checked,
-                  }))
-                }
-              />{" "}
-              I confirm this is a public service number and I have permission to
-              share it.
-            </label>
-          </div>
-        </details>
+              )}
+              {detailEnabled("timing") && (
+                <Field
+                  id="timingNote"
+                  label="Anything useful about timing?"
+                  optional
+                  error={error("timingNote")}
+                >
+                  <Input
+                    id="timingNote"
+                    name="timingNote"
+                    value={draft.timingNote}
+                    aria-invalid={!!error("timingNote")}
+                    aria-describedby={
+                      error("timingNote") ? "timingNote-error" : undefined
+                    }
+                    onChange={(event) =>
+                      setValue("timingNote", event.target.value)
+                    }
+                  />
+                </Field>
+              )}
+              {detailEnabled("location") && (
+                <>
+                  <Field
+                    id="locationText"
+                    label="Where exactly?"
+                    optional
+                    error={error("locationText")}
+                  >
+                    <Input
+                      id="locationText"
+                      name="locationText"
+                      value={draft.locationText}
+                      aria-invalid={!!error("locationText")}
+                      aria-describedby={
+                        error("locationText") ? "locationText-error" : undefined
+                      }
+                      onChange={(event) =>
+                        setValue("locationText", event.target.value)
+                      }
+                    />
+                  </Field>
+                  <Field
+                    id="mapsUrl"
+                    label="Google Maps link"
+                    optional
+                    error={error("mapsUrl")}
+                  >
+                    <Input
+                      id="mapsUrl"
+                      name="mapsUrl"
+                      type="url"
+                      value={draft.mapsUrl}
+                      aria-invalid={!!error("mapsUrl")}
+                      aria-describedby={
+                        error("mapsUrl") ? "mapsUrl-error" : undefined
+                      }
+                      onChange={(event) =>
+                        setValue("mapsUrl", event.target.value)
+                      }
+                    />
+                  </Field>
+                </>
+              )}
+              {detailEnabled("contact") && (
+                <>
+                  <Field
+                    id="phone"
+                    label="Public business/service contact"
+                    optional
+                  >
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      value={draft.phone}
+                      onChange={(event) =>
+                        setValue("phone", event.target.value)
+                      }
+                    />
+                  </Field>
+                  <label className="check-row">
+                    <input
+                      type="checkbox"
+                      name="publicServiceContact"
+                      checked={draft.publicServiceContact}
+                      onChange={(event) =>
+                        setDraft((current) => ({
+                          ...current,
+                          publicServiceContact: event.target.checked,
+                        }))
+                      }
+                    />{" "}
+                    I confirm this is a public service number and I have
+                    permission to share it.
+                  </label>
+                </>
+              )}
+            </div>
+          </details>
+        )}
 
-        <PhotoUploader
-          key={restored ? "restored-photos" : "new-photos"}
-          signedIn={signedIn}
-          photos={draft.photos}
-          onChange={setPhotos}
-          onBusyChange={setPhotoBusy}
-          onRequireAuth={requirePhotoAuth}
-        />
+        <div className="reader-preview" aria-live="polite">
+          <p className="reader-preview-label">The next traveler will see</p>
+          <p className="reader-preview-meta">
+            {categoryNames[category]} · Visited{" "}
+            {previewMonth(
+              draft.visitedChoice === "custom"
+                ? draft.visitedMonth
+                : draft.visitedChoice,
+            )}
+          </p>
+          <p className="reader-preview-text">
+            {draft.body.trim() || "Your tip will appear here as you write it."}
+          </p>
+        </div>
+
+        {(detailEnabled("photo") || draft.photos.length > 0) && (
+          <PhotoUploader
+            key={restored ? "restored-photos" : "new-photos"}
+            signedIn={signedIn}
+            photos={draft.photos}
+            onChange={setPhotos}
+            onBusyChange={setPhotoBusy}
+            onRequireAuth={requirePhotoAuth}
+          />
+        )}
 
         <div className="composer-footer">
           <span className="small muted">Shared from your own experience.</span>
@@ -925,6 +1217,7 @@ export function ContributionComposer({
                   : mode === "edit"
                     ? "Save changes"
                     : "Share tip"}
+            {mode === "create" && <ArrowRight size={17} aria-hidden="true" />}
           </Button>
         </div>
       </form>

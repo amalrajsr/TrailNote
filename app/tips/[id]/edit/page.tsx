@@ -89,8 +89,14 @@ export default async function EditTipPage({
             fromName: tip.fromName ?? "",
             toName: tip.toName ?? "",
             transportMode: tip.transportMode ?? "",
-            durationMinutes: tip.durationMinutes?.toString() ?? "",
+            durationMinutes:
+              tip.durationMinutes?.toString() ??
+              (tip.category === "explore"
+                ? tip.walkMinutes?.toString() ?? ""
+                : ""),
             walkMinutes: tip.walkMinutes?.toString() ?? "",
+            timingNote: tip.timingNote ?? "",
+            boardingPoint: tip.boardingPoint ?? "",
             locationText: tip.locationText ?? "",
             mapsUrl: tip.mapsUrl ?? "",
             phone: contact?.phone ?? "",

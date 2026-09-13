@@ -64,6 +64,8 @@ function factsFor(detail: ContributionDetailDTO) {
       "Approximate duration",
       `${facts.durationMinutes} ${facts.durationMinutes === 1 ? "minute" : "minutes"}`,
     ]);
+  if (facts.boardingPoint) values.push(["Boarding point", facts.boardingPoint]);
+  if (facts.timingNote) values.push(["Timing", facts.timingNote]);
   if (facts.roomType) values.push(["Room type", humanize(facts.roomType)]);
   if (facts.bookingMethod)
     values.push(["Booking method", humanize(facts.bookingMethod)]);

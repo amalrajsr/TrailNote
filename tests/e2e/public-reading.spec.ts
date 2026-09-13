@@ -252,13 +252,15 @@ test("guest composer validates first, preserves its draft, and returns from sign
 }) => {
   await page.goto("/destinations/badami/add");
   const body = page.getByRole("textbox", {
-    name: "What should the next traveler know?",
+    name: "What do you wish you knew before coming here?",
   });
 
   await body.fill("short");
   await page.getByRole("button", { name: "Share tip" }).click();
   await expect(
-    page.getByText("Review the highlighted fields and try again."),
+    page.getByText(
+      "Give the next traveler one detail they can use — for example a price, route, timing, place, or something to avoid.",
+    ),
   ).toBeVisible();
 
   const usefulTip = "The north bus stand ticket counter opens before seven.";
@@ -276,7 +278,6 @@ test("composer only offers price units relevant to the selected category", async
   page,
 }) => {
   await page.goto("/destinations/badami/add");
-  const unit = page.getByRole("combobox", { name: "What the price covers" });
 
   const expectedUnits = {
     Stay: [
@@ -286,13 +287,17 @@ test("composer only offers price units relevant to the selected category", async
       "person / night",
       "Other",
     ],
-    Food: ["Choose a unit", "meal", "item", "Other"],
+    Food: ["Choose a unit", "breakfast", "lunch", "dinner", "snacks", "Other"],
     Transport: ["Choose a unit", "person / trip", "vehicle / trip", "Other"],
     Explore: ["Choose a unit", "person entry", "Other"],
   } as const;
 
   for (const [category, options] of Object.entries(expectedUnits)) {
     await page.getByRole("button", { name: category, exact: true }).click();
+    await page.getByRole("button", { name: "₹ Price" }).click();
+    const unit = page.getByRole("combobox", {
+      name: "What the price covers",
+    });
     await expect(unit.locator("option")).toHaveText(options);
   }
 });

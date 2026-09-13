@@ -36,6 +36,20 @@
       "when": 1789284708110,
       "tag": "0004_naive_nocturne",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1789304137397,
+      "tag": "0005_tough_silk_fever",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1789308224352,
+      "tag": "0006_dry_tusk",
+      "breakpoints": true
     }
   ]
 }

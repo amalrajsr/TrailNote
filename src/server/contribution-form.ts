@@ -28,6 +28,8 @@ export function parseContributionForm(data: FormData) {
     transportMode: text(data, "transportMode"),
     durationMinutes: nullableNumber(data, "durationMinutes"),
     walkMinutes: nullableNumber(data, "walkMinutes"),
+    timingNote: text(data, "timingNote"),
+    boardingPoint: text(data, "boardingPoint"),
     locationText: text(data, "locationText"),
     mapsUrl: text(data, "mapsUrl"),
     phone: text(data, "phone"),
