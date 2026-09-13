@@ -1,24 +1,26 @@
 import Link from "next/link";
 import { DestinationSearch } from "../src/components/destinations/search";
-import { DestinationTiles } from "../src/components/destinations/tiles";
+import { LazyDestinationTiles } from "../src/components/destinations/lazy-tiles";
 import { MapIllustration } from "../src/components/destinations/map-illustration";
 import { getDatabase } from "../src/db";
 import {
-  categoryCounts,
-  destinationList,
+  categoryCountsForDestinations,
+  destinationCount,
+  destinationMapList,
+  destinationPage,
 } from "../src/server/queries/destinations";
 import { Plus } from "lucide-react";
 
 export default async function HomePage() {
   const { db } = await getDatabase();
-  const destinations = (await destinationList(db));
-  const countsByDestination = Object.fromEntries(
-    await Promise.all(
-      destinations.map(async (destination) => [
-        destination.id,
-        await categoryCounts(db, destination.id),
-      ]),
-    ),
+  const [page, total, mapDestinations] = await Promise.all([
+    destinationPage(db),
+    destinationCount(db),
+    destinationMapList(db),
+  ]);
+  const countsByDestination = await categoryCountsForDestinations(
+    db,
+    page.destinations.map((destination) => destination.id),
   );
 
   return (
@@ -44,21 +46,24 @@ export default async function HomePage() {
             <Link href="/destinations/gokarna">Gokarna</Link>
           </nav>
         </div>
-        <MapIllustration />
+        <MapIllustration destinations={mapDestinations} />
       </section>
 
       <section className="home-section" aria-labelledby="destinations-title">
         <div className="section-head">
           <div>
-            <h2 id="destinations-title">Fresh from travelers</h2>
+            <h2 id="destinations-title">Explore every location</h2>
             <p>
-              Places where useful notes have recently been shared or updated.
+              Browse every destination currently shared by the TrailNote
+              community.
             </p>
           </div>
         </div>
-        <DestinationTiles
-          destinations={destinations}
-          categoryCounts={countsByDestination}
+        <LazyDestinationTiles
+          initialDestinations={page.destinations}
+          initialCategoryCounts={countsByDestination}
+          initialNextCursor={page.nextCursor}
+          total={total}
         />
 
         <aside className="home-cta" aria-labelledby="home-cta-title">

@@ -458,33 +458,21 @@ main {
   border-radius: 50% 50% 0 0;
   background: var(--map-water);
 }
+.india-map-layer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 92%;
+  aspect-ratio: 666.66669 / 777.33331;
+  transform: translate(-50%, -50%);
+}
 .india-shape {
   position: absolute;
-  top: 8%;
-  left: 15%;
-  width: 67%;
-  height: 80%;
-  clip-path: polygon(
-    40% 0,
-    60% 7%,
-    66% 18%,
-    78% 24%,
-    72% 39%,
-    81% 47%,
-    69% 57%,
-    72% 74%,
-    57% 82%,
-    50% 100%,
-    43% 81%,
-    27% 74%,
-    18% 58%,
-    22% 44%,
-    12% 32%,
-    23% 19%,
-    32% 11%
-  );
-  background: var(--brand-faint);
-  box-shadow: inset 0 0 0 1px var(--brand-border);
+  inset: 0;
+  background: var(--brand-soft);
+  filter: drop-shadow(0 0 1px var(--brand-border));
+  mask: url("/india-outline.svg") center / contain no-repeat;
+  -webkit-mask: url("/india-outline.svg") center / contain no-repeat;
 }
 .map-markers {
   position: absolute;
@@ -492,15 +480,20 @@ main {
 }
 .marker {
   position: absolute;
+  top: var(--marker-top);
+  left: var(--marker-left);
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   min-height: 44px;
-  padding: 8px;
+  padding: 0;
   border-radius: 10px;
   color: var(--ink);
   font-size: 12px;
   font-weight: 700;
+  transform: translate(-50%, -50%);
 }
 .marker:hover,
 .marker:focus-visible {
@@ -517,29 +510,67 @@ main {
 .marker.active .marker-dot {
   animation: marker-pulse 1.2s var(--ease) 1;
 }
-.marker-badami {
-  top: 54%;
-  left: 30%;
+.marker-label {
+  position: absolute;
+  top: 12px;
+  left: 36px;
+  white-space: nowrap;
 }
-.marker-hampi {
-  top: 63%;
-  left: 39%;
+.hero-map:not(.dense) .marker[data-slug="badami"] .marker-label {
+  top: -12px;
 }
-.marker-munnar {
-  top: 78%;
-  left: 45%;
+.hero-map:not(.dense) .marker[data-slug="hampi"] .marker-label {
+  top: 21px;
 }
-.marker-varkala {
-  top: 86%;
-  left: 42%;
+.hero-map:not(.dense) .marker[data-slug="gokarna"] .marker-label {
+  top: 10px;
+  right: 36px;
+  left: auto;
 }
-.marker-gokarna {
-  top: 67%;
-  left: 25%;
+.hero-map:not(.dense) .marker[data-slug="varkala"] .marker-label {
+  top: 19px;
 }
-.marker-mysuru {
-  top: 71%;
-  left: 37%;
+.map-shell.dense .marker {
+  z-index: 1;
+  gap: 0;
+}
+.map-shell.dense .marker-label {
+  position: absolute;
+  left: 34px;
+  width: max-content;
+  max-width: 150px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-4px);
+  transition:
+    opacity var(--motion-fast) var(--ease),
+    transform var(--motion-fast) var(--ease);
+}
+.map-shell.dense .marker:hover,
+.map-shell.dense .marker:focus-visible {
+  z-index: 2;
+}
+.map-shell.dense .marker:hover .marker-label,
+.map-shell.dense .marker:focus-visible .marker-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+.map-attribution {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  z-index: 3;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
+  color: var(--ink-muted);
+  font-size: 9px;
+  line-height: 14px;
 }
 @keyframes marker-pulse {
   50% {
@@ -657,6 +688,64 @@ main {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
+}
+.destination-browser {
+  min-width: 0;
+}
+.scroll-hint {
+  margin-bottom: 8px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  line-height: 20px;
+}
+.destination-scroll {
+  position: relative;
+  max-height: min(620px, 72dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px 10px 18px 2px;
+  border-radius: var(--radius-card);
+  scrollbar-gutter: stable;
+  scrollbar-color: var(--brand-border) transparent;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
+.destination-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.destination-scroll::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--brand-border);
+  background-clip: padding-box;
+}
+.destination-scroll:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.destination-sentinel {
+  height: 1px;
+}
+.destination-load-more {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  min-height: 64px;
+  padding-top: 20px;
+}
+.destination-load-more .btn {
+  min-width: 190px;
+}
+.destination-load-more .btn:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+.load-status {
+  min-height: 20px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  line-height: 20px;
+  text-align: center;
 }
 .destination-tile {
   position: relative;
@@ -1036,20 +1125,15 @@ main {
 .destination-map {
   height: 430px;
 }
+.destination-map .india-map-layer {
+  height: 94%;
+}
 .destination-map .india-shape {
-  top: -12%;
-  left: 6%;
-  width: 88%;
-  height: 120%;
   opacity: 0.58;
 }
 .destination-map .marker:not(.active),
 .destination-map .map-water {
   display: none;
-}
-.destination-map .marker.active {
-  top: 43%;
-  left: 40%;
 }
 .map-info {
   margin-top: 12px;
@@ -1116,6 +1200,50 @@ main {
   display: flex;
   justify-content: center;
   margin-top: 24px;
+}
+.tip-browser {
+  min-width: 0;
+}
+.tip-scroll {
+  position: relative;
+  max-height: min(760px, 72dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px 10px 18px 2px;
+  border-radius: var(--radius-card);
+  scrollbar-gutter: stable;
+  scrollbar-color: var(--brand-border) transparent;
+  scrollbar-width: thin;
+}
+.tip-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.tip-scroll::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--brand-border);
+  background-clip: padding-box;
+}
+.tip-scroll:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.tip-sentinel {
+  height: 1px;
+}
+.tip-load-more {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  min-height: 64px;
+  padding-top: 20px;
+}
+.tip-load-more .btn {
+  min-width: 170px;
+}
+.tip-load-more .btn:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 .empty-state {
   padding: 48px 24px;

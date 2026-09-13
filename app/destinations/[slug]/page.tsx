@@ -13,7 +13,7 @@ import {
   type Category,
 } from "../../../src/lib/constants";
 import { CategoryIcon } from "../../../src/components/ui/category-icon";
-import { TipCard } from "../../../src/components/contributions/card";
+import { InfiniteTipFeed } from "../../../src/components/contributions/infinite-tip-feed";
 import { EmptyState } from "../../../src/components/ui/primitives";
 import { SortSelect } from "../../../src/components/destinations/sort";
 import { MapIllustration } from "../../../src/components/destinations/map-illustration";
@@ -32,7 +32,7 @@ export default async function DestinationPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ category?: string; sort?: string; cursor?: string }>;
+  searchParams: Promise<{ category?: string; sort?: string }>;
 }) {
   const { slug } = await params,
     query = await searchParams,
@@ -48,10 +48,12 @@ export default async function DestinationPage({
       destinationId: destination.id,
       category,
       sort,
-      cursor: query.cursor,
     }),
     categoryCounts(db, destination.id),
   ]);
+  const totalTips = category
+    ? (counts.find((count) => count.category === category)?.count ?? 0)
+    : destination.publishedRootTipCount;
   const add = `/destinations/${slug}/add${category ? `?category=${category}` : ""}`;
   return (
     <main id="main" className="container page-top">
@@ -113,44 +115,43 @@ export default async function DestinationPage({
                 : "Latest from travelers"}
             </h2>
             <span>
-              {listing.cards.length}{" "}
-              {listing.cards.length === 1 ? "note" : "notes"}
+              {totalTips} {totalTips === 1 ? "note" : "notes"}
             </span>
           </div>
-          <div className="stack">
-            {listing.cards.length ? (
-              listing.cards.map((t) => <TipCard tip={t} key={t.id} />)
-            ) : (
-              <EmptyState
-                title={
-                  category
-                    ? `No ${categoryLabels[category].toLowerCase()} tips yet`
-                    : "No tips here yet"
-                }
-                action={
-                  <Link className="btn" href={add}>
-                    Add the first tip
-                  </Link>
-                }
-              >
-                Know something useful about {destination.name}? Help the next
-                traveler.
-              </EmptyState>
-            )}
-          </div>
-          {listing.nextCursor && (
-            <div className="load-more">
-              <Link
-                className="btn secondary"
-                href={`?${new URLSearchParams({ sort, ...(category ? { category } : {}), cursor: listing.nextCursor })}#tips`}
-              >
-                Load more tips
-              </Link>
-            </div>
+          {listing.cards.length ? (
+            <InfiniteTipFeed
+              key={`${slug}:${category ?? "all"}:${sort}`}
+              slug={slug}
+              category={category}
+              sort={sort}
+              initialCards={listing.cards}
+              initialNextCursor={listing.nextCursor}
+              total={totalTips}
+            />
+          ) : (
+            <EmptyState
+              title={
+                category
+                  ? `No ${categoryLabels[category].toLowerCase()} tips yet`
+                  : "No tips here yet"
+              }
+              action={
+                <Link className="btn" href={add}>
+                  Add the first tip
+                </Link>
+              }
+            >
+              Know something useful about {destination.name}? Help the next
+              traveler.
+            </EmptyState>
           )}
         </section>
         <aside className="side-stack destination-aside">
-          <MapIllustration compact activeSlug={destination.slug} />
+          <MapIllustration
+            compact
+            activeSlug={destination.slug}
+            destinations={[destination]}
+          />
           <div className="map-info">
             <strong>
               {destination.name}, {destination.state}

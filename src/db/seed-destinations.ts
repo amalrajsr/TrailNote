@@ -6,6 +6,8 @@ export const curatedDestinations = [
     slug: "badami",
     name: "Badami",
     state: "Karnataka",
+    latitude: 15.9186,
+    longitude: 75.6761,
     description:
       "Sandstone caves, lakeside walks and practical tips from the road.",
     aliases: [],
@@ -14,6 +16,8 @@ export const curatedDestinations = [
     slug: "hampi",
     name: "Hampi",
     state: "Karnataka",
+    latitude: 15.335,
+    longitude: 76.46,
     description:
       "Temple ruins and boulder-strewn landscapes along the Tungabhadra.",
     aliases: [],
@@ -22,6 +26,8 @@ export const curatedDestinations = [
     slug: "varkala",
     name: "Varkala",
     state: "Kerala",
+    latitude: 8.7379,
+    longitude: 76.7163,
     description: "Clifftop paths and coastal stays on Kerala’s southern coast.",
     aliases: [],
   },
@@ -29,6 +35,8 @@ export const curatedDestinations = [
     slug: "gokarna",
     name: "Gokarna",
     state: "Karnataka",
+    latitude: 14.5479,
+    longitude: 74.3188,
     description: "A temple town with beaches and coastal walking routes.",
     aliases: [],
   },
@@ -36,6 +44,8 @@ export const curatedDestinations = [
     slug: "munnar",
     name: "Munnar",
     state: "Kerala",
+    latitude: 10.0889,
+    longitude: 77.0595,
     description: "Hill-country journeys through tea-growing landscapes.",
     aliases: [],
   },
@@ -43,6 +53,8 @@ export const curatedDestinations = [
     slug: "mysuru",
     name: "Mysuru",
     state: "Karnataka",
+    latitude: 12.2958,
+    longitude: 76.6394,
     description: "Palaces, markets and everyday discoveries in the city.",
     aliases: ["Mysore"],
   },
@@ -58,6 +70,8 @@ export async function seedDestinations(db: Database) {
           state: d.state,
           description: d.description,
           normalizedName: d.name.toLowerCase(),
+          latitude: d.latitude,
+          longitude: d.longitude,
         })
         .onConflictDoUpdate({
           target: destinations.slug,
@@ -66,6 +80,8 @@ export async function seedDestinations(db: Database) {
             state: d.state,
             description: d.description,
             normalizedName: d.name.toLowerCase(),
+            latitude: d.latitude,
+            longitude: d.longitude,
           },
         })
         .returning({ id: destinations.id });

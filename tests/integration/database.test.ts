@@ -11,8 +11,11 @@ import {
   fixtureId,
 } from "../../src/db/seed-development";
 import { seedDestinations } from "../../src/db/seed-destinations";
+import * as s from "../../src/db/schema";
 import {
   destinationBySlug,
+  destinationMapList,
+  destinationPage,
   searchDestinations,
 } from "../../src/server/queries/destinations";
 import { listContributions } from "../../src/server/queries/contributions";
@@ -69,6 +72,12 @@ describe("migrated database contract", () => {
           .n,
       ),
     ).toBe(0);
+    expect(
+      (await destinationMapList(db)).every(
+        (destination) =>
+          destination.latitude !== null && destination.longitude !== null,
+      ),
+    ).toBe(true);
   });
   it("rejects production or remote development seeding", () => {
     expect(() => assertDevelopmentSeed("production", "file:test.db")).toThrow();
@@ -138,5 +147,66 @@ describe("migrated database contract", () => {
     expect(
       listing.cards.every((tip) => tip.parentContributionId === null),
     ).toBe(true);
+
+    const nextListing = await listContributions(db, {
+      destinationId: badami!.id,
+      cursor: listing.nextCursor!,
+      now: +fixtureClock,
+    });
+    expect(nextListing.cards).toHaveLength(5);
+    expect(nextListing.nextCursor).toBeNull();
+    expect(
+      nextListing.cards.some((tip) =>
+        listing.cards.some((firstTip) => firstTip.id === tip.id),
+      ),
+    ).toBe(false);
+  });
+
+  it("pages through every enabled destination without duplicates", async () => {
+    const { db } = await harness();
+    await seedDestinations(db);
+
+    const slugs: string[] = [];
+    let cursor: string | null = null;
+    do {
+      const page = await destinationPage(db, { after: cursor, limit: 2 });
+      slugs.push(...page.destinations.map((destination) => destination.slug));
+      cursor = page.nextCursor;
+    } while (cursor);
+
+    expect(slugs).toEqual([
+      "badami",
+      "gokarna",
+      "hampi",
+      "munnar",
+      "mysuru",
+      "varkala",
+    ]);
+    expect(new Set(slugs).size).toBe(slugs.length);
+    await expect(
+      destinationPage(db, { after: "not-a-valid-cursor" }),
+    ).rejects.toThrow("Invalid destination cursor");
+  });
+
+  it("includes newly saved coordinates in the map location query", async () => {
+    const { db } = await harness();
+    await seedDestinations(db);
+    await db.insert(s.destinations).values({
+      slug: "kochi",
+      name: "Kochi",
+      state: "Kerala",
+      normalizedName: "kochi",
+      description: "",
+      latitude: 9.9312,
+      longitude: 76.2673,
+    });
+
+    expect(await destinationMapList(db)).toContainEqual(
+      expect.objectContaining({
+        slug: "kochi",
+        latitude: 9.9312,
+        longitude: 76.2673,
+      }),
+    );
   });
 });

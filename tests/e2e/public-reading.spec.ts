@@ -48,6 +48,98 @@ for (const viewport of [
   });
 }
 
+test("destination API pages through all enabled locations", async ({
+  request,
+}) => {
+  const firstResponse = await request.get("/api/destinations?limit=2");
+  expect(firstResponse.ok()).toBe(true);
+  const first = (await firstResponse.json()) as {
+    destinations: Array<{ id: string }>;
+    nextCursor: string | null;
+  };
+  expect(first.destinations).toHaveLength(2);
+  expect(first.nextCursor).toBeTruthy();
+
+  const secondResponse = await request.get(
+    `/api/destinations?limit=2&cursor=${encodeURIComponent(first.nextCursor!)}`,
+  );
+  expect(secondResponse.ok()).toBe(true);
+  const second = (await secondResponse.json()) as {
+    destinations: Array<{ id: string }>;
+  };
+  expect(second.destinations).toHaveLength(2);
+  expect(
+    second.destinations.some((destination) =>
+      first.destinations.some(
+        (firstDestination) => firstDestination.id === destination.id,
+      ),
+    ),
+  ).toBe(false);
+});
+
+test("location tiles have their own scroll region and database-backed map", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const locationRegion = page.getByRole("region", { name: "Locations" });
+  await expect(locationRegion).toBeVisible();
+  const scrollStyles = await locationRegion.evaluate((element) => ({
+    overflowY: getComputedStyle(element).overflowY,
+    maxHeight: getComputedStyle(element).maxHeight,
+  }));
+  expect(scrollStyles.overflowY).toBe("auto");
+  expect(scrollStyles.maxHeight).not.toBe("none");
+
+  const map = page.getByRole("navigation", { name: "Map destinations" });
+  await expect(map.getByRole("link")).toHaveCount(6);
+  expect((await page.locator(".hero-map").boundingBox())?.height).toBe(430);
+  await expect(page.locator(".india-shape")).toHaveCSS(
+    "mask-image",
+    /india-outline\.svg/,
+  );
+  await expect(map.getByRole("link", { name: "Badami, Karnataka" })).toHaveCSS(
+    "left",
+    /.+/,
+  );
+});
+
+test("destination map projects its database coordinates onto the India outline", async ({
+  page,
+}) => {
+  await page.goto("/destinations/badami");
+
+  const map = page.locator(".destination-map");
+  await expect(map.locator(".india-shape")).toHaveCSS(
+    "mask-image",
+    /india-outline\.svg/,
+  );
+  const marker = map.getByRole("link", { name: "Badami, Karnataka" });
+  const position = await marker.evaluate((element) => {
+    const markerElement = element as HTMLElement;
+    const declaredLeft = Number.parseFloat(
+      markerElement.style.getPropertyValue("--marker-left"),
+    );
+    const declaredTop = Number.parseFloat(
+      markerElement.style.getPropertyValue("--marker-top"),
+    );
+    const parent = markerElement.parentElement!;
+    return {
+      declaredLeft,
+      declaredTop,
+      renderedLeft: (markerElement.offsetLeft / parent.clientWidth) * 100,
+      renderedTop: (markerElement.offsetTop / parent.clientHeight) * 100,
+    };
+  });
+
+  expect(Math.abs(position.renderedLeft - position.declaredLeft)).toBeLessThan(
+    0.5,
+  );
+  expect(Math.abs(position.renderedTop - position.declaredTop)).toBeLessThan(
+    0.5,
+  );
+});
+
 test("destination search supports aliases and keyboard selection", async ({
   page,
 }) => {
@@ -87,6 +179,26 @@ test("destination filters keep URL state and show only the selected category", a
       .getByRole("navigation", { name: "Tip categories" })
       .getByRole("link", { name: /All/ }),
   ).toHaveAttribute("aria-current", "page");
+});
+
+test("destination tips infinitely load inside their own scroll region", async ({
+  page,
+}) => {
+  await page.goto("/destinations/badami");
+
+  const feed = page.getByRole("region", { name: "Traveler tips" });
+  await expect(feed).toBeVisible();
+  expect(
+    await feed.evaluate((element) => getComputedStyle(element).overflowY),
+  ).toBe("auto");
+  await expect(feed.locator(".tip-card")).toHaveCount(12);
+
+  await feed.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+  });
+
+  await expect(feed.locator(".tip-card")).toHaveCount(17);
+  await expect(page.getByText("All 17 tips shown.")).toBeVisible();
 });
 
 test("development dialog traps focus, closes with Escape, and restores focus", async ({
