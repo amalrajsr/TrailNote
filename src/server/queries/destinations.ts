@@ -1,5 +1,15 @@
 import "server-only";
-import { and, asc, eq, gt, inArray, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gt,
+  inArray,
+  isNotNull,
+  or,
+  sql,
+} from "drizzle-orm";
 import type { Database } from "../../db/client";
 import { destinations as d, contributions as c } from "../../db/schema";
 import { normalizeDestinationText } from "../../lib/destination-search";
@@ -41,6 +51,7 @@ export const DESTINATION_PAGE_SIZE = 6;
 const MAX_DESTINATION_PAGE_SIZE = 24;
 
 type DestinationCursor = {
+  publishedRootTipCount: number;
   normalizedName: string;
   id: string;
 };
@@ -57,6 +68,8 @@ function decodeCursor(value: string): DestinationCursor {
       Buffer.from(value, "base64url").toString("utf8"),
     ) as Partial<DestinationCursor>;
     if (
+      !Number.isSafeInteger(parsed.publishedRootTipCount) ||
+      parsed.publishedRootTipCount! < 0 ||
       typeof parsed.normalizedName !== "string" ||
       !parsed.normalizedName ||
       parsed.normalizedName.length > 160 ||
@@ -65,18 +78,14 @@ function decodeCursor(value: string): DestinationCursor {
       parsed.id.length > 100
     )
       throw new Error("Invalid cursor shape");
-    return { normalizedName: parsed.normalizedName, id: parsed.id };
+    return {
+      publishedRootTipCount: parsed.publishedRootTipCount!,
+      normalizedName: parsed.normalizedName,
+      id: parsed.id,
+    };
   } catch {
     throw new InvalidDestinationCursorError("Invalid destination cursor");
   }
-}
-
-export async function destinationList(db: Database) {
-  return db
-    .select(shape)
-    .from(d)
-    .where(eq(d.enabled, true))
-    .orderBy(asc(d.normalizedName), asc(d.id));
 }
 
 export async function destinationMapList(db: Database) {
@@ -90,8 +99,11 @@ export async function destinationMapList(db: Database) {
       longitude: d.longitude,
     })
     .from(d)
-    .where(eq(d.enabled, true))
-    .orderBy(asc(d.normalizedName), asc(d.id));
+    .where(
+      and(eq(d.enabled, true), isNotNull(d.latitude), isNotNull(d.longitude)),
+    )
+    .orderBy(desc(rootCount), asc(d.normalizedName), asc(d.id))
+    .limit(16);
 }
 
 export async function destinationPage(
@@ -111,15 +123,23 @@ export async function destinationPage(
   const cursor = options.after ? decodeCursor(options.after) : null;
   const cursorFilter = cursor
     ? or(
-        gt(d.normalizedName, cursor.normalizedName),
-        and(eq(d.normalizedName, cursor.normalizedName), gt(d.id, cursor.id)),
+        sql`${rootCount} < ${cursor.publishedRootTipCount}`,
+        and(
+          sql`${rootCount} = ${cursor.publishedRootTipCount}`,
+          gt(d.normalizedName, cursor.normalizedName),
+        ),
+        and(
+          sql`${rootCount} = ${cursor.publishedRootTipCount}`,
+          eq(d.normalizedName, cursor.normalizedName),
+          gt(d.id, cursor.id),
+        ),
       )
     : undefined;
   const rows = await db
     .select(pageShape)
     .from(d)
     .where(and(eq(d.enabled, true), cursorFilter))
-    .orderBy(asc(d.normalizedName), asc(d.id))
+    .orderBy(desc(rootCount), asc(d.normalizedName), asc(d.id))
     .limit(limit + 1);
   const hasMore = rows.length > limit;
   const visibleRows = rows.slice(0, limit);
@@ -136,7 +156,11 @@ export async function destinationPage(
     destinations,
     nextCursor:
       hasMore && last
-        ? encodeCursor({ normalizedName: last.normalizedName, id: last.id })
+        ? encodeCursor({
+            publishedRootTipCount: last.publishedRootTipCount,
+            normalizedName: last.normalizedName,
+            id: last.id,
+          })
         : null,
   };
 }

@@ -1,21 +1,19 @@
 import Link from "next/link";
 import { DestinationSearch } from "../src/components/destinations/search";
-import { LazyDestinationTiles } from "../src/components/destinations/lazy-tiles";
+import { DestinationTiles } from "../src/components/destinations/tiles";
 import { MapIllustration } from "../src/components/destinations/map-illustration";
 import { getDatabase } from "../src/db";
 import {
   categoryCountsForDestinations,
-  destinationCount,
   destinationMapList,
   destinationPage,
 } from "../src/server/queries/destinations";
-import { Plus } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
 
 export default async function HomePage() {
   const { db } = await getDatabase();
-  const [page, total, mapDestinations] = await Promise.all([
-    destinationPage(db),
-    destinationCount(db),
+  const [page, mapDestinations] = await Promise.all([
+    destinationPage(db, { limit: 6 }),
     destinationMapList(db),
   ]);
   const countsByDestination = await categoryCountsForDestinations(
@@ -52,18 +50,17 @@ export default async function HomePage() {
       <section className="home-section" aria-labelledby="destinations-title">
         <div className="section-head">
           <div>
-            <h2 id="destinations-title">Explore every location</h2>
-            <p>
-              Browse every destination currently shared by the TrailNote
-              community.
-            </p>
+            <h2 id="destinations-title">Explore locations</h2>
+            <p>Start with a few destinations shared by the community.</p>
           </div>
+          <Link className="quiet" href="/search">
+            View all locations
+            <ArrowRight size={17} aria-hidden="true" />
+          </Link>
         </div>
-        <LazyDestinationTiles
-          initialDestinations={page.destinations}
-          initialCategoryCounts={countsByDestination}
-          initialNextCursor={page.nextCursor}
-          total={total}
+        <DestinationTiles
+          destinations={page.destinations}
+          categoryCounts={countsByDestination}
         />
 
         <aside className="home-cta" aria-labelledby="home-cta-title">

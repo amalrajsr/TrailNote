@@ -77,19 +77,15 @@ test("destination API pages through all enabled locations", async ({
   ).toBe(false);
 });
 
-test("location tiles have their own scroll region and database-backed map", async ({
+test("homepage shows six location tiles and links to full search", async ({
   page,
 }) => {
   await page.goto("/");
 
-  const locationRegion = page.getByRole("region", { name: "Locations" });
-  await expect(locationRegion).toBeVisible();
-  const scrollStyles = await locationRegion.evaluate((element) => ({
-    overflowY: getComputedStyle(element).overflowY,
-    maxHeight: getComputedStyle(element).maxHeight,
-  }));
-  expect(scrollStyles.overflowY).toBe("auto");
-  expect(scrollStyles.maxHeight).not.toBe("none");
+  await expect(page.locator(".destination-tile")).toHaveCount(6);
+  await expect(
+    page.getByRole("link", { name: "View all locations" }),
+  ).toHaveAttribute("href", "/search");
 
   const map = page.getByRole("navigation", { name: "Map destinations" });
   await expect(map.getByRole("link")).toHaveCount(6);

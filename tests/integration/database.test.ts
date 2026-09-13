@@ -188,9 +188,10 @@ describe("migrated database contract", () => {
     ).rejects.toThrow("Invalid destination cursor");
   });
 
-  it("includes newly saved coordinates in the map location query", async () => {
+  it("ranks destinations by traveler notes and caps the map at sixteen", async () => {
     const { db } = await harness();
-    await seedDestinations(db);
+    await seedDevelopment(db, "test", "file:test.db");
+    const hampi = await destinationBySlug(db, "hampi");
     await db.insert(s.destinations).values({
       slug: "kochi",
       name: "Kochi",
@@ -200,13 +201,27 @@ describe("migrated database contract", () => {
       latitude: 9.9312,
       longitude: 76.2673,
     });
+    await db.update(s.contributions).set({ destinationId: hampi!.id });
+    await db.insert(s.destinations).values(
+      Array.from({ length: 10 }, (_, index) => ({
+        slug: `place-${index}`,
+        name: `Place ${index}`,
+        state: "Kerala",
+        normalizedName: `place ${index}`,
+        description: "",
+        latitude: 10 + index / 100,
+        longitude: 76 + index / 100,
+      })),
+    );
 
-    expect(await destinationMapList(db)).toContainEqual(
+    expect((await destinationPage(db, { limit: 6 })).destinations[0]).toEqual(
       expect.objectContaining({
-        slug: "kochi",
-        latitude: 9.9312,
-        longitude: 76.2673,
+        slug: "hampi",
+        publishedRootTipCount: 17,
       }),
     );
+    const map = await destinationMapList(db);
+    expect(map).toHaveLength(16);
+    expect(map[0].slug).toBe("hampi");
   });
 });
