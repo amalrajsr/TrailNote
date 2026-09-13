@@ -347,10 +347,6 @@ export default async function TipDetailPage({
           <summary>
             Revision history ({detail.previousRevisions.length} earlier)
           </summary>
-          <p className="muted">
-            New edits start a new version. Confirmations and updates remain
-            attached to the version travelers saw.
-          </p>
           {detail.previousRevisions.map((revision) => (
             <article key={revision.revision} className="revision-card">
               <strong>Version {revision.revision}</strong>

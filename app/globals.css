@@ -469,8 +469,11 @@ main {
 .india-shape {
   position: absolute;
   inset: 0;
-  background: var(--brand-soft);
-  filter: drop-shadow(0 0 1px var(--brand-border));
+  background: linear-gradient(
+    145deg,
+    var(--map-land-highlight),
+    var(--map-land)
+  );
   mask: url("/india-outline.svg") center / contain no-repeat;
   -webkit-mask: url("/india-outline.svg") center / contain no-repeat;
 }
@@ -1126,7 +1129,7 @@ main {
   height: 94%;
 }
 .destination-map .india-shape {
-  opacity: 0.58;
+  opacity: 0.72;
 }
 .destination-map .marker:not(.active),
 .destination-map .map-water {
