@@ -25,6 +25,13 @@ export const priceUnits = [
   "other",
 ] as const;
 export type PriceUnit = (typeof priceUnits)[number];
+export const priceUnitsByCategory = {
+  stay: ["room_night", "bed_night", "person_night", "other"],
+  food: ["meal", "item", "other"],
+  transport: ["person_trip", "vehicle_trip", "other"],
+  explore: ["entry_person", "other"],
+  general: priceUnits,
+} as const satisfies Record<Category, readonly PriceUnit[]>;
 export const unitLabels: Record<PriceUnit, string> = {
   room_night: "/ room / night",
   bed_night: "/ bed / night",

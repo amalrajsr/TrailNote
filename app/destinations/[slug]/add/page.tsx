@@ -30,6 +30,7 @@ export default async function AddContributionPage({
   const initialCategory = categories.includes(query.category as Category)
     ? (query.category as Category)
     : "general";
+  const initialMutationId = crypto.randomUUID();
 
   return (
     <main id="main" className="container">
@@ -40,9 +41,10 @@ export default async function AddContributionPage({
         <h1 className="page-title">Help the next traveler.</h1>
         <p className="muted">One useful detail is enough.</p>
         <ContributionComposer
+          key={initialMutationId}
           destination={destination}
           initialCategory={initialCategory}
-          initialMutationId={crypto.randomUUID()}
+          initialMutationId={initialMutationId}
           signedIn={!!user}
         />
       </div>

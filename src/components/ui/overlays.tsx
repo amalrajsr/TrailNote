@@ -8,6 +8,7 @@ export function Dialog({
   trigger,
   title,
   description,
+  icon,
   children,
   open,
   onOpenChange,
@@ -16,6 +17,7 @@ export function Dialog({
   trigger?: ReactNode;
   title: string;
   description?: string;
+  icon?: ReactNode;
   children: ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -32,6 +34,7 @@ export function Dialog({
           className={`dialog${className ? ` ${className}` : ""}`}
           aria-describedby={description ? undefined : undefined}
         >
+          {icon}
           <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
           {description && (
             <DialogPrimitive.Description className="muted">

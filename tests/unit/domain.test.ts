@@ -1,8 +1,26 @@
 import { describe, expect, it } from "vitest";
+import { priceUnits, priceUnitsByCategory } from "../../src/lib/constants";
 import { parseMoney, formatMoney } from "../../src/lib/money";
 import { currentMonth, validMonth, freshness } from "../../src/lib/visit-month";
 import { safeReturnUrl, validMapsUrl } from "../../src/lib/urls";
 describe("travel domain rules", () => {
+  it("limits price units to choices relevant to each category", () => {
+    expect(priceUnitsByCategory.stay).toEqual([
+      "room_night",
+      "bed_night",
+      "person_night",
+      "other",
+    ]);
+    expect(priceUnitsByCategory.food).toEqual(["meal", "item", "other"]);
+    expect(priceUnitsByCategory.transport).toEqual([
+      "person_trip",
+      "vehicle_trip",
+      "other",
+    ]);
+    expect(priceUnitsByCategory.explore).toEqual(["entry_person", "other"]);
+    expect(priceUnitsByCategory.general).toEqual(priceUnits);
+  });
+
   it("parses money exactly and keeps null distinct from zero", () => {
     expect(parseMoney("")).toBeNull();
     expect(parseMoney("0")).toBe(0);

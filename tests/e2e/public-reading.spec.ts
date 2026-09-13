@@ -239,6 +239,31 @@ test("guest composer validates first, preserves its draft, and returns from sign
   await expect(page.getByText("Your saved draft was restored.")).toBeVisible();
 });
 
+test("composer only offers price units relevant to the selected category", async ({
+  page,
+}) => {
+  await page.goto("/destinations/badami/add");
+  const unit = page.getByRole("combobox", { name: "What the price covers" });
+
+  const expectedUnits = {
+    Stay: [
+      "Choose a unit",
+      "room / night",
+      "bed / night",
+      "person / night",
+      "Other",
+    ],
+    Food: ["Choose a unit", "meal", "item", "Other"],
+    Transport: ["Choose a unit", "person / trip", "vehicle / trip", "Other"],
+    Explore: ["Choose a unit", "person entry", "Other"],
+  } as const;
+
+  for (const [category, options] of Object.entries(expectedUnits)) {
+    await page.getByRole("button", { name: category, exact: true }).click();
+    await expect(unit.locator("option")).toHaveText(options);
+  }
+});
+
 test("guest photo selection asks for sign-in before opening a file picker", async ({
   page,
 }) => {

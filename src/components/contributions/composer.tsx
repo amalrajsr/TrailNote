@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, MapPin } from "lucide-react";
+import { ArrowRight, Check, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -14,6 +14,7 @@ import {
 import {
   categories,
   categoryLabels,
+  priceUnitsByCategory,
   unitLabels,
   type Category,
 } from "../../lib/constants";
@@ -267,9 +268,29 @@ export function ContributionComposer({
   }, [destination.slug, draft, edit, mode, original, router, storageKey]);
 
   if (state.status === "success" && state.tipId) {
+    const startAnother = (nextCategory: Category) => {
+      const nextDraft = {
+        ...makeDraft(nextCategory, crypto.randomUUID()),
+        visitedChoice: draft.visitedChoice,
+        visitedMonth: draft.visitedMonth,
+      };
+      try {
+        sessionStorage.setItem(
+          storageKey,
+          JSON.stringify(storableDraft(nextDraft)),
+        );
+      } catch {
+        // Navigation still starts a clean contribution if storage is unavailable.
+      }
+      router.refresh();
+    };
+
     return (
-      <section className="form-card field-hint" aria-live="polite">
-        <Check size={48} aria-hidden="true" />
+      <section className="composer-success" aria-live="polite">
+        <div className="success-mark" aria-hidden="true">
+          <Check size={28} strokeWidth={2.5} />
+        </div>
+        <p className="eyebrow">Shared with travelers</p>
         <h2>
           {mode === "update"
             ? "Update shared"
@@ -277,27 +298,47 @@ export function ContributionComposer({
               ? "Changes saved"
               : "Tip added"}
         </h2>
-        <p className="muted">
+        <p className="success-copy">
           {mode === "update"
             ? "Thanks for helping travelers understand what changed."
             : mode === "edit"
-              ? "A new version is now visible to travelers."
-              : "Thanks for sharing something practical."}
+              ? "Your newest version is now visible to travelers."
+              : `Your note about ${destination.name} is now ready to help the next traveler.`}
         </p>
-        <div className="row">
-          <Link className="btn secondary" href={`/tips/${state.tipId}`}>
-            {mode === "update" ? "View updated discussion" : "View tip"}
-          </Link>
-          {mode === "create" && (
-            <button
-              type="button"
-              className="btn"
-              onClick={() => window.location.reload()}
+        <Link className="btn success-primary" href={`/tips/${state.tipId}`}>
+          {mode === "update" ? "View updated discussion" : "View your tip"}
+          <ArrowRight size={17} aria-hidden="true" />
+        </Link>
+
+        {mode === "create" && (
+          <div className="success-another">
+            <div>
+              <h3>Add another thing about {destination.name}?</h3>
+              <p>Choose what you want to share next.</p>
+            </div>
+            <div className="success-categories">
+              {[
+                "general",
+                ...categories.filter((value) => value !== "general"),
+              ].map((value) => (
+                <button
+                  type="button"
+                  key={value}
+                  onClick={() => startAnother(value as Category)}
+                >
+                  <CategoryIcon category={value as Category} />
+                  {categoryNames[value as Category]}
+                </button>
+              ))}
+            </div>
+            <Link
+              className="success-back"
+              href={`/destinations/${destination.slug}`}
             >
-              Add another thing about {destination.name}
-            </button>
-          )}
-        </div>
+              Back to {destination.name}
+            </Link>
+          </div>
+        )}
       </section>
     );
   }
@@ -337,9 +378,9 @@ export function ContributionComposer({
             onChange={(event) => setValue("priceUnit", event.target.value)}
           >
             <option value="">Choose a unit</option>
-            {Object.entries(unitLabels).map(([value, label]) => (
+            {priceUnitsByCategory[category].map((value) => (
               <option value={value} key={value}>
-                {label.replace(/^\/ /, "")}
+                {unitLabels[value].replace(/^\/ /, "")}
               </option>
             ))}
           </Select>
