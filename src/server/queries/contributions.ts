@@ -123,8 +123,22 @@ export async function cardsForRows(db: Database, rows: Tip[]) {
   const [authors, destinations, confirm, helpful, updates, photos] =
     await Promise.all([
       db
-        .select({ id: s.profiles.userId, name: s.profiles.displayName })
+        .select({
+          id: s.profiles.userId,
+          name: s.profiles.displayName,
+          username: s.profiles.username,
+          avatarPath: s.uploadAssets.imagekitPath,
+          avatarWidth: s.uploadAssets.width,
+          avatarHeight: s.uploadAssets.height,
+        })
         .from(s.profiles)
+        .leftJoin(
+          s.uploadAssets,
+          and(
+            eq(s.uploadAssets.attachedProfileUserId, s.profiles.userId),
+            eq(s.uploadAssets.status, "attached"),
+          ),
+        )
         .where(
           inArray(
             s.profiles.userId,
@@ -258,8 +272,18 @@ export async function cardsForRows(db: Database, rows: Tip[]) {
         changed,
       ),
       author: {
+        id: author?.id ?? t.authorId,
         displayName: author?.name ?? "Traveler",
+        username: author?.username ?? "traveler",
         initial: Array.from(author?.name ?? "T")[0],
+        avatar:
+          author?.avatarPath && author.avatarWidth && author.avatarHeight
+            ? {
+                path: author.avatarPath,
+                width: author.avatarWidth,
+                height: author.avatarHeight,
+              }
+            : null,
       },
       revision: t.revision,
       createdAt: t.createdAt,

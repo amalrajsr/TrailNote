@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import ImageKit, { NotFoundError, toFile } from "@imagekit/nodejs";
 import { and, asc, eq, inArray, lt, lte, or, sql } from "drizzle-orm";
 import sharp, { type Metadata } from "sharp";
-import type { Database } from "../../db/client";
+import type { Database, Transaction } from "../../db/client";
 import * as s from "../../db/schema";
 import { getImageKitEnvironment } from "../env";
 import { DomainError } from "../result";
@@ -161,8 +161,8 @@ export async function validateUploadSource(bytes: Uint8Array) {
 
 const sourceDigest = (bytes: Uint8Array) =>
   createHash("sha256").update(bytes).digest("hex");
-async function enqueueDelete(
-  db: Database,
+export async function enqueueAssetDelete(
+  db: Database | Transaction,
   assetId: string,
   reason: string,
   now: number,
@@ -302,7 +302,7 @@ export async function uploadPhoto(
           )
           .returning();
         if (ready) return ready;
-        await enqueueDelete(db, assetId, "upload_cancelled", Date.now());
+        await enqueueAssetDelete(db, assetId, "upload_cancelled", Date.now());
         throw new DomainError(
           "UPLOAD_FAILED",
           "The photo upload was cancelled.",
@@ -318,7 +318,7 @@ export async function uploadPhoto(
           updatedAt: Date.now(),
         })
         .where(eq(s.uploadAssets.id, assetId));
-      await enqueueDelete(db, assetId, "upload_rejected", Date.now());
+      await enqueueAssetDelete(db, assetId, "upload_rejected", Date.now());
     } catch (error) {
       await db
         .update(s.uploadAssets)
@@ -328,7 +328,7 @@ export async function uploadPhoto(
           updatedAt: Date.now(),
         })
         .where(eq(s.uploadAssets.id, assetId));
-      await enqueueDelete(db, assetId, "upload_failed", Date.now());
+      await enqueueAssetDelete(db, assetId, "upload_failed", Date.now());
       if (attempt === 3) throw error;
     }
   }
@@ -363,7 +363,7 @@ export async function cancelUpload(
       .update(s.uploadAssets)
       .set({ status: "deleting", updatedAt: now })
       .where(eq(s.uploadAssets.id, assetId));
-    await enqueueDelete(db, assetId, "upload_cancelled", now);
+    await enqueueAssetDelete(db, assetId, "upload_cancelled", now);
   }
 }
 
@@ -399,7 +399,7 @@ export async function runCleanup(
             updatedAt: now,
           })
           .where(eq(s.uploadAssets.id, asset.id));
-        await enqueueDelete(db, asset.id, "upload_abandoned", now);
+        await enqueueAssetDelete(db, asset.id, "upload_abandoned", now);
       } else {
         await db
           .update(s.uploadAssets)
@@ -421,7 +421,7 @@ export async function runCleanup(
     )
     .limit(limit);
   for (const asset of expired) {
-    await enqueueDelete(db, asset.id, "upload_expired", now);
+    await enqueueAssetDelete(db, asset.id, "upload_expired", now);
     await db
       .update(s.uploadAssets)
       .set({ status: "deleting", updatedAt: now })

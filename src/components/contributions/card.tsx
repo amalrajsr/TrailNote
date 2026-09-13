@@ -6,6 +6,7 @@ import { categoryLabels } from "../../lib/constants";
 import { formatMoney, priceSuffix } from "../../lib/money";
 import { formatMonth } from "../../lib/visit-month";
 import type { ContributionCardDTO } from "../../server/queries/contributions";
+import { ProfileAvatar } from "../profiles/avatar";
 export function TipCard({ tip }: { tip: ContributionCardDTO }) {
   const photo = tip.photos[0];
   return (
@@ -47,12 +48,30 @@ export function TipCard({ tip }: { tip: ContributionCardDTO }) {
         {Array.from(tip.body).slice(0, 230).join("")}
         {Array.from(tip.body).length > 230 ? "…" : ""}
       </p>
-      <p className="tip-meta">
-        {tip.visitedMonth
-          ? `Visited ${formatMonth(tip.visitedMonth)}`
-          : formatMonth(null)}{" "}
-        · {tip.author.displayName}
-      </p>
+      <div className="tip-meta tip-author-meta">
+        <Link
+          className="tip-author-avatar-link"
+          href={`/users/${tip.author.id}`}
+          aria-label={`View @${tip.author.username}'s profile`}
+        >
+          <ProfileAvatar
+            name={tip.author.displayName}
+            avatar={tip.author.avatar}
+            className="tip-author-avatar"
+            sizes="28px"
+          />
+        </Link>
+        <p>
+          {tip.visitedMonth
+            ? `Visited ${formatMonth(tip.visitedMonth)}`
+            : formatMonth(null)}{" "}
+          ·{" "}
+          <Link className="author-link" href={`/users/${tip.author.id}`}>
+            {tip.author.displayName}{" "}
+            <span className="profile-handle">@{tip.author.username}</span>
+          </Link>
+        </p>
+      </div>
       {tip.lastConfirmedMonth && (
         <p className="tip-confirm">
           Last confirmed {formatMonth(tip.lastConfirmedMonth)} ·{" "}

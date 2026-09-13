@@ -4,6 +4,7 @@ import type { Database } from "./client";
 import {
   user,
   profiles,
+  usernameClaims,
   destinations,
   contributions,
   contributionRevisions,
@@ -50,10 +51,19 @@ export async function seedDevelopment(
         })
         .onConflictDoNothing();
       await tx
+        .insert(usernameClaims)
+        .values({
+          username: `traveler-${String(i).padStart(2, "0")}`,
+          userId: fixtureId(i),
+          createdAt: +fixtureClock,
+        })
+        .onConflictDoNothing();
+      await tx
         .insert(profiles)
         .values({
           userId: fixtureId(i),
           displayName: `${displayName} (fictional)`,
+          username: `traveler-${String(i).padStart(2, "0")}`,
           createdAt: +fixtureClock,
           updatedAt: +fixtureClock,
         })

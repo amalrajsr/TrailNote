@@ -1097,6 +1097,47 @@ main {
   line-height: 20px;
   color: var(--ink-muted);
 }
+.tip-author-meta {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.tip-author-meta > p {
+  min-width: 0;
+}
+.tip-author-avatar,
+.update-author-avatar {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--surface-soft);
+  color: var(--brand);
+  font-weight: 700;
+}
+.tip-author-avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 11px;
+}
+.tip-author-avatar-link {
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+.author-link {
+  color: var(--ink);
+  font-weight: 650;
+}
+.author-link:hover,
+.update-author:hover strong {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.profile-handle {
+  color: var(--ink-muted);
+  font-weight: 500;
+}
 .tip-confirm {
   font-size: 13px;
   line-height: 20px;
@@ -1549,6 +1590,11 @@ textarea.field-input {
   background: color-mix(in srgb, var(--surface) 92%, transparent);
   box-shadow: var(--shadow-card);
 }
+.account-profile-column {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
 .account-avatar {
   display: grid;
   width: 52px;
@@ -1560,6 +1606,7 @@ textarea.field-input {
   color: var(--on-brand);
   font-size: 20px;
   font-weight: 650;
+  overflow: hidden;
 }
 .account-profile strong,
 .account-profile > div > span {
@@ -1570,12 +1617,126 @@ textarea.field-input {
   font-size: 12px;
   line-height: 18px;
 }
-.account-sign-out {
+.account-profile-actions {
+  display: flex;
   grid-column: 2;
+  align-items: center;
+  gap: 2px;
+}
+.account-profile-actions .quiet {
   min-height: 36px;
-  width: max-content;
-  margin: 3px 0 -5px -10px;
   padding: 7px 10px;
+}
+.account-profile-column > .account-sign-out {
+  min-height: 36px;
+  padding-block: 7px;
+}
+.profile-avatar-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profile-updated-notice {
+  margin-top: 10px;
+}
+.profile-dialog {
+  width: min(540px, calc(100% - 32px));
+}
+.profile-dialog > .muted {
+  margin-bottom: 24px;
+}
+.profile-form-error {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.profile-form-error p {
+  margin-top: 3px;
+}
+.profile-photo-field {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.profile-editor-avatar,
+.public-profile-avatar {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-size: 30px;
+  font-weight: 700;
+}
+.profile-editor-avatar {
+  width: 88px;
+  height: 88px;
+}
+.profile-photo-actions {
+  gap: 6px;
+}
+.profile-photo-actions .btn,
+.profile-photo-actions .quiet {
+  min-height: 44px;
+  padding-block: 9px;
+}
+.profile-photo-field .small + .small,
+.field-help {
+  margin-top: 6px;
+}
+.profile-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 28px;
+}
+.public-profile-page {
+  width: min(820px, calc(100% - 64px));
+  padding-bottom: 32px;
+}
+.public-profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 30px 32px;
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-feature);
+  background: var(--brand-faint);
+}
+.public-profile-avatar {
+  width: 88px;
+  height: 88px;
+  flex: 0 0 88px;
+}
+.public-profile-hero h1 {
+  margin-top: 3px;
+}
+.public-profile-hero .profile-handle {
+  margin-top: 4px;
+}
+.public-profile-tips {
+  margin-top: 32px;
+}
+.public-profile-tips > h2 {
+  margin-bottom: 16px;
+  font-size: 24px;
+}
+.tip-list {
+  display: grid;
+  gap: 16px;
+}
+.profile-next {
+  margin-top: 20px;
+}
+.profile-empty-state {
+  margin-top: 0;
 }
 .account-toolbar {
   display: flex;
@@ -1953,6 +2114,7 @@ textarea.field-input {
   border-radius: 50%;
   background: var(--surface-soft);
   color: var(--brand);
+  overflow: hidden;
 }
 .facts {
   display: grid;
@@ -2114,6 +2276,20 @@ textarea.field-input {
 .update-byline span {
   color: var(--ink-muted);
 }
+.update-author {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.update-author > span,
+.update-author small {
+  display: block;
+}
+.update-author-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
 .update-card > p {
   margin-top: 12px;
   white-space: pre-line;
@@ -2156,18 +2332,6 @@ textarea.field-input {
 }
 .revision-disclosure > .muted {
   margin-bottom: 16px;
-}
-.history-disclosure {
-  width: calc(100% - 352px);
-}
-.revision-card {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-}
-.revision-card p {
-  margin-top: 6px;
-  white-space: pre-line;
 }
 .photo-dialog {
   width: min(1180px, calc(100% - 32px));
@@ -2420,7 +2584,11 @@ textarea.field-input {
   padding: 36px;
   border-color: var(--brand-border);
   background:
-    radial-gradient(circle at 50% 0, var(--brand-faint) 0 180px, transparent 181px),
+    radial-gradient(
+      circle at 50% 0,
+      var(--brand-faint) 0 180px,
+      transparent 181px
+    ),
     var(--surface);
 }
 .auth-panel-intro {
@@ -2727,8 +2895,7 @@ summary {
   .auth-story h1 {
     font-size: 48px;
   }
-  .updates,
-  .history-disclosure {
+  .updates {
     width: 100%;
     max-width: none;
   }
@@ -2985,6 +3152,50 @@ summary {
   }
   .account-profile {
     min-width: 0;
+  }
+  .account-profile-column {
+    justify-items: stretch;
+  }
+  .account-profile-actions {
+    flex-wrap: wrap;
+  }
+  .account-profile-column > .account-sign-out {
+    width: max-content;
+  }
+  .profile-photo-field {
+    grid-template-columns: 72px minmax(0, 1fr);
+    align-items: start;
+    gap: 14px;
+  }
+  .profile-editor-avatar {
+    width: 72px;
+    height: 72px;
+    font-size: 24px;
+  }
+  .profile-photo-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .profile-photo-actions .btn,
+  .profile-photo-actions .quiet {
+    width: 100%;
+  }
+  .profile-form-actions > * {
+    flex: 1;
+  }
+  .public-profile-page {
+    width: calc(100% - 32px);
+  }
+  .public-profile-hero {
+    align-items: flex-start;
+    gap: 16px;
+    padding: 24px;
+  }
+  .public-profile-avatar {
+    width: 64px;
+    height: 64px;
+    flex-basis: 64px;
+    font-size: 22px;
   }
   .account-toolbar {
     display: block;

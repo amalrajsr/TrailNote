@@ -43,6 +43,7 @@ export const profiles = sqliteTable(
       .primaryKey()
       .references(() => user.id),
     displayName: text("display_name").notNull(),
+    username: text("username").notNull(),
     role: text("role", { enum: ["traveler", "moderator"] })
       .notNull()
       .default("traveler"),
@@ -52,8 +53,32 @@ export const profiles = sqliteTable(
     ...timestamps(),
   },
   (t) => [
+    uniqueIndex("profile_username_unique").on(sql`lower(${t.username})`),
+    check(
+      "profile_username",
+      sql`length(${t.username}) between 3 and 36 and ${t.username} = lower(${t.username}) and ${t.username} not glob '*[^a-z0-9-]*' and substr(${t.username}, 1, 1) <> '-' and substr(${t.username}, -1, 1) <> '-'`,
+    ),
     check("profile_role", choice(t.role, ["traveler", "moderator"])),
     check("profile_status", choice(t.status, ["active", "suspended"])),
+  ],
+);
+
+export const usernameClaims = sqliteTable(
+  "username_claims",
+  {
+    username: text("username").primaryKey(),
+    userId: text("user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    createdAt: integer("created_at").notNull().$defaultFn(Date.now),
+  },
+  (t) => [
+    uniqueIndex("username_claim_unique").on(sql`lower(${t.username})`),
+    index("username_claim_user_idx").on(t.userId),
+    check(
+      "username_claim_format",
+      sql`length(${t.username}) between 3 and 36 and ${t.username} = lower(${t.username}) and ${t.username} not glob '*[^a-z0-9-]*' and substr(${t.username}, 1, 1) <> '-' and substr(${t.username}, -1, 1) <> '-'`,
+    ),
   ],
 );
 
@@ -352,6 +377,9 @@ export const uploadAssets = sqliteTable(
     attachedContributionId: text("attached_contribution_id").references(
       () => contributions.id,
     ),
+    attachedProfileUserId: text("attached_profile_user_id").references(
+      () => user.id,
+    ),
     errorCode: text("error_code"),
     expiresAt: integer("expires_at").notNull(),
     ...timestamps(),
@@ -363,6 +391,7 @@ export const uploadAssets = sqliteTable(
       t.slot,
       t.attempt,
     ),
+    uniqueIndex("upload_profile_unique").on(t.attachedProfileUserId),
     check(
       "upload_status",
       choice(t.status, [
@@ -385,7 +414,7 @@ export const uploadAssets = sqliteTable(
     ),
     check(
       "upload_attached",
-      sql`${t.status} <> 'attached' or ${t.attachedContributionId} is not null`,
+      sql`${t.status} <> 'attached' or ((${t.attachedContributionId} is not null and ${t.attachedProfileUserId} is null) or (${t.attachedContributionId} is null and ${t.attachedProfileUserId} is not null))`,
     ),
     index("upload_expiry_idx").on(t.status, t.expiresAt),
     index("upload_owner_idx").on(t.ownerId, t.createdAt),

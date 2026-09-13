@@ -5,6 +5,7 @@ import {
   AccountSignOut,
   MyContributions,
 } from "../../src/components/account/contributions";
+import { AccountProfileEditor } from "../../src/components/account/profile-editor";
 import { getDatabase } from "../../src/db";
 import { viewer } from "../../src/server/auth";
 import { accountContributions } from "../../src/server/queries/account";
@@ -28,8 +29,6 @@ export default async function MePage({
     published: allTips.filter((tip) => tip.status === "published").length,
     hidden: allTips.filter((tip) => tip.status === "hidden").length,
   };
-  const initial = Array.from(user.name)[0]?.toUpperCase() ?? "T";
-
   return (
     <main id="main" className="container page-top account-page">
       <header className="account-hero">
@@ -38,14 +37,13 @@ export default async function MePage({
           <h1 className="page-title">My contributions</h1>
           <p>Everything you&apos;ve shared to help another traveler.</p>
         </div>
-        <div className="account-profile">
-          <span className="account-avatar" aria-hidden="true">
-            {initial}
-          </span>
-          <div>
-            <strong>{user.name}</strong>
-            <span>TrailNote contributor</span>
-          </div>
+        <div className="account-profile-column">
+          <AccountProfileEditor
+            id={user.id}
+            name={user.name}
+            username={user.username}
+            avatar={user.avatar}
+          />
           <AccountSignOut />
         </div>
       </header>

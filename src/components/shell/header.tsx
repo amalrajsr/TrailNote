@@ -19,7 +19,12 @@ export async function Header() {
             Share a tip
           </Link>
           {user ? (
-            <AccountMenu name={user.name} />
+            <AccountMenu
+              id={user.id}
+              name={user.name}
+              username={user.username}
+              avatar={user.avatar}
+            />
           ) : (
             <Link className="btn secondary" href="/sign-in">
               Sign in

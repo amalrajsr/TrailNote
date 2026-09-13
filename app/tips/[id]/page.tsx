@@ -6,6 +6,7 @@ import { PhotoGallery } from "../../../src/components/contributions/photo-galler
 import { ReactionControls } from "../../../src/components/contributions/reaction-controls";
 import { ContactReveal } from "../../../src/components/contributions/contact-reveal";
 import { ReportTip } from "../../../src/components/contributions/report-tip";
+import { ProfileAvatar } from "../../../src/components/profiles/avatar";
 import { CategoryIcon } from "../../../src/components/ui/category-icon";
 import { getDatabase } from "../../../src/db";
 import { categoryLabels } from "../../../src/lib/constants";
@@ -132,11 +133,21 @@ function DetailCard({
       )}
       <p className="detail-text">{detail.body}</p>
       <div className="author">
-        <span className="avatar" aria-hidden="true">
-          {detail.author.initial}
-        </span>
+        <Link
+          href={`/users/${detail.author.id}`}
+          aria-label={`View @${detail.author.username}'s profile`}
+        >
+          <ProfileAvatar
+            name={detail.author.displayName}
+            avatar={detail.author.avatar}
+          />
+        </Link>
         <p>
-          Shared by {detail.author.displayName}
+          Shared by{" "}
+          <Link className="author-link" href={`/users/${detail.author.id}`}>
+            {detail.author.displayName}{" "}
+            <span className="profile-handle">@{detail.author.username}</span>
+          </Link>
           <small>
             {detail.visitedMonth
               ? `Visited ${formatMonth(detail.visitedMonth)}`
@@ -249,7 +260,20 @@ function Updates({ detail }: { detail: ContributionDetailDTO }) {
       return (
         <article className="update-card" key={update.id}>
           <div className="row between update-byline">
-            <strong>{update.author.displayName}</strong>
+            <Link className="update-author" href={`/users/${update.author.id}`}>
+              <ProfileAvatar
+                name={update.author.displayName}
+                avatar={update.author.avatar}
+                className="update-author-avatar"
+                sizes="32px"
+              />
+              <span>
+                <strong>{update.author.displayName}</strong>
+                <small className="profile-handle">
+                  @{update.author.username}
+                </small>
+              </span>
+            </Link>
             <span>
               {update.visitedMonth
                 ? `Visited ${formatMonth(update.visitedMonth)}`
@@ -342,19 +366,6 @@ export default async function TipDetailPage({
         <FreshnessPanel detail={detail} />
       </div>
       <Updates detail={detail} />
-      {detail.previousRevisions.length > 0 && (
-        <details className="revision-disclosure history-disclosure">
-          <summary>
-            Revision history ({detail.previousRevisions.length} earlier)
-          </summary>
-          {detail.previousRevisions.map((revision) => (
-            <article key={revision.revision} className="revision-card">
-              <strong>Version {revision.revision}</strong>
-              <p>{revision.body}</p>
-            </article>
-          ))}
-        </details>
-      )}
     </main>
   );
 }

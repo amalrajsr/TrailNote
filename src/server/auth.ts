@@ -3,11 +3,12 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getDatabase } from "../db";
 import * as schema from "../db/schema";
 import { env, getAuthEnvironment } from "./env";
 import { DomainError } from "./result";
+import { createProfile } from "./services/profiles";
 let instance: ReturnType<typeof makeAuth> | undefined;
 function makeAuth(db: Awaited<ReturnType<typeof getDatabase>>["db"]) {
   const config = getAuthEnvironment();
@@ -28,13 +29,7 @@ function makeAuth(db: Awaited<ReturnType<typeof getDatabase>>["db"]) {
       user: {
         create: {
           after: async (user) => {
-            await db
-              .insert(schema.profiles)
-              .values({
-                userId: user.id,
-                displayName: user.name.split(" ")[0] || "Traveler",
-              })
-              .onConflictDoNothing();
+            await createProfile(db, user.id, user.name);
           },
         },
       },
@@ -59,14 +54,40 @@ export async function viewer() {
   ).api.getSession({ headers: requestHeaders });
   if (!session) return null;
   const { db } = await getDatabase();
-  const profile = (
+  const row = (
     await db
-      .select()
+      .select({
+        profile: schema.profiles,
+        avatarPath: schema.uploadAssets.imagekitPath,
+        avatarWidth: schema.uploadAssets.width,
+        avatarHeight: schema.uploadAssets.height,
+      })
       .from(schema.profiles)
+      .leftJoin(
+        schema.uploadAssets,
+        and(
+          eq(schema.uploadAssets.attachedProfileUserId, schema.profiles.userId),
+          eq(schema.uploadAssets.status, "attached"),
+        ),
+      )
       .where(eq(schema.profiles.userId, session.user.id))
   )[0];
+  const profile = row?.profile;
   if (!profile || profile.status !== "active") return null;
-  return { id: session.user.id, name: profile.displayName, role: profile.role };
+  return {
+    id: session.user.id,
+    name: profile.displayName,
+    username: profile.username,
+    role: profile.role,
+    avatar:
+      row.avatarPath && row.avatarWidth && row.avatarHeight
+        ? {
+            path: row.avatarPath,
+            width: row.avatarWidth,
+            height: row.avatarHeight,
+          }
+        : null,
+  };
 }
 export async function requireViewer() {
   const user = await viewer();

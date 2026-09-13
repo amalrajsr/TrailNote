@@ -214,6 +214,39 @@ test("development dialog traps focus, closes with Escape, and restores focus", a
   await expect(trigger).toBeFocused();
 });
 
+test("traveler can claim a unique username and open their stable public profile", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await signInAsObserver(page, newObserverSessionToken);
+  await page.goto("/me");
+  await page.getByRole("button", { name: "Edit profile" }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Edit profile" });
+  await dialog.getByLabel("Display name").fill("Ananya Nair");
+  await dialog.getByLabel("Username").fill("traveler-02");
+  await dialog.getByRole("button", { name: "Save profile" }).click();
+  await expect(dialog.locator("#profile-username-error")).toHaveText(
+    "That username is taken.",
+  );
+
+  await dialog.getByLabel("Username").fill("ananya-notes");
+  await dialog.getByRole("button", { name: "Save profile" }).click();
+  await expect(page.getByText("Profile updated.")).toBeVisible();
+
+  await page.goto("/users/00000000-0000-4000-8000-000000000001");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Ananya Nair" }),
+  ).toBeVisible();
+  await expect(page.getByText("@ananya-notes").first()).toBeVisible();
+  await expect(page.locator(".tip-card").first()).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    ),
+  ).toBeLessThanOrEqual(0);
+});
+
 test("guest composer validates first, preserves its draft, and returns from sign-in", async ({
   page,
 }) => {

@@ -23,9 +23,10 @@ export default function PrivacyPage() {
       <section className="doc-section">
         <h2>What appears publicly</h2>
         <p>
-          Public contribution pages show the display name you use on TrailNote,
-          the practical details you choose to share, the visit month when
-          provided, and whether a public service contact is available.
+          Public contribution and profile pages show the display name, username,
+          and profile image you use on TrailNote, along with your published
+          tips, the visit month when provided, and whether a public service
+          contact is available.
         </p>
         <p>
           Your sign-in email and authentication details are not shown on public
@@ -45,7 +46,7 @@ export default function PrivacyPage() {
         <p>
           Uploaded traveler photos are processed before storage. TrailNote is
           designed to remove unnecessary metadata such as location metadata from
-          accepted images before they are attached to public tips.
+          accepted images before they are attached to public tips or profiles.
         </p>
       </section>
       <section className="doc-section">
@@ -59,9 +60,9 @@ export default function PrivacyPage() {
       <section className="doc-section">
         <h2>Your choices</h2>
         <p>
-          Authors can edit or delete their own contributions. Public service
-          contacts can be reported for review without requiring the affected
-          person to create an account.
+          Authors can edit their public profile and edit or delete their own
+          contributions. Public service contacts can be reported for review
+          without requiring the affected person to create an account.
         </p>
       </section>
       <section className="doc-section">
