@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getDatabase } from "../../../../src/db";
 import { categories, type Category } from "../../../../src/lib/constants";
 import { destinationBySlug } from "../../../../src/server/queries/destinations";
@@ -30,6 +30,11 @@ export default async function AddContributionPage({
   const initialCategory = categories.includes(query.category as Category)
     ? (query.category as Category)
     : "general";
+  if (!user) {
+    redirect(
+      `/sign-in?returnTo=${encodeURIComponent(`/destinations/${slug}/add?category=${initialCategory}`)}`,
+    );
+  }
   const initialMutationId = crypto.randomUUID();
 
   return (

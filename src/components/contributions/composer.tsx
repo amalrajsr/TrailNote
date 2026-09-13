@@ -10,6 +10,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type FormEvent,
 } from "react";
 import {
   categories,
@@ -19,6 +20,8 @@ import {
   type Category,
 } from "../../lib/constants";
 import { currentMonth, formatMonth } from "../../lib/visit-month";
+import { parseMoney } from "../../lib/money";
+import { contributionInput } from "../../lib/validation/contribution";
 import { CategoryIcon } from "../ui/category-icon";
 import { Button, Field, Input, Select, Textarea } from "../ui/primitives";
 import { PhotoUploader, type UploadedPhoto } from "./photo-uploader";
@@ -81,6 +84,15 @@ const defaultUnits: Record<Category, string> = {
   explore: "entry_person",
   general: "",
 };
+const monthOptions = Array.from({ length: 12 }, (_, index) => {
+  const value = String(index + 1).padStart(2, "0");
+  return {
+    value,
+    label: new Intl.DateTimeFormat("en", { month: "long" }).format(
+      new Date(2000, index, 1),
+    ),
+  };
+});
 
 function previousMonth(month: string) {
   const [year, value] = month.split("-").map(Number);
@@ -165,6 +177,10 @@ export function ContributionComposer({
   const [restored, setRestored] = useState(false);
   const [details, setDetails] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
+  const [showValidation, setShowValidation] = useState(false);
+  const [clientFieldErrors, setClientFieldErrors] = useState<
+    Record<string, string[]>
+  >({});
   const submitAction =
     mode === "update"
       ? shareUpdate
@@ -179,6 +195,70 @@ export function ContributionComposer({
   const draftSaved = useRef(false);
   const month = useMemo(() => currentMonth(), []);
   const lastMonth = useMemo(() => previousMonth(month), [month]);
+
+  const validateDraft = () => {
+    let pricePaise: number | null;
+    try {
+      pricePaise = parseMoney(draft.price);
+    } catch (error) {
+      return {
+        success: false as const,
+        fieldErrors: {
+          price: [error instanceof Error ? error.message : "Enter a valid price."],
+        },
+      };
+    }
+
+    const result = contributionInput.safeParse({
+      destinationId: destination.id,
+      category: draft.category,
+      body: draft.body,
+      visitedMonth:
+        draft.visitedChoice === "custom"
+          ? draft.visitedMonth
+          : draft.visitedChoice,
+      pricePaise,
+      priceUnit: draft.priceUnit,
+      priceUnitLabel: draft.priceUnitLabel,
+      placeName: draft.placeName,
+      roomType: draft.roomType,
+      bookingMethod: draft.bookingMethod,
+      dish: draft.dish,
+      fromName: draft.fromName,
+      toName: draft.toName,
+      transportMode: draft.transportMode,
+      durationMinutes: draft.durationMinutes ? Number(draft.durationMinutes) : null,
+      walkMinutes: draft.walkMinutes ? Number(draft.walkMinutes) : null,
+      locationText: draft.locationText,
+      mapsUrl: draft.mapsUrl,
+      phone: draft.phone,
+      publicServiceContact: draft.publicServiceContact,
+      photos: draft.photos.map((photo) => ({ id: photo.id, alt: photo.alt })),
+      parentContributionId: original?.id ?? edit?.parentContributionId ?? null,
+      parentRevision: original?.revision ?? edit?.parentRevision ?? null,
+    });
+
+    return result.success
+      ? { success: true as const }
+      : {
+          success: false as const,
+          fieldErrors: result.error.flatten().fieldErrors as Record<
+            string,
+            string[]
+          >,
+        };
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    setShowValidation(true);
+    setClientFieldErrors({});
+    const result = validateDraft();
+    if (!result.success) {
+      event.preventDefault();
+      setClientFieldErrors(result.fieldErrors);
+      setShowValidation(true);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -241,7 +321,9 @@ export function ContributionComposer({
         `/sign-in?returnTo=${encodeURIComponent(state.returnTo)}${draftSaved.current ? "&draft=1" : ""}`,
       );
     }
-    if (state.status === "error") summaryRef.current?.focus();
+    if (state.status === "error") {
+      summaryRef.current?.focus();
+    }
   }, [draft, router, state, storageKey]);
 
   const setPhotos = useCallback(
@@ -343,10 +425,24 @@ export function ContributionComposer({
     );
   }
 
-  const error = (name: string) => state.fieldErrors?.[name]?.[0];
+  const error = (name: string) => {
+    if (!showValidation) return undefined;
+    return clientFieldErrors[name]?.[0] ?? state.fieldErrors?.[name]?.[0];
+  };
   const setValue = (name: string, value: string) =>
     setDraft((current) => ({ ...current, [name]: value }));
   const category = draft.category;
+  const currentYear = month.slice(0, 4);
+  const currentMonthValue = month.slice(5, 7);
+  const [visitedYear, visitedMonthValue] = draft.visitedMonth.split("-");
+  const selectableMonths = monthOptions.filter(
+    ({ value }) =>
+      visitedYear !== currentYear || value <= currentMonthValue,
+  );
+  const visitedYears = Array.from(
+    { length: Number(currentYear) - 1999 },
+    (_, index) => String(Number(currentYear) - index),
+  );
   const priceFields = (
     <>
       <Field
@@ -413,7 +509,13 @@ export function ContributionComposer({
       {restored && (
         <p className="status-message">Your saved draft was restored.</p>
       )}
-      <form action={action} className="form-card" noValidate>
+      <form
+        action={action}
+        className="form-card"
+        noValidate
+        onChange={() => setShowValidation(false)}
+        onSubmit={handleSubmit}
+      >
         <input type="hidden" name="destinationId" value={destination.id} />
         <input type="hidden" name="slug" value={destination.slug} />
         <input type="hidden" name="mutationId" value={draft.mutationId} />
@@ -448,16 +550,17 @@ export function ContributionComposer({
           }
         />
 
-        {state.status === "error" && (
+        {showValidation &&
+          (state.status === "error" || Object.keys(clientFieldErrors).length > 0) && (
           <div
             ref={summaryRef}
             tabIndex={-1}
             className="error-notice"
             role="alert"
           >
-            {state.message}
+            {state.message ?? "Review the highlighted fields and try again."}
           </div>
-        )}
+          )}
 
         {mode === "update" && original ? (
           <section className="original-summary" aria-labelledby="original-tip">
@@ -608,16 +711,44 @@ export function ContributionComposer({
           </div>
           {draft.visitedChoice === "custom" && (
             <Field id="visitedMonthCustom" label="Visit month">
-              <Input
-                id="visitedMonthCustom"
-                type="month"
-                min="2000-01"
-                max={month}
-                value={draft.visitedMonth}
-                onChange={(event) =>
-                  setValue("visitedMonth", event.target.value)
-                }
-              />
+              <div className="input-grid month-picker">
+                <Select
+                  id="visitedMonthCustom"
+                  aria-label="Visit month"
+                  value={visitedMonthValue}
+                  onChange={(event) =>
+                    setValue(
+                      "visitedMonth",
+                      `${visitedYear}-${event.target.value}`,
+                    )
+                  }
+                >
+                  {selectableMonths.map((option) => (
+                    <option value={option.value} key={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+                <Select
+                  aria-label="Visit year"
+                  value={visitedYear}
+                  onChange={(event) => {
+                    const nextYear = event.target.value;
+                    const nextMonth =
+                      nextYear === currentYear &&
+                      visitedMonthValue > currentMonthValue
+                        ? currentMonthValue
+                        : visitedMonthValue;
+                    setValue("visitedMonth", `${nextYear}-${nextMonth}`);
+                  }}
+                >
+                  {visitedYears.map((year) => (
+                    <option value={year} key={year}>
+                      {year}
+                    </option>
+                  ))}
+                </Select>
+              </div>
             </Field>
           )}
         </div>

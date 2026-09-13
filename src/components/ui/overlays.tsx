@@ -61,7 +61,7 @@ export function Menu({
   items: Array<{ label: string; href?: string; onSelect?: () => void }>;
 }) {
   return (
-    <MenuPrimitive.Root>
+    <MenuPrimitive.Root modal={false}>
       <MenuPrimitive.Trigger asChild>{trigger}</MenuPrimitive.Trigger>
       <MenuPrimitive.Portal>
         <MenuPrimitive.Content className="popover" sideOffset={8} align="end">

@@ -34,11 +34,16 @@ export function SignInPanel({
 
   return (
     <section className="auth-panel form-card">
-      <Compass size={32} strokeWidth={1.5} aria-hidden="true" />
-      <h1 className="editorial">Share what you know</h1>
-      <p className="muted">
-        Continue with Google to add tips and help keep information useful.
-      </p>
+      <div className="auth-panel-intro">
+        <span className="auth-panel-mark" aria-hidden="true">
+          <Compass size={28} strokeWidth={1.5} />
+        </span>
+        <p className="eyebrow">Welcome to TrailNote</p>
+        <h1 className="editorial">Share what you know</h1>
+        <p className="auth-panel-lede">
+          Continue with Google to add tips and help keep information useful.
+        </p>
+      </div>
       {error && (
         <div className="error-notice" role="alert">
           Google sign-in didn&apos;t finish.
@@ -57,7 +62,7 @@ export function SignInPanel({
           Back to my tip
         </Link>
       )}
-      <p className="small muted">
+      <p className="small muted auth-panel-legal">
         By continuing, you agree to our <Link href="/terms">Terms</Link> and{" "}
         <Link href="/privacy">Privacy Policy</Link>.
       </p>

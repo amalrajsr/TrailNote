@@ -34,7 +34,6 @@ export function LazyDestinationTiles({
   const [nextCursor, setNextCursor] = useState(initialNextCursor);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const sentinel = useRef<HTMLDivElement>(null);
-  const scrollContainer = useRef<HTMLDivElement>(null);
   const abortController = useRef<AbortController>(null);
 
   const loadMore = useCallback(async () => {
@@ -75,14 +74,13 @@ export function LazyDestinationTiles({
 
   useEffect(() => {
     const target = sentinel.current;
-    const root = scrollContainer.current;
-    if (!target || !root || !nextCursor || status !== "idle") return;
+    if (!target || !nextCursor || status !== "idle") return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) void loadMore();
       },
-      { root, rootMargin: "300px 0px" },
+      { root: null, rootMargin: "300px 0px" },
     );
     observer.observe(target);
     return () => observer.disconnect();
@@ -103,7 +101,6 @@ export function LazyDestinationTiles({
         Scroll this list to browse more locations.
       </p>
       <div
-        ref={scrollContainer}
         className="destination-scroll"
         role="region"
         aria-label="Locations"

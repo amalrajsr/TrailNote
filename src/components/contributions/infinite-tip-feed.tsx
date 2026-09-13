@@ -29,7 +29,6 @@ export function InfiniteTipFeed({
   const [cards, setCards] = useState(initialCards);
   const [nextCursor, setNextCursor] = useState(initialNextCursor);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
-  const scrollContainer = useRef<HTMLDivElement>(null);
   const sentinel = useRef<HTMLDivElement>(null);
   const abortController = useRef<AbortController>(null);
 
@@ -67,15 +66,14 @@ export function InfiniteTipFeed({
   }, [category, nextCursor, slug, sort, status]);
 
   useEffect(() => {
-    const root = scrollContainer.current;
     const target = sentinel.current;
-    if (!root || !target || !nextCursor || status !== "idle") return;
+    if (!target || !nextCursor || status !== "idle") return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) void loadMore();
       },
-      { root, rootMargin: "320px 0px" },
+      { root: null, rootMargin: "320px 0px" },
     );
     observer.observe(target);
     return () => observer.disconnect();
@@ -94,7 +92,6 @@ export function InfiniteTipFeed({
         Scroll this list to browse more traveler notes.
       </p>
       <div
-        ref={scrollContainer}
         className="tip-scroll"
         role="region"
         aria-label="Traveler tips"
