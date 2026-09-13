@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Compass } from "lucide-react";
-import { viewer } from "../../server/auth";
+import { viewerState } from "../../server/auth";
 import { AccountMenu } from "./user-menu";
 export async function Header() {
-  const user = await viewer();
+  const state = await viewerState();
+  if (state.kind === "blocked") redirect("/sign-in?error=blocked");
+  const user = state.kind === "active" ? state.user : null;
   return (
     <header className="site-header">
       <div className="container header-inner">
@@ -23,6 +26,7 @@ export async function Header() {
               id={user.id}
               name={user.name}
               username={user.username}
+              role={user.role}
               avatar={user.avatar}
             />
           ) : (

@@ -10,13 +10,15 @@ export function SignInPanel({
   returnTo,
   hasDraft,
   oauthError,
+  blockedError,
 }: {
   returnTo: string;
   hasDraft: boolean;
   oauthError: boolean;
+  blockedError: boolean;
 }) {
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState(oauthError);
+  const [error, setError] = useState(oauthError || blockedError);
 
   async function signIn() {
     setPending(true);
@@ -44,12 +46,16 @@ export function SignInPanel({
           Continue with Google to add tips and help keep information useful.
         </p>
       </div>
-      {error && (
+      {blockedError ? (
+        <div className="error-notice" role="alert">
+          This account has been blocked by the administrator.
+        </div>
+      ) : error ? (
         <div className="error-notice" role="alert">
           Google sign-in didn&apos;t finish.
           {hasDraft ? " Your draft is still here." : " Please try again."}
         </div>
-      )}
+      ) : null}
       <button className="btn secondary" disabled={pending} onClick={signIn}>
         <Image src="/google-g.svg" width={20} height={20} alt="" unoptimized />
         {pending ? "Opening Google…" : "Continue with Google"}

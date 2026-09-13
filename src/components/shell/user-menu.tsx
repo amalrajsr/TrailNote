@@ -7,11 +7,13 @@ export function AccountMenu({
   id,
   name,
   username,
+  role,
   avatar,
 }: {
   id: string;
   name: string;
   username: string;
+  role: "traveler" | "moderator";
   avatar: ProfileAvatarData;
 }) {
   const router = useRouter();
@@ -25,6 +27,9 @@ export function AccountMenu({
       }
       items={[
         { label: "My contributions", href: "/me" },
+        ...(role === "moderator"
+          ? [{ label: "Moderator dashboard", href: "/moderation" }]
+          : []),
         { label: "View public profile", href: `/users/${id}` },
         { label: "Community guidelines", href: "/community-guidelines" },
         {

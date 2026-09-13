@@ -54,6 +54,7 @@ export default async function SignInPage({
           returnTo={returnTo}
           hasDraft={query.draft === "1" || returnTo.includes("/add")}
           oauthError={query.error === "oauth"}
+          blockedError={query.error === "blocked"}
         />
       </div>
     </main>

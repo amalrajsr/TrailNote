@@ -17,6 +17,7 @@ function makeAuth(db: Awaited<ReturnType<typeof getDatabase>>["db"]) {
     secret: config.secret,
     baseURL: config.baseUrl,
     trustedOrigins: [config.baseUrl],
+    onAPIError: { throw: true },
     socialProviders: {
       google: {
         clientId: config.googleClientId!,
@@ -32,6 +33,19 @@ function makeAuth(db: Awaited<ReturnType<typeof getDatabase>>["db"]) {
             await createProfile(db, user.id, user.name);
           },
         },
+        session: {
+          create: {
+            before: async (session: { userId: string }) => {
+              const profile = await db
+                .select({ status: schema.profiles.status })
+                .from(schema.profiles)
+                .where(eq(schema.profiles.userId, session.userId))
+                .then((rows) => rows[0]);
+              if (profile?.status === "suspended")
+                throw new Error("ACCOUNT_BLOCKED");
+            },
+          },
+        },
       },
     },
   });
@@ -40,19 +54,19 @@ export async function getAuth() {
   if (!instance) instance = makeAuth((await getDatabase()).db);
   return instance;
 }
-export async function viewer() {
+export async function viewerState() {
   if (
     !env.BETTER_AUTH_SECRET ||
     !env.GOOGLE_CLIENT_ID ||
     !env.GOOGLE_CLIENT_SECRET
   )
-    return null;
+    return { kind: "anonymous" as const };
   const requestHeaders = await headers();
-  if (!requestHeaders.get("cookie")) return null;
+  if (!requestHeaders.get("cookie")) return { kind: "anonymous" as const };
   const session = await (
     await getAuth()
   ).api.getSession({ headers: requestHeaders });
-  if (!session) return null;
+  if (!session) return { kind: "anonymous" as const };
   const { db } = await getDatabase();
   const row = (
     await db
@@ -73,21 +87,35 @@ export async function viewer() {
       .where(eq(schema.profiles.userId, session.user.id))
   )[0];
   const profile = row?.profile;
-  if (!profile || profile.status !== "active") return null;
+  if (!profile) return { kind: "anonymous" as const };
+  if (profile.status !== "active") {
+    await db
+      .delete(schema.session)
+      .where(eq(schema.session.userId, session.user.id));
+    return { kind: "blocked" as const };
+  }
   return {
-    id: session.user.id,
-    name: profile.displayName,
-    username: profile.username,
-    role: profile.role,
-    avatar:
-      row.avatarPath && row.avatarWidth && row.avatarHeight
-        ? {
-            path: row.avatarPath,
-            width: row.avatarWidth,
-            height: row.avatarHeight,
-          }
-        : null,
+    kind: "active" as const,
+    user: {
+      id: session.user.id,
+      name: profile.displayName,
+      username: profile.username,
+      role: profile.role,
+      avatar:
+        row.avatarPath && row.avatarWidth && row.avatarHeight
+          ? {
+              path: row.avatarPath,
+              width: row.avatarWidth,
+              height: row.avatarHeight,
+            }
+          : null,
+    },
   };
+}
+
+export async function viewer() {
+  const state = await viewerState();
+  return state.kind === "active" ? state.user : null;
 }
 export async function requireViewer() {
   const user = await viewer();
