@@ -7,7 +7,7 @@ export function assertSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
   if (!origin) return;
   const expected = new URL(
-    env.NEXT_PUBLIC_APP_URL ?? env.BETTER_AUTH_URL ?? request.url,
+    env.BETTER_AUTH_URL ?? env.NEXT_PUBLIC_APP_URL  ?? request.url,
   ).origin;
   if (origin !== expected)
     throw new DomainError("FORBIDDEN", "This request origin is not allowed.");
