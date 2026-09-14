@@ -2823,9 +2823,17 @@ body:has(.auth-page) .site-footer {
   background: color-mix(in srgb, var(--surface) 32%, transparent);
 }
 .auth-story {
+  position: relative;
+  isolation: isolate;
   min-width: 0;
+  min-height: 555px;
   display: flex;
   flex-direction: column;
+}
+.auth-story-copy {
+  position: relative;
+  z-index: 2;
+  max-width: 610px;
 }
 .auth-story .eyebrow {
   display: inline-flex;
@@ -2843,7 +2851,7 @@ body:has(.auth-page) .site-footer {
 }
 .auth-story h1 {
   max-width: 620px;
-  font: 500 clamp(46px, 4.4vw, 62px) / 1 var(--font-display);
+  font: 500 clamp(36px, 3.25vw, 47px) / 1.06 var(--font-display);
   letter-spacing: -0.045em;
 }
 .auth-story-lede {
@@ -2854,33 +2862,24 @@ body:has(.auth-page) .site-footer {
   line-height: 1.65;
 }
 .auth-preview {
-  position: relative;
-  flex: 0 0 275px;
-  height: 275px;
-  margin-top: 22px;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 .auth-preview::before {
-  position: absolute;
-  inset: 12px 24px 8px 22px;
-  border: 1px solid color-mix(in srgb, var(--brand) 8%, transparent);
-  border-radius: 24px;
-  background: color-mix(in srgb, var(--surface) 15%, transparent);
-  content: "";
+  display: none;
 }
 .auth-india-map {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 350px;
-  height: 270px;
-  background: color-mix(in srgb, var(--brand) 24%, transparent);
-  filter: drop-shadow(
-    0 0 1px color-mix(in srgb, var(--brand) 40%, transparent)
+  inset: 0;
+  background: linear-gradient(
+    145deg,
+    var(--map-land-highlight),
+    var(--map-land)
   );
-  mask: url("/india-outline.svg") center / contain no-repeat;
-  -webkit-mask: url("/india-outline.svg") center / contain no-repeat;
-  opacity: 0.95;
-  transform: translate(-50%, -48%);
+  mask: url("/india-outline.svg") center / auto 100% no-repeat;
+  -webkit-mask: url("/india-outline.svg") center / auto 100% no-repeat;
+  opacity: 0.58;
 }
 .auth-note {
   position: absolute;
@@ -2922,19 +2921,25 @@ body:has(.auth-page) .site-footer {
   content: "";
 }
 .auth-note-a {
-  top: 20px;
-  left: 0;
+  bottom: 12px;
+  left: 8px;
   transform: rotate(-2deg);
 }
 .auth-note-b {
-  right: 0;
-  bottom: 18px;
+  right: 2px;
+  bottom: 58px;
   transform: rotate(2deg);
+}
+.auth-note-c {
+  top: 57%;
+  left: 51%;
+  width: 185px;
+  transform: translate(-50%, -50%) rotate(0.5deg);
 }
 .auth-zone {
   position: relative;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: flex-end;
   min-width: 0;
 }
@@ -2956,7 +2961,7 @@ body:has(.auth-page) .site-footer {
 .auth-panel {
   width: 100%;
   max-width: 420px;
-  margin: 0 0 14px;
+  margin: 0;
   padding: 38px;
   border-color: color-mix(in srgb, var(--ink) 11%, transparent);
   border-radius: 24px;
@@ -3283,7 +3288,10 @@ summary {
     padding: 36px;
   }
   .auth-story h1 {
-    font-size: 48px;
+    font-size: 40px;
+  }
+  .auth-story {
+    min-height: 570px;
   }
   .auth-micro-copy {
     display: none;
@@ -3573,8 +3581,8 @@ summary {
     border-radius: 24px;
   }
   .auth-story h1 {
-    font-size: 46px;
-    line-height: 0.98;
+    font-size: 35px;
+    line-height: 1.04;
     letter-spacing: -0.04em;
   }
   .auth-story-lede {
@@ -3582,13 +3590,11 @@ summary {
     line-height: 1.65;
   }
   .auth-preview {
-    flex-basis: 210px;
-    height: 210px;
-    margin-top: 24px;
+    inset: 0;
   }
   .auth-india-map {
-    width: 220px;
-    height: 175px;
+    mask-size: auto 92%;
+    -webkit-mask-size: auto 92%;
   }
   .auth-note {
     width: 165px;
@@ -3599,6 +3605,10 @@ summary {
   }
   .auth-note strong {
     font-size: 11px;
+  }
+  .auth-note-c {
+    top: 62%;
+    width: 150px;
   }
   .auth-panel {
     padding: 26px 22px;
@@ -4104,11 +4114,10 @@ body:has(.composer-page) .site-footer .footer-grid::after {
 }
 @media (max-width: 420px) {
   .auth-story h1 {
-    font-size: 41px;
+    font-size: 33px;
   }
-  .auth-preview {
-    flex-basis: 190px;
-    height: 190px;
+  .auth-story {
+    min-height: 560px;
   }
   .auth-note {
     width: 150px;
