@@ -1,6 +1,5 @@
 "use client";
 
-import { Compass } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -37,13 +36,11 @@ export function SignInPanel({
   return (
     <section className="auth-panel form-card">
       <div className="auth-panel-intro">
-        <span className="auth-panel-mark" aria-hidden="true">
-          <Compass size={28} strokeWidth={1.5} />
-        </span>
-        <p className="eyebrow">Welcome to TrailNote</p>
-        <h1 className="editorial">Join TrailNote</h1>
+        <p className="auth-kicker">Welcome to TrailNote</p>
+        <h2>Share what you know.</h2>
         <p className="auth-panel-lede">
-          Sign in to share tips and help the next traveller.
+          Sign in to add useful tips for the next traveller and help keep
+          practical travel information current.
         </p>
       </div>
       {blockedError ? (
@@ -56,7 +53,12 @@ export function SignInPanel({
           {hasDraft ? " Your draft is still here." : " Please try again."}
         </div>
       ) : null}
-      <button className="btn secondary" disabled={pending} onClick={signIn}>
+      <button
+        className="btn secondary"
+        disabled={pending}
+        onClick={signIn}
+        type="button"
+      >
         <Image src="/google-g.svg" width={20} height={20} alt="" unoptimized />
         {pending ? "Opening Google…" : "Continue with Google"}
       </button>
@@ -71,6 +73,10 @@ export function SignInPanel({
       <p className="small muted auth-panel-legal">
         By continuing, you agree to our <Link href="/terms">Terms</Link> and{" "}
         <Link href="/privacy">Privacy Policy</Link>.
+      </p>
+      <p className="auth-reassurance">
+        No profile setup. No travel feed. Just useful notes that can help
+        someone on their next trip.
       </p>
     </section>
   );

@@ -33,6 +33,7 @@ for (const viewport of [
 
     for (const path of [
       "/",
+      "/sign-in",
       "/destinations/badami",
       "/destinations/badami/add",
       `/tips/${changedTipId}`,
