@@ -52,7 +52,7 @@ export function imageKitProvider(): UploadProvider {
       const result = await client.files.upload({
         file: await toFile(bytes, "photo.jpg"),
         fileName: `attempt-${attempt}.webp`,
-        folder: `/fieldnotes/${environment}/uploads/${assetId}`,
+        folder: `/trailnote/${environment}/uploads/${assetId}`,
         useUniqueFileName: false,
         overwriteFile: false,
         checks: "'file.mime' IN ['image/jpeg', 'image/png', 'image/webp']",
@@ -85,7 +85,7 @@ export function imageKitProvider(): UploadProvider {
     async find(assetId) {
       const files = await client.assets.list({
         type: "file",
-        path: `/fieldnotes/${environment}/uploads/${assetId}/`,
+        path: `/trailnote/${environment}/uploads/${assetId}/`,
         limit: 10,
       });
       return files.flatMap((file) =>

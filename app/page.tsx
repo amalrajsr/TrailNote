@@ -41,7 +41,7 @@ export default async function HomePage() {
             <Link href="/destinations/badami">Badami</Link>
             <Link href="/destinations/hampi">Hampi</Link>
             <Link href="/destinations/varkala">Varkala</Link>
-            <Link href="/destinations/gokarna">Gokarna</Link>
+            <Link href="/destinations/matheran">Matheran</Link>
           </nav>
         </div>
         <MapIllustration destinations={mapDestinations} />
