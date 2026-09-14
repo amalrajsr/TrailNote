@@ -1,11 +1,11 @@
 import "server-only";
 import { and, eq, sql } from "drizzle-orm";
-import type { Database } from "../db/client";
+import type { Database, Transaction } from "../db/client";
 import { rateLimitBuckets } from "../db/schema";
 import { DomainError } from "./result";
 
 export async function consumeRateLimit(
-  db: Database,
+  db: Database | Transaction,
   keyHash: string,
   action: string,
   limit: number,
@@ -13,7 +13,7 @@ export async function consumeRateLimit(
   now = Date.now(),
 ) {
   const windowStart = Math.floor(now / windowMs) * windowMs;
-  await db
+  const accepted = await db
     .insert(rateLimitBuckets)
     .values({
       keyHash,
@@ -29,20 +29,19 @@ export async function consumeRateLimit(
         rateLimitBuckets.windowStart,
       ],
       set: { count: sql`${rateLimitBuckets.count} + 1` },
+      where: sql`${rateLimitBuckets.count} < ${limit}`,
     });
-  const bucket = (
-    await db
-      .select({ count: rateLimitBuckets.count })
-      .from(rateLimitBuckets)
-      .where(
-        and(
-          eq(rateLimitBuckets.keyHash, keyHash),
-          eq(rateLimitBuckets.action, action),
-          eq(rateLimitBuckets.windowStart, windowStart),
-        ),
-      )
-  )[0];
-  if (!bucket || bucket.count > limit) {
+  const bucket = await db
+    .select({ count: rateLimitBuckets.count })
+    .from(rateLimitBuckets)
+    .where(
+      and(
+        eq(rateLimitBuckets.keyHash, keyHash),
+        eq(rateLimitBuckets.action, action),
+        eq(rateLimitBuckets.windowStart, windowStart),
+      ),
+    );
+  if (!accepted.rowsAffected || bucket[0]?.count === undefined) {
     const error = new DomainError(
       "RATE_LIMITED",
       "You have reached the temporary limit. Try again shortly.",
@@ -53,5 +52,5 @@ export async function consumeRateLimit(
     );
     throw error;
   }
-  return { remaining: limit - bucket.count };
+  return { remaining: limit - bucket[0].count };
 }

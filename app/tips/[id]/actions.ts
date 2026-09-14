@@ -6,6 +6,7 @@ import { getDatabase } from "../../../src/db";
 import { viewer } from "../../../src/server/auth";
 import type { ActionResult } from "../../../src/server/result";
 import { DomainError } from "../../../src/server/result";
+import { consumeRateLimit } from "../../../src/server/rate-limit";
 import {
   removeConfirmation,
   setConfirmation,
@@ -97,6 +98,7 @@ export async function confirmTip(
     });
     const user = await requireActionViewer();
     const { db } = await getDatabase();
+    await consumeRateLimit(db, user.id, "reaction", 60, 3_600_000);
     const saved = await setConfirmation(
       db,
       user.id,
@@ -125,6 +127,7 @@ export async function undoConfirmation(
     const parsed = targetSchema.parse({ id, revision });
     const user = await requireActionViewer();
     const { db } = await getDatabase();
+    await consumeRateLimit(db, user.id, "reaction", 60, 3_600_000);
     await removeConfirmation(db, user.id, parsed.id, parsed.revision);
     await refreshAffected(parsed.id);
     return resultFor(parsed.id, user.id);
@@ -144,6 +147,7 @@ export async function markHelpful(
     });
     const user = await requireActionViewer();
     const { db } = await getDatabase();
+    await consumeRateLimit(db, user.id, "reaction", 60, 3_600_000);
     await setHelpful(db, user.id, parsed.id, parsed.helpful);
     await refreshAffected(parsed.id);
     return resultFor(parsed.id, user.id);
@@ -161,6 +165,7 @@ export async function reportTip(
   try {
     const user = await requireActionViewer();
     const { db } = await getDatabase();
+    await consumeRateLimit(db, user.id, "report", 10, 86_400_000);
     const result = await reportContribution(db, user.id, {
       id,
       revision,

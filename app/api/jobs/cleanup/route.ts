@@ -22,7 +22,7 @@ function authorized(request: Request) {
   );
 }
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   if (!authorized(request))
     return Response.json(
       { message: "Unauthorized" },

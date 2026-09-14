@@ -24,7 +24,7 @@ export async function GET(request: Request) {
       db,
       anonymousKey(request),
       "destination_search",
-      60,
+      120,
       60_000,
     );
     const local = await searchDestinations(db, query);

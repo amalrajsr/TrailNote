@@ -24,6 +24,7 @@ export async function generateMetadata({
   const { slug } = await params;
   return {
     title: `${slug.charAt(0).toUpperCase() + slug.slice(1)} travel tips`,
+    alternates: { canonical: `/destinations/${slug}` },
   };
 }
 export default async function DestinationPage({

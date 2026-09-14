@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { eq } from "drizzle-orm";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { connectDatabase } from "../../src/db/client";
 import {
@@ -17,8 +18,13 @@ import {
   destinationMapList,
   destinationPage,
   searchDestinations,
+  sitemapDestinations,
 } from "../../src/server/queries/destinations";
-import { listContributions } from "../../src/server/queries/contributions";
+import {
+  listContributions,
+  sitemapContributions,
+} from "../../src/server/queries/contributions";
+import { consumeRateLimit } from "../../src/server/rate-limit";
 const cleanups: Array<() => Promise<void>> = [];
 afterEach(async () => {
   for (const cleanup of cleanups.splice(0)) await cleanup();
@@ -226,5 +232,72 @@ describe("migrated database contract", () => {
     const map = await destinationMapList(db);
     expect(map).toHaveLength(16);
     expect(map[0].slug).toBe("hampi");
+  });
+
+  it("enforces a persisted allowance without charging denied requests", async () => {
+    const { db } = await harness();
+    const now = +fixtureClock;
+    await expect(
+      consumeRateLimit(db, "hashed-client", "search", 2, 60_000, now),
+    ).resolves.toMatchObject({ remaining: 1 });
+    await expect(
+      consumeRateLimit(db, "hashed-client", "search", 2, 60_000, now),
+    ).resolves.toMatchObject({ remaining: 0 });
+    await expect(
+      consumeRateLimit(db, "hashed-client", "search", 2, 60_000, now),
+    ).rejects.toMatchObject({ code: "RATE_LIMITED" });
+    expect(
+      (
+        await db
+          .select({ count: s.rateLimitBuckets.count })
+          .from(s.rateLimitBuckets)
+      )[0].count,
+    ).toBe(2);
+  });
+
+  it("enforces the cap for concurrent allowance requests", async () => {
+    const { db } = await harness();
+    const results = await Promise.allSettled(
+      Array.from({ length: 12 }, () =>
+        consumeRateLimit(
+          db,
+          "concurrent-client",
+          "search",
+          5,
+          60_000,
+          +fixtureClock,
+        ),
+      ),
+    );
+    expect(
+      results.filter((result) => result.status === "fulfilled"),
+    ).toHaveLength(5);
+    expect(
+      results.filter((result) => result.status === "rejected"),
+    ).toHaveLength(7);
+    expect(
+      (
+        await db
+          .select({ count: s.rateLimitBuckets.count })
+          .from(s.rateLimitBuckets)
+      )[0].count,
+    ).toBe(5);
+  });
+
+  it("keeps hidden content out of sitemap query results", async () => {
+    const { db } = await harness();
+    await seedDevelopment(db, "test", "file:test.db");
+    const before = await sitemapContributions(db);
+    expect(before.some((tip) => tip.id === fixtureId(100))).toBe(true);
+    await db
+      .update(s.contributions)
+      .set({ status: "hidden" })
+      .where(eq(s.contributions.id, fixtureId(100)));
+    expect(
+      (await sitemapContributions(db)).some((tip) => tip.id === fixtureId(100)),
+    ).toBe(false);
+    expect(
+      (await sitemapDestinations(db)).map((destination) => destination.slug),
+    ).toContain("badami");
   });
 });

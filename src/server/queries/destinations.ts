@@ -207,6 +207,14 @@ export async function destinationCount(db: Database) {
   return result?.count ?? 0;
 }
 
+export async function sitemapDestinations(db: Database) {
+  return db
+    .select({ slug: d.slug, updatedAt: d.updatedAt })
+    .from(d)
+    .where(eq(d.enabled, true))
+    .orderBy(asc(d.slug));
+}
+
 export async function categoryCountsForDestinations(
   db: Database,
   destinationIds: string[],

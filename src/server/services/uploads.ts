@@ -367,12 +367,94 @@ export async function cancelUpload(
   }
 }
 
+async function purgeDeletedContributions(
+  db: Database,
+  now: number,
+  limit: number,
+) {
+  const cutoff = now - 30 * 86_400_000;
+  const candidates = await db
+    .select({
+      id: s.contributions.id,
+      parentId: s.contributions.parentContributionId,
+    })
+    .from(s.contributions)
+    .where(
+      and(
+        eq(s.contributions.status, "deleted"),
+        lt(s.contributions.deletedAt, cutoff),
+      ),
+    )
+    .limit(limit);
+
+  for (const candidate of candidates) {
+    await db.transaction(async (tx) => {
+      const children = candidate.parentId
+        ? []
+        : await tx
+            .select({ id: s.contributions.id })
+            .from(s.contributions)
+            .where(eq(s.contributions.parentContributionId, candidate.id));
+      const ids = [candidate.id, ...children.map((child) => child.id)];
+      const contacts = await tx
+        .select({ id: s.contacts.id })
+        .from(s.contacts)
+        .where(inArray(s.contacts.contributionId, ids));
+      const contactIds = contacts.map((contact) => contact.id);
+
+      await tx
+        .delete(s.contactRemovalRequests)
+        .where(
+          or(
+            inArray(s.contactRemovalRequests.contributionId, ids),
+            contactIds.length
+              ? inArray(s.contactRemovalRequests.contactId, contactIds)
+              : undefined,
+          ),
+        );
+      await tx.delete(s.reports).where(inArray(s.reports.contributionId, ids));
+      await tx
+        .delete(s.contributionPhotos)
+        .where(inArray(s.contributionPhotos.contributionId, ids));
+      await tx
+        .delete(s.confirmations)
+        .where(inArray(s.confirmations.contributionId, ids));
+      await tx
+        .delete(s.helpfulVotes)
+        .where(inArray(s.helpfulVotes.contributionId, ids));
+      await tx
+        .delete(s.contacts)
+        .where(inArray(s.contacts.contributionId, ids));
+      await tx
+        .delete(s.moderationEvents)
+        .where(inArray(s.moderationEvents.targetId, [...ids, ...contactIds]));
+      await tx
+        .delete(s.contributionRevisions)
+        .where(inArray(s.contributionRevisions.contributionId, ids));
+      await tx
+        .delete(s.contributions)
+        .where(
+          inArray(s.contributions.id, [
+            ...children.map((child) => child.id),
+            candidate.id,
+          ]),
+        );
+    });
+  }
+  return candidates.length;
+}
+
 export async function runCleanup(
   db: Database,
   provider: UploadProvider,
   now = Date.now(),
   limit = 20,
 ) {
+  const [receipts, buckets, retainedContributions] = await Promise.all([
+    db.delete(s.mutationReceipts).where(lt(s.mutationReceipts.expiresAt, now)),
+    db.delete(s.rateLimitBuckets).where(lt(s.rateLimitBuckets.expiresAt, now)),
+    purgeDeletedContributions(db, now, limit),
+  ]);
   const abandoned = await db
     .select()
     .from(s.uploadAssets)
@@ -493,5 +575,11 @@ export async function runCleanup(
         .where(eq(s.mediaCleanupJobs.id, job.id));
     }
   }
-  return { examined: jobs.length, completed };
+  return {
+    examined: jobs.length,
+    completed,
+    expiredReceipts: receipts.rowsAffected,
+    expiredRateLimitBuckets: buckets.rowsAffected,
+    purgedContributions: retainedContributions,
+  };
 }

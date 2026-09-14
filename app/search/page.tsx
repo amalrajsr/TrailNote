@@ -9,7 +9,10 @@ import { DestinationSearch } from "../../src/components/destinations/search";
 import { LazyDestinationTiles } from "../../src/components/destinations/lazy-tiles";
 import { DestinationTiles } from "../../src/components/destinations/tiles";
 import { EmptyState } from "../../src/components/ui/primitives";
-export const metadata = { title: "Explore destinations" };
+export const metadata = {
+  title: "Explore destinations",
+  alternates: { canonical: "/search" },
+};
 export default async function SearchPage({
   searchParams,
 }: {

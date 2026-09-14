@@ -1,3 +1,8 @@
+export const metadata = {
+  title: "Community guidelines",
+  alternates: { canonical: "/community-guidelines" },
+};
+
 const goodContributions = [
   [
     "Share first-hand details",
@@ -47,8 +52,6 @@ function PrincipleList({
     </div>
   );
 }
-
-export const metadata = { title: "Community guidelines" };
 
 export default function CommunityGuidelinesPage() {
   return (

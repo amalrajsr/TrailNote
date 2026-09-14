@@ -3,6 +3,7 @@ import { Commissioner } from "next/font/google";
 import "./globals.css";
 import { Header } from "../src/components/shell/header";
 import { Footer } from "../src/components/shell/footer";
+import { env } from "../src/server/env";
 export const dynamic = "force-dynamic";
 
 const commissioner = Commissioner({
@@ -12,6 +13,9 @@ const commissioner = Commissioner({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    env.NEXT_PUBLIC_APP_URL ?? env.BETTER_AUTH_URL ?? "http://localhost:3000",
+  ),
   title: {
     default: "TrailNote",
     template: "%s · TrailNote",

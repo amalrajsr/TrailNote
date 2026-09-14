@@ -7,6 +7,7 @@ import {
   contributionInput,
   type ContributionInput,
 } from "../../lib/validation/contribution";
+import { consumeRateLimit } from "../rate-limit";
 import { DomainError } from "../result";
 
 export const payloadDigest = (value: unknown) =>
@@ -175,6 +176,7 @@ export async function createContribution(
         );
       return { id: existing.id, revision: existing.revision };
     }
+    await consumeRateLimit(tx, userId, "contribution_write", 20, 3_600_000);
     const destination = (
       await tx
         .select()
@@ -259,6 +261,7 @@ export async function editContribution(
         );
       return JSON.parse(receipt.resultRef) as { id: string; revision: number };
     }
+    await consumeRateLimit(tx, userId, "contribution_write", 20, 3_600_000);
     const old = await visibleContribution(tx, id);
     if (old.authorId !== userId)
       throw new DomainError("FORBIDDEN", "Only the author can edit this tip.");

@@ -10,6 +10,8 @@ import {
 } from "../src/server/queries/destinations";
 import { ArrowRight, Plus } from "lucide-react";
 
+export const metadata = { alternates: { canonical: "/" } };
+
 export default async function HomePage() {
   const { db } = await getDatabase();
   const [page, mapDestinations] = await Promise.all([

@@ -29,6 +29,21 @@ const cursorSchema = z.object({
   id: z.uuid(),
 });
 const visible = sql`exists(select 1 from profiles p where p.user_id=${c.authorId} and p.status='active') and exists(select 1 from destinations d where d.id=${c.destinationId} and d.enabled=1)`;
+
+export async function sitemapContributions(db: Database) {
+  return db
+    .select({ id: c.id, updatedAt: c.updatedAt })
+    .from(c)
+    .where(
+      and(
+        eq(c.status, "published"),
+        sql`${c.parentContributionId} is null`,
+        visible,
+      ),
+    )
+    .orderBy(desc(c.updatedAt), desc(c.id));
+}
+
 export async function listContributions(
   db: Database,
   {

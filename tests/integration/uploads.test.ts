@@ -294,4 +294,36 @@ describe("photo upload pipeline", () => {
       ).filter(({ status }) => status === "processing"),
     ).toHaveLength(2);
   });
+
+  it("removes expired operational records during cleanup", async () => {
+    const now = +fixtureClock;
+    await connection.db.insert(s.mutationReceipts).values({
+      userId: fixtureId(1),
+      key: crypto.randomUUID(),
+      payloadHash: "digest",
+      resultRef: "{}",
+      createdAt: now - 2,
+      expiresAt: now - 1,
+    });
+    await connection.db.insert(s.rateLimitBuckets).values({
+      keyHash: "expired",
+      action: "upload",
+      windowStart: now - 2,
+      count: 1,
+      expiresAt: now - 1,
+    });
+
+    await expect(
+      runCleanup(connection.db, new FakeProvider(), now),
+    ).resolves.toMatchObject({
+      expiredReceipts: 1,
+      expiredRateLimitBuckets: 1,
+    });
+    expect(await connection.db.select().from(s.mutationReceipts)).toHaveLength(
+      0,
+    );
+    expect(await connection.db.select().from(s.rateLimitBuckets)).toHaveLength(
+      0,
+    );
+  });
 });
