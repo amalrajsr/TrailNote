@@ -39,7 +39,7 @@ export function AccountMenu({
             for (const key of Object.keys(sessionStorage))
               if (key.startsWith("fieldnotes:draft:"))
                 sessionStorage.removeItem(key);
-            router.push("/");
+            router.replace("/?signedOut=1");
             router.refresh();
           },
         },
