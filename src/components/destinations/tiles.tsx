@@ -23,14 +23,14 @@ export function DestinationTiles({
               <span className="place-meta" aria-label="Available categories">
                 {categoryCounts[d.id].slice(0, 3).map(({ category }) => (
                   <span className={`mini-tag ${category}`} key={category}>
-                    {category === "general" ? "Tips" : categoryLabels[category]}
+                    {categoryLabels[category]}
                   </span>
                 ))}
               </span>
             )}
             <small className="place-count">
               {d.publishedRootTipCount
-                ? `${d.publishedRootTipCount} traveler ${d.publishedRootTipCount === 1 ? "note" : "notes"}`
+                ? `${d.publishedRootTipCount} ${d.publishedRootTipCount === 1 ? "tip" : "tips"}`
                 : "Be the first to add a tip"}
             </small>
           </div>

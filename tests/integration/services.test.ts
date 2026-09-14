@@ -470,7 +470,7 @@ describe("transactional contribution services", () => {
       (await conn.client.execute("PRAGMA foreign_key_check")).rows,
     ).toEqual([]);
   });
-  it("erases an authored update even when its root belongs to another traveler", async () => {
+  it("erases an authored update even when its root belongs to another traveller", async () => {
     await deleteAccount(conn.db, fixtureId(2), async () => {});
     await expect(
       visibleContribution(conn.db, fixtureId(200)),

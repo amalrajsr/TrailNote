@@ -50,7 +50,7 @@ export function ContactReveal({ contributionId }: { contributionId: string }) {
   if (!contact)
     return (
       <section className="contact-block">
-        <h2>Contact shared by a traveler</h2>
+        <h2>Contact shared by a traveller</h2>
         <p className="muted">Only share a public business or service number.</p>
         <Button type="button" variant="secondary" busy={busy} onClick={reveal}>
           Show contact
@@ -64,7 +64,7 @@ export function ContactReveal({ contributionId }: { contributionId: string }) {
     );
   return (
     <section className="contact-block" aria-live="polite">
-      <h2>Contact shared by a traveler</h2>
+      <h2>Contact shared by a traveller</h2>
       <p className="contact-number">{contact.phone}</p>
       <div className="row">
         <a className="btn secondary" href={`tel:${contact.phone}`}>

@@ -72,7 +72,7 @@ function Reports({ reports, contacts, events }: { reports: Report[]; contacts: C
           <td data-label="Reported">{formatDate(item.createdAt)}</td>
           <td data-label="Status"><StatusBadge value={item.status} /></td>
           <td data-label="Action" className="moderation-action-cell">
-            {item.status === "open" && report && <div className="moderation-actions"><ActionDialog label="Resolve" description="Hide this reported tip from travelers." danger onConfirm={(reason) => reviewReport(report.id, "hide", reason)} /><ActionDialog label="Dismiss" description="Mark this report as dismissed without hiding the tip." onConfirm={(reason) => reviewReport(report.id, "dismiss", reason)} /></div>}
+            {item.status === "open" && report && <div className="moderation-actions"><ActionDialog label="Resolve" description="Hide this reported tip from travellers." danger onConfirm={(reason) => reviewReport(report.id, "hide", reason)} /><ActionDialog label="Dismiss" description="Mark this report as dismissed without hiding the tip." onConfirm={(reason) => reviewReport(report.id, "dismiss", reason)} /></div>}
             {item.status === "open" && contact && <div className="moderation-actions"><ActionDialog label="Resolve" description="Hide the requested contact from readers." danger onConfirm={(reason) => reviewContactRequest(contact.id, "hide", reason)} /><ActionDialog label="Dismiss" description="Mark this contact-removal request as dismissed." onConfirm={(reason) => reviewContactRequest(contact.id, "dismiss", reason)} /></div>}
             <History events={events} targetId={report?.contributionId ?? contact?.contactId ?? ""} />
           </td>
@@ -103,7 +103,7 @@ function Tips({ tips, events }: { tips: Tip[]; events: Event[] }) {
       <tbody>{tips.map((tip) => <tr key={tip.id}>
         <td data-label="Tip excerpt" className="moderation-excerpt">{tip.body}</td><td data-label="Destination">{tip.destination}</td>
         <td data-label="Author"><strong>{tip.authorName}</strong><span className="moderation-secondary">@{tip.authorUsername}</span></td><td data-label="Published">{formatDate(tip.createdAt)}</td>
-        <td data-label="Status"><StatusBadge value={tip.status} /></td><td data-label="Action" className="moderation-action-cell">{tip.status === "published" ? <ActionDialog label="Unpublish" description="This tip will be hidden from travelers." danger onConfirm={(reason) => changeTipVisibility(tip.id, "published", "hidden", reason)} /> : <ActionDialog label="Republish" description="This tip will be visible to travelers unless its author is blocked." onConfirm={(reason) => changeTipVisibility(tip.id, "hidden", "published", reason)} />}<History events={events} targetId={tip.id} /></td>
+        <td data-label="Status"><StatusBadge value={tip.status} /></td><td data-label="Action" className="moderation-action-cell">{tip.status === "published" ? <ActionDialog label="Unpublish" description="This tip will be hidden from travellers." danger onConfirm={(reason) => changeTipVisibility(tip.id, "published", "hidden", reason)} /> : <ActionDialog label="Republish" description="This tip will be visible to travellers unless its author is blocked." onConfirm={(reason) => changeTipVisibility(tip.id, "hidden", "published", reason)} />}<History events={events} targetId={tip.id} /></td>
       </tr>)}</tbody>
     </table>
     {!tips.length && <p className="moderation-empty">No tips match these filters.</p>}

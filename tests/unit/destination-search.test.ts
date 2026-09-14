@@ -5,7 +5,7 @@ import {
 } from "../../src/lib/destination-search";
 
 describe("destination search", () => {
-  it("promotes an exact traveler alias above road results", () => {
+  it("promotes an exact traveller alias above road results", () => {
     expect(
       extractDestinationAliases({
         "name:en": "Ooty",

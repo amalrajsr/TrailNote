@@ -8,7 +8,7 @@ import { DomainError } from "../../../src/server/result";
 import { publicProfile } from "../../../src/server/queries/profiles";
 
 export const metadata = {
-  title: "Traveler profile",
+  title: "Traveller profile",
   robots: { index: false, follow: true },
 };
 

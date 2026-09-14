@@ -362,7 +362,7 @@ export async function setAccountStatus(
     if (input.targetUserId === userId || profile.role !== "traveler")
       throw new DomainError(
         "FORBIDDEN",
-        "Moderators can only block or unblock travelers other than themselves.",
+        "Moderators can only block or unblock travellers other than themselves.",
       );
     if (profile.status !== input.expectedStatus)
       throw new DomainError(

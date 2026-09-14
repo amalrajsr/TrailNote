@@ -43,7 +43,7 @@ export default async function UpdateContributionPage({
         </Link>
         <h1 className="page-title">What has changed?</h1>
         <p className="muted">
-          Share what you observed. The original traveler&apos;s report stays
+          Share what you observed. The original traveller&apos;s report stays
           intact.
         </p>
         <ContributionComposer

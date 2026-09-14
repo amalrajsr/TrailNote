@@ -10,7 +10,7 @@ import { LazyDestinationTiles } from "../../src/components/destinations/lazy-til
 import { DestinationTiles } from "../../src/components/destinations/tiles";
 import { EmptyState } from "../../src/components/ui/primitives";
 export const metadata = {
-  title: "Explore destinations",
+  title: "Explore places",
   alternates: { canonical: "/search" },
 };
 export default async function SearchPage({
@@ -32,10 +32,10 @@ export default async function SearchPage({
     : {};
   return (
     <main id="main" className="container page-top stack">
-      <h1 className="page-title">Find your next destination.</h1>
+      <h1 className="page-title">Find a place. See what travellers know.</h1>
       <DestinationSearch initialQuery={q} />
       <section className="stack">
-        <h2>{q ? `Results for “${q}”` : "All locations"}</h2>
+        <h2>{q ? `Results for “${q}”` : "Places on TrailNote"}</h2>
         {results?.length ? (
           <DestinationTiles destinations={results} />
         ) : page?.destinations.length ? (
@@ -46,8 +46,8 @@ export default async function SearchPage({
             total={total}
           />
         ) : (
-          <EmptyState title="No destinations found">
-            We haven&apos;t added this destination yet. Try a nearby town.
+          <EmptyState title="No places found">
+            We haven&apos;t added this place yet. Try a nearby town.
           </EmptyState>
         )}
       </section>

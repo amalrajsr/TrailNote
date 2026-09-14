@@ -11,7 +11,7 @@ export const categoryLabels: Record<Category, string> = {
   food: "Food",
   transport: "Transport",
   explore: "Explore",
-  general: "General tip",
+  general: "General",
 };
 export const priceUnits = [
   "room_night",

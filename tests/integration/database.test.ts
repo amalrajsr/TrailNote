@@ -64,7 +64,7 @@ describe("migrated database contract", () => {
       ),
     ).toBe(7);
   });
-  it("destination-only seed never fabricates traveler content", async () => {
+  it("destination-only seed never fabricates traveller content", async () => {
     const { db, client } = await harness();
     await seedDestinations(db);
     expect(
@@ -197,7 +197,7 @@ describe("migrated database contract", () => {
     ).rejects.toThrow("Invalid destination cursor");
   });
 
-  it("ranks destinations by traveler notes and caps the map at sixteen", async () => {
+  it("ranks destinations by traveller tips and caps the map at sixteen", async () => {
     const { db } = await harness();
     await seedDevelopment(db, "test", "file:test.db");
     const hampi = await destinationBySlug(db, "hampi");

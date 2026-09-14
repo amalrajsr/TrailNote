@@ -41,9 +41,9 @@ export function SignInPanel({
           <Compass size={28} strokeWidth={1.5} />
         </span>
         <p className="eyebrow">Welcome to TrailNote</p>
-        <h1 className="editorial">Share what you know</h1>
+        <h1 className="editorial">Join TrailNote</h1>
         <p className="auth-panel-lede">
-          Continue with Google to add tips and help keep information useful.
+          Sign in to share tips and help the next traveller.
         </p>
       </div>
       {blockedError ? (

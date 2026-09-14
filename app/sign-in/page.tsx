@@ -18,37 +18,12 @@ export default async function SignInPage({
     <main id="main" className="container auth-page">
       <div className="auth-layout">
         <aside className="auth-story" aria-labelledby="auth-story-title">
-          <p className="eyebrow">Travel notes, not travel noise</p>
-          <h1 id="auth-story-title">
-            Find the details that make a place easier.
-          </h1>
-          <p className="auth-story-lede">
-            TrailNote keeps the useful bits of a trip close at hand, shared by
-            people who have actually been there.
+          <p id="auth-story-title" className="eyebrow">
+            Travel notes, not travel noise
           </p>
-          <ul className="auth-story-list">
-            <li>
-              <span>01</span>
-              <p>
-                <strong>Practical by design</strong>
-                Prices, routes, timing, and the small things guidebooks miss.
-              </p>
-            </li>
-            <li>
-              <span>02</span>
-              <p>
-                <strong>Shared by travellers</strong>
-                First-hand notes that get more useful with every contribution.
-              </p>
-            </li>
-            <li>
-              <span>03</span>
-              <p>
-                <strong>Made for the next trip</strong>
-                Save your place in the conversation and add what you learned.
-              </p>
-            </li>
-          </ul>
+          <p className="auth-story-lede">
+            Practical details shared by people who&apos;ve actually been there.
+          </p>
         </aside>
         <SignInPanel
           returnTo={returnTo}

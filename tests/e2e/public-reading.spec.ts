@@ -77,14 +77,14 @@ test("destination API pages through all enabled locations", async ({
   ).toBe(false);
 });
 
-test("homepage shows six location tiles and links to full search", async ({
+test("homepage shows six place tiles and links to full search", async ({
   page,
 }) => {
   await page.goto("/");
 
   await expect(page.locator(".destination-tile")).toHaveCount(6);
   await expect(
-    page.getByRole("link", { name: "View all locations" }),
+    page.getByRole("link", { name: "View all places" }),
   ).toHaveAttribute("href", "/search");
 
   const map = page.getByRole("navigation", { name: "Map destinations" });
@@ -100,18 +100,18 @@ test("homepage shows six location tiles and links to full search", async ({
   );
 });
 
-test("destination feed explains how traveler notes are structured", async ({
+test("destination feed explains what tips contain", async ({
   page,
 }) => {
   await page.goto("/destinations/badami");
 
   const guide = page.locator(".destination-aside");
   await expect(
-    guide.getByRole("heading", { name: "Good to know" }),
+    guide.getByRole("heading", { name: "What you'll find here" }),
   ).toBeVisible();
-  await expect(guide.getByText("Primary value")).toBeVisible();
-  await expect(guide.getByText("Quick facts")).toBeVisible();
-  await expect(guide.getByText("Traveler note")).toBeVisible();
+  await expect(guide.getByText("Prices & fares")).toBeVisible();
+  await expect(guide.getByText("Useful details")).toBeVisible();
+  await expect(guide.getByText("Traveller tips")).toBeVisible();
 });
 
 test("destination search supports aliases and keyboard selection", async ({
@@ -160,7 +160,7 @@ test("destination tips load as the page approaches the end of the feed", async (
 }) => {
   await page.goto("/destinations/badami");
 
-  const feed = page.getByRole("region", { name: "Traveler tips" });
+  const feed = page.getByRole("region", { name: "Traveller tips" });
   await expect(feed).toBeVisible();
   expect(
     await feed.evaluate((element) => getComputedStyle(element).overflowY),
@@ -192,7 +192,7 @@ test("development dialog traps focus, closes with Escape, and restores focus", a
   await expect(trigger).toBeFocused();
 });
 
-test("traveler can claim a unique username and open their stable public profile", async ({
+test("traveller can claim a unique username and open their stable public profile", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -237,7 +237,7 @@ test("guest composer validates first, preserves its draft, and returns from sign
   await page.getByRole("button", { name: "Share tip" }).click();
   await expect(
     page.getByText(
-      "Give the next traveler one detail they can use — for example a price, route, timing, place, or something to avoid.",
+      "Give the next traveller one detail they can use — for example a price, route, timing, place, or something to avoid.",
     ),
   ).toBeVisible();
 
@@ -285,7 +285,7 @@ test("guest photo selection asks for sign-in before opening a file picker", asyn
 }) => {
   await page.goto("/destinations/badami/add");
   await page
-    .getByRole("textbox", { name: "What should the next traveler know?" })
+    .getByRole("textbox", { name: "What do you wish you knew before coming here?" })
     .fill("A draft remains available before choosing any photos.");
   await page.getByRole("button", { name: "Add photos" }).click();
 
@@ -308,7 +308,7 @@ test("detail keeps the original fare and attributes the changed fare", async ({
   await expect(update).toContainText("₹35");
   await expect(update).toContainText("₹40");
   await expect(
-    page.getByText("7 travelers confirmed this version"),
+    page.getByText("7 travellers confirmed this version"),
   ).toHaveCount(2);
 });
 
@@ -326,11 +326,11 @@ test("guest reaction returns to a focused intent without voting", async ({
   await page.goto(`/tips/${changedTipId}?intent=confirm`);
   await expect(page.getByRole("button", { name: "Confirmed" })).toBeFocused();
   await expect(page.locator(".reaction-count")).toContainText(
-    "7 travelers confirmed this version",
+    "7 travellers confirmed this version",
   );
 });
 
-test("signed-in traveler can confirm, correct the month, undo, and mark helpful", async ({
+test("signed-in traveller can confirm, correct the month, undo, and mark helpful", async ({
   page,
 }) => {
   await signInAsObserver(page, newObserverSessionToken);
@@ -339,7 +339,7 @@ test("signed-in traveler can confirm, correct the month, undo, and mark helpful"
   await page.getByRole("button", { name: "Still accurate" }).click();
   await expect(page.getByText(/Confirmed for September 2026/)).toBeVisible();
   await expect(page.locator(".reaction-count")).toContainText(
-    "8 travelers confirmed this version",
+    "8 travellers confirmed this version",
   );
   await expect(page.locator(".detail-main .badge")).toContainText(
     "Change reported",
@@ -352,7 +352,7 @@ test("signed-in traveler can confirm, correct the month, undo, and mark helpful"
     page.getByRole("button", { name: "Still accurate" }),
   ).toBeVisible();
   await expect(page.locator(".reaction-count")).toContainText(
-    "7 travelers confirmed this version",
+    "7 travellers confirmed this version",
   );
 
   const helpful = page.getByRole("button", { name: "Helpful 0" });
@@ -422,10 +422,10 @@ test("changed-information composer locks context and retains a guest draft", asy
   await expect(page.getByText("Original report · version 1")).toBeVisible();
   await expect(page.locator(".original-summary")).toContainText("₹35");
   await expect(
-    page.getByRole("button", { name: /Quick tip|Transport/ }),
+    page.getByRole("button", { name: /General|Transport/ }),
   ).toHaveCount(0);
   const body = page.getByRole("textbox", {
-    name: "Tell travelers what's different",
+    name: "Tell travellers what's different",
   });
   const update =
     "The September bus fare was ₹45 and the journey took forty minutes.";
@@ -437,7 +437,7 @@ test("changed-information composer locks context and retains a guest draft", asy
   await expect(body).toHaveValue(update);
 });
 
-test("signed-in traveler publishes an attributed update without replacing the original", async ({
+test("signed-in traveller publishes an attributed update without replacing the original", async ({
   page,
 }) => {
   await signInAsObserver(page, newObserverSessionToken);
@@ -445,7 +445,7 @@ test("signed-in traveler publishes an attributed update without replacing the or
   const update =
     "Fictional browser check: the bus fare was ₹45 in September; the original report should remain visible.";
   await page
-    .getByRole("textbox", { name: "Tell travelers what's different" })
+    .getByRole("textbox", { name: "Tell travellers what's different" })
     .fill(update);
   await page.getByRole("button", { name: "Share update" }).click();
   await expect(

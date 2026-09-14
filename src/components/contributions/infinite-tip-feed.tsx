@@ -89,12 +89,12 @@ export function InfiniteTipFeed({
   return (
     <div className="tip-browser" aria-busy={status === "loading"}>
       <p id={hintId} className="scroll-hint">
-        Scroll this list to browse more traveler notes.
+        Scroll to see more tips.
       </p>
       <div
         className="tip-scroll"
         role="region"
-        aria-label="Traveler tips"
+        aria-label="Traveller tips"
         aria-describedby={hintId}
         tabIndex={0}
       >
@@ -125,7 +125,7 @@ export function InfiniteTipFeed({
           {status === "error"
             ? "We couldn’t load more tips. Check your connection and try again."
             : status === "loading"
-              ? "Loading more traveler tips…"
+              ? "Loading more tips…"
               : nextCursor
                 ? `${cards.length} of ${total} tips shown.`
                 : `All ${total} ${total === 1 ? "tip" : "tips"} shown.`}

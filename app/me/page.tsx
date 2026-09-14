@@ -10,7 +10,7 @@ import { getDatabase } from "../../src/db";
 import { viewer } from "../../src/server/auth";
 import { accountContributions } from "../../src/server/queries/account";
 
-export const metadata = { title: "My contributions", robots: { index: false } };
+export const metadata = { title: "My tips", robots: { index: false } };
 export default async function MePage({
   searchParams,
 }: {
@@ -34,8 +34,8 @@ export default async function MePage({
       <header className="account-hero">
         <div className="account-heading">
           <p className="eyebrow">Your TrailNote</p>
-          <h1 className="page-title">My contributions</h1>
-          <p>Everything you&apos;ve shared to help another traveler.</p>
+          <h1 className="page-title">My tips</h1>
+          <p>Everything you&apos;ve shared to help another traveller.</p>
         </div>
         <div className="account-profile-column">
           <AccountProfileEditor
@@ -49,7 +49,7 @@ export default async function MePage({
       </header>
 
       <div className="account-toolbar">
-        <nav className="tabs account-tabs" aria-label="Contribution status">
+        <nav className="tabs account-tabs" aria-label="Tip status">
           <Link
             className={filter === "all" ? "selected" : ""}
             aria-current={filter === "all" ? "page" : undefined}

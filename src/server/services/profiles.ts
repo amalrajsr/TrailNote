@@ -49,7 +49,7 @@ export async function createProfile(
     await db.select().from(s.profiles).where(eq(s.profiles.userId, userId))
   )[0];
   if (existing) return existing;
-  const displayName = providerName.trim().split(/\s+/)[0] || "Traveler";
+  const displayName = providerName.trim().split(/\s+/)[0] || "Traveller";
   for (const username of usernameCandidates(displayName, userId)) {
     const created = await db.transaction(async (tx) => {
       if (!(await reserveUsername(tx, userId, username, now))) return null;

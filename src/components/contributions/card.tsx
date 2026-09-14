@@ -37,7 +37,7 @@ export function TipCard({ tip }: { tip: ContributionCardDTO }) {
         <div className={`category-label ${tip.category}`}>
           <CategoryIcon category={tip.category} />
           {tip.category === "general"
-            ? "Quick tip"
+            ? "General"
             : categoryLabels[tip.category]}
         </div>
         <span className={`badge ${tip.freshness.tone}`}>
@@ -92,7 +92,7 @@ export function TipCard({ tip }: { tip: ContributionCardDTO }) {
       {tip.lastConfirmedMonth && (
         <p className="tip-confirm">
           Last confirmed {formatMonth(tip.lastConfirmedMonth)} ·{" "}
-          {tip.confirmationCount} travelers
+          {tip.confirmationCount} travellers
         </p>
       )}
       <div className="tip-actions">

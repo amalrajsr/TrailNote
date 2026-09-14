@@ -77,7 +77,7 @@ type Draft = {
 const initialActionState: ComposerActionState = { status: "idle" };
 const categoryNames: Record<Category, string> = {
   ...categoryLabels,
-  general: "Quick tip",
+  general: "General",
 };
 const categoryCopy: Record<
   Category,
@@ -499,7 +499,7 @@ export function ContributionComposer({
         <div className="success-mark" aria-hidden="true">
           <Check size={28} strokeWidth={2.5} />
         </div>
-        <p className="eyebrow">Shared with travelers</p>
+        <p className="eyebrow">Shared with travellers</p>
         <h2>
           {mode === "update"
             ? "Update shared"
@@ -509,10 +509,10 @@ export function ContributionComposer({
         </h2>
         <p className="success-copy">
           {mode === "update"
-            ? "Thanks for helping travelers understand what changed."
+            ? "Thanks for helping travellers understand what changed."
             : mode === "edit"
-              ? "Your newest version is now visible to travelers."
-              : `Your note about ${destination.name} is now ready to help the next traveler.`}
+              ? "Your newest version is now visible to travellers."
+              : `Your tip about ${destination.name} is now ready to help the next traveller.`}
         </p>
         <Link className="btn success-primary" href={`/tips/${state.tipId}`}>
           {mode === "update" ? "View updated discussion" : "View your tip"}
@@ -749,7 +749,7 @@ export function ContributionComposer({
             id="body"
             label={
               mode === "update"
-                ? "Tell travelers what's different"
+                ? "Tell travellers what's different"
                 : categoryCopy[category].prompt
             }
             error={error("body")}
@@ -770,7 +770,7 @@ export function ContributionComposer({
               aria-invalid={!!error("body")}
             />
             <div id="body-help" className="field-foot">
-              <span>Specific details are more useful than reviews.</span>
+              <span>Share a useful detail rather than a general review.</span>
               <span>{Array.from(draft.body).length} / 1,000</span>
             </div>
             {showUsefulnessGuidance && (
@@ -779,7 +779,7 @@ export function ContributionComposer({
                 className="usefulness-guidance"
                 role="alert"
               >
-                Give the next traveler one detail they can use — for example a
+                Give the next traveller one detail they can use — for example a
                 price, route, timing, place, or something to avoid.
               </p>
             )}
@@ -788,7 +788,7 @@ export function ContributionComposer({
           <div className="visited-row">
             <div className="visited-title">
               <label htmlFor="visitedChoice">When were you there?</label>
-              <small>Freshness helps the next traveler judge the tip.</small>
+              <small>Freshness helps the next traveller judge the tip.</small>
             </div>
             <Select
               id="visitedChoice"
@@ -1180,7 +1180,7 @@ export function ContributionComposer({
         )}
 
         <div className="reader-preview" aria-live="polite">
-          <p className="reader-preview-label">The next traveler will see</p>
+          <p className="reader-preview-label">The next traveller will see</p>
           <p className="reader-preview-meta">
             {categoryNames[category]} · Visited{" "}
             {previewMonth(

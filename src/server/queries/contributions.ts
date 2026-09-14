@@ -302,7 +302,7 @@ export async function cardsForRows(db: Database, rows: Tip[]) {
       ),
       author: {
         id: author?.id ?? t.authorId,
-        displayName: author?.name ?? "Traveler",
+        displayName: author?.name ?? "Traveller",
         username: author?.username ?? "traveler",
         initial: Array.from(author?.name ?? "T")[0],
         avatar:
@@ -331,7 +331,7 @@ export async function cardsForRows(db: Database, rows: Tip[]) {
           path: p.path!,
           width: p.width!,
           height: p.height!,
-          alt: p.alt || `Traveler photo attached to ${title}`,
+          alt: p.alt || `Traveller photo attached to ${title}`,
         })),
     };
   });

@@ -86,7 +86,7 @@ export default function ComponentGalleryPage() {
         <Field
           id="gallery-tip"
           label="Useful tip"
-          error="Add at least 10 characters so another traveler can use this."
+          error="Add at least 10 characters so another traveller can use this."
         >
           <Textarea
             id="gallery-tip"
@@ -99,7 +99,7 @@ export default function ComponentGalleryPage() {
 
       <section className="gallery" aria-label="Content states">
         <EmptyState title="No tips here yet">
-          Know something useful? Help the next traveler.
+          Know something useful? Help the next traveller.
         </EmptyState>
         <div className="error-notice" role="alert">
           Couldn&apos;t load tips. Check your connection and try again.

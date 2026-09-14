@@ -10,7 +10,7 @@ const goodContributions = [
   ],
   [
     "Include when you visited",
-    "Freshness helps the next traveler judge the information.",
+    "Freshness helps the next traveller judge the information.",
   ],
   [
     "Be specific",
@@ -61,7 +61,7 @@ export default function CommunityGuidelinesPage() {
         <h1>Community guidelines</h1>
         <p>
           TrailNote is most useful when every contribution gives the next
-          traveler one practical thing they can actually use.
+          traveller one practical thing they can actually use.
         </p>
       </header>
       <div className="guideline-grid">
@@ -70,7 +70,7 @@ export default function CommunityGuidelinesPage() {
           <PrincipleList items={goodContributions} mark="✓" />
         </section>
         <section className="principle-card bad">
-          <h2>Don&apos;t use TrailNote for</h2>
+          <h2>What doesn&apos;t belong on TrailNote</h2>
           <PrincipleList items={avoidContributions} mark="×" />
         </section>
       </div>
@@ -78,7 +78,7 @@ export default function CommunityGuidelinesPage() {
         <h2>When information changes</h2>
         <p>
           Use the Changed action to add a new observation. TrailNote keeps the
-          earlier report visible so travelers can see what changed and when.
+          earlier report visible so travellers can see what changed and when.
         </p>
       </section>
       <section className="doc-section">
@@ -86,7 +86,7 @@ export default function CommunityGuidelinesPage() {
         <p>
           Report content that is spam, inaccurate, unsafe, or exposes private
           information. Reports go to a private moderator queue and do not
-          automatically remove a traveler tip.
+          automatically remove a traveller tip.
         </p>
       </section>
     </main>

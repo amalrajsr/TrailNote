@@ -66,10 +66,10 @@ export default async function DestinationPage({
         <div>
           <p className="eyebrow">{destination.state} · India</p>
           <h1>{destination.name}</h1>
-          <p>Small discoveries. Useful details. Shared by travelers.</p>
+          <p>Practical tips shared by travellers who&apos;ve been there.</p>
           <div className="dest-meta">
-            {destination.publishedRootTipCount} traveler{" "}
-            {destination.publishedRootTipCount === 1 ? "note" : "notes"} ·{" "}
+            {destination.publishedRootTipCount}{" "}
+            {destination.publishedRootTipCount === 1 ? "tip" : "tips"} ·{" "}
             {destination.state}, India
           </div>
         </div>
@@ -91,9 +91,7 @@ export default async function DestinationPage({
                 <CategoryIcon category={key as Category | "all"} />
                 {key === "all"
                   ? "All"
-                  : key === "general"
-                    ? "Tips"
-                    : categoryLabels[key as Category]}
+                  : categoryLabels[key as Category]}
                 <span className="sr-only">
                   {key === "all"
                     ? destination.publishedRootTipCount
@@ -112,10 +110,10 @@ export default async function DestinationPage({
             <h2>
               {category
                 ? `${categoryLabels[category]} tips`
-                : "Latest from travelers"}
+                : "Latest tips"}
             </h2>
             <span>
-              {totalTips} {totalTips === 1 ? "note" : "notes"}
+              {totalTips} {totalTips === 1 ? "tip" : "tips"}
             </span>
           </div>
           {listing.cards.length ? (
@@ -142,28 +140,28 @@ export default async function DestinationPage({
               }
             >
               Know something useful about {destination.name}? Help the next
-              traveler.
+              traveller.
             </EmptyState>
           )}
         </section>
         <aside className="side-panel destination-aside">
-          <h2>Good to know</h2>
+          <h2>What you&apos;ll find here</h2>
           <p>
-            Prices and practical details come directly from travelers and can
+            Prices and practical details come directly from travellers and can
             change over time.
           </p>
           <dl className="reading-guide">
             <div>
-              <dt>Primary value</dt>
-              <dd>Price or fare</dd>
+              <dt>Prices &amp; fares</dt>
+              <dd>What travellers actually paid.</dd>
             </div>
             <div>
-              <dt>Quick facts</dt>
-              <dd>Useful details at a glance</dd>
+              <dt>Useful details</dt>
+              <dd>Routes, timings, contacts and things worth knowing.</dd>
             </div>
             <div>
-              <dt>Traveler note</dt>
-              <dd>The full experience, in their words</dd>
+              <dt>Traveller tips</dt>
+              <dd>First-hand context from someone who was there.</dd>
             </div>
           </dl>
         </aside>

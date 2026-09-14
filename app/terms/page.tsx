@@ -14,10 +14,10 @@ export default function TermsPage() {
         <div className="document-meta">Last updated September 2026</div>
       </header>
       <section className="doc-section">
-        <h2>Use traveler information with judgment</h2>
+        <h2>Use traveller information with judgment</h2>
         <p>
           Prices, routes, opening conditions, and availability can change.
-          TrailNote presents what travelers report from their own experiences;
+          TrailNote presents what travellers report from their own experiences;
           it does not guarantee that a contribution remains current.
         </p>
       </section>
@@ -34,7 +34,7 @@ export default function TermsPage() {
         <p>
           Do not publish private personal information. Public-facing business or
           service contact details should only be shared when you are comfortable
-          making that information available to other travelers.
+          making that information available to other travellers.
         </p>
       </section>
       <section className="doc-section">
@@ -49,7 +49,7 @@ export default function TermsPage() {
         <h2>Your content</h2>
         <p>
           You remain responsible for the information you contribute. You may
-          edit or delete your own published traveler tips subject to the
+          edit or delete your own published traveller tips subject to the
           product&apos;s revision and moderation rules.
         </p>
       </section>

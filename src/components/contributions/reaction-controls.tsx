@@ -262,7 +262,7 @@ export function ReactionControls({
       <p className="reaction-count small muted">
         {confirmationCount === 0
           ? "No confirmations yet"
-          : `${confirmationCount} ${confirmationCount === 1 ? "traveler" : "travelers"} confirmed this version`}
+          : `${confirmationCount} ${confirmationCount === 1 ? "traveller" : "travellers"} confirmed this version`}
       </p>
       <p
         className={error ? "field-error" : "sr-only"}

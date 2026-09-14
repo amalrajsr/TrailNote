@@ -127,7 +127,7 @@ function ContributionRow({
               }}
               className="delete-tip-dialog"
               title="Delete this tip?"
-              description="It will no longer be visible to travelers. This action cannot be undone."
+              description="It will no longer be visible to travellers. This action cannot be undone."
               icon={
                 <span className="delete-tip-icon" aria-hidden="true">
                   <TriangleAlert size={23} />
@@ -195,7 +195,7 @@ export function MyContributions({ tips }: { tips: Tip[] }) {
           Share one practical detail you wish you had known before you went.
         </p>
         <Link className="btn" href="/search">
-          Find a destination
+          Find a place
         </Link>
       </section>
     );

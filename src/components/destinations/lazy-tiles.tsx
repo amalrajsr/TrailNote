@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Category } from "../../lib/constants";
 import type {
   DestinationPage,
@@ -28,7 +28,6 @@ export function LazyDestinationTiles({
   initialNextCursor: string | null;
   total: number;
 }) {
-  const hintId = useId();
   const [destinations, setDestinations] = useState(initialDestinations);
   const [categoryCounts, setCategoryCounts] = useState(initialCategoryCounts);
   const [nextCursor, setNextCursor] = useState(initialNextCursor);
@@ -97,14 +96,10 @@ export function LazyDestinationTiles({
 
   return (
     <div className="destination-browser" aria-busy={status === "loading"}>
-      <p id={hintId} className="scroll-hint">
-        Scroll this list to browse more locations.
-      </p>
       <div
         className="destination-scroll"
         role="region"
-        aria-label="Locations"
-        aria-describedby={hintId}
+        aria-label="Places on TrailNote"
         tabIndex={0}
       >
         <DestinationTiles
@@ -127,20 +122,20 @@ export function LazyDestinationTiles({
             onClick={() => void loadMore()}
           >
             {status === "loading"
-              ? "Loading locations…"
+              ? "Loading places…"
               : status === "error"
                 ? "Try loading again"
-                : "Load more locations"}
+                : "Show more places"}
           </button>
         )}
         <p className="load-status" role="status" aria-live="polite">
           {status === "error"
-            ? "We couldn’t load more locations. Check your connection and try again."
+            ? "We couldn’t load more places. Check your connection and try again."
             : status === "loading"
-              ? "Loading more locations…"
+              ? "Loading more places…"
               : loadedAll
-                ? `All ${total} ${total === 1 ? "location" : "locations"} shown.`
-                : `${destinations.length} of ${total} locations shown.`}
+                ? `All ${total} ${total === 1 ? "place" : "places"} shown.`
+                : `${destinations.length} of ${total} places shown.`}
         </p>
       </div>
     </div>

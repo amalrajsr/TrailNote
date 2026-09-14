@@ -107,7 +107,7 @@ function ContributionRow({
             "suspended",
             reason,
           ),
-        "Traveler suspended.",
+        "Traveller suspended.",
       );
     setConfirm(null);
   };
@@ -194,7 +194,7 @@ function ContributionRow({
             disabled={!reason.trim()}
             onClick={() => setConfirm("suspend")}
           >
-            Suspend traveler
+            Suspend traveller
           </Button>
         ) : (
           <Button
@@ -211,11 +211,11 @@ function ContributionRow({
                     "active",
                     reason,
                   ),
-                "Traveler restored.",
+                "Traveller restored.",
               )
             }
           >
-            Restore traveler
+            Restore traveller
           </Button>
         )}
       </div>
@@ -228,12 +228,12 @@ function ContributionRow({
         open={!!confirm}
         onOpenChange={(open) => !open && setConfirm(null)}
         title={
-          confirm === "suspend" ? "Suspend this traveler?" : "Hide this tip?"
+          confirm === "suspend" ? "Suspend this traveller?" : "Hide this tip?"
         }
         description={
           confirm === "suspend"
             ? "Their contributions and confirmations will no longer be public."
-            : "It will no longer be visible to travelers."
+            : "It will no longer be visible to travellers."
         }
       >
         <div className="row">
@@ -250,7 +250,7 @@ function ContributionRow({
             busy={pending}
             onClick={confirmed}
           >
-            {confirm === "suspend" ? "Suspend traveler" : "Hide tip"}
+            {confirm === "suspend" ? "Suspend traveller" : "Hide tip"}
           </Button>
         </div>
       </Dialog>

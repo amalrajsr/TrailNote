@@ -230,20 +230,20 @@ function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
         <p className="fresh-count">
           {detail.confirmationCount === 0
             ? "No confirmations yet"
-            : `${detail.confirmationCount} ${detail.confirmationCount === 1 ? "traveler" : "travelers"} confirmed this version`}
+            : `${detail.confirmationCount} ${detail.confirmationCount === 1 ? "traveller" : "travellers"} confirmed this version`}
         </p>
         <p className="muted">
           {detail.changeReported
-            ? "A traveler has reported a change. Read the update before relying on the original details."
-            : "Community confirmations reflect travelers' experiences."}
+            ? "A traveller has reported a change. Read the update before relying on the original details."
+            : "Community confirmations reflect travellers' experiences."}
         </p>
       </section>
       <section className="side-note trust-note">
         <h2>
-          <Clock3 size={20} aria-hidden="true" /> From travelers, for travelers
+          <Clock3 size={20} aria-hidden="true" /> From travellers, for travellers
         </h2>
         <p>
-          Community confirmations reflect travelers&apos; experiences. Fares and
+          Community confirmations reflect travellers&apos; experiences. Fares and
           availability may change.
         </p>
         <CopyLink tipId={detail.parent?.id ?? detail.id} />
@@ -322,7 +322,7 @@ function Updates({ detail }: { detail: ContributionDetailDTO }) {
   return (
     <section className="updates" id="updates" aria-labelledby="updates-title">
       <h2 id="updates-title">
-        Traveler updates <small>{detail.updates.length}</small>
+        Traveller updates <small>{detail.updates.length}</small>
       </h2>
       <div className="timeline">{cards(detail.updates)}</div>
       {detail.earlierUpdates.length > 0 && (

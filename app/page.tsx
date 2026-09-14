@@ -27,7 +27,7 @@ export default async function HomePage() {
     <main id="main" className="container">
       <section className="hero home-hero" aria-labelledby="home-title">
         <div className="home-copy">
-          <p className="eyebrow">Traveler knowledge for India</p>
+          <p className="eyebrow">Traveller knowledge for India</p>
           <h1 id="home-title">
             Tell the next traveller
             <br />
@@ -52,11 +52,11 @@ export default async function HomePage() {
       <section className="home-section" aria-labelledby="destinations-title">
         <div className="section-head">
           <div>
-            <h2 id="destinations-title">Explore locations</h2>
-            <p>Start with a few destinations shared by the community.</p>
+            <h2 id="destinations-title">Explore places</h2>
+            <p>See what travellers have shared from places across India.</p>
           </div>
           <Link className="quiet" href="/search">
-            View all locations
+            View all places
             <ArrowRight size={17} aria-hidden="true" />
           </Link>
         </div>

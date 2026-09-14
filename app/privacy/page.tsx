@@ -11,7 +11,7 @@ export default function PrivacyPage() {
         <h1>Privacy at TrailNote</h1>
         <p>
           How TrailNote handles the information you share while keeping public
-          traveler knowledge useful.
+          traveller knowledge useful.
         </p>
         <div className="document-meta">Last updated September 2026</div>
       </header>
@@ -19,7 +19,7 @@ export default function PrivacyPage() {
         <h2>What we collect</h2>
         <p>
           TrailNote stores account information needed for Google sign-in,
-          traveler tips you publish, and operational records needed to keep the
+          traveller tips you publish, and operational records needed to keep the
           service reliable and safe.
         </p>
       </section>
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
         </p>
         <p>
           Your sign-in email and authentication details are not shown on public
-          traveler pages.
+          traveller pages.
         </p>
       </section>
       <section className="doc-section">
@@ -47,7 +47,7 @@ export default function PrivacyPage() {
       <section className="doc-section">
         <h2>Photos</h2>
         <p>
-          Uploaded traveler photos are processed before storage. TrailNote is
+          Uploaded traveller photos are processed before storage. TrailNote is
           designed to remove unnecessary metadata such as location metadata from
           accepted images before they are attached to public tips or profiles.
         </p>
@@ -56,8 +56,9 @@ export default function PrivacyPage() {
         <h2>Operational data</h2>
         <p>
           Operational logs may record request timing, error codes, and service
-          diagnostics. TrailNote does not intentionally log tip bodies, phone
-          numbers, email addresses, image buffers, OAuth tokens, or secrets.
+          diagnostics. TrailNote does not intentionally include the content of
+          tips, phone numbers, email addresses, uploaded images, or
+          authentication credentials in operational logs.
         </p>
       </section>
       <section className="doc-section">

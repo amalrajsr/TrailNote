@@ -55,7 +55,7 @@ export default async function AddContributionPage({
           <aside className="composer-help" aria-labelledby="useful-tip-title">
             <h2 id="useful-tip-title">What makes a tip useful?</h2>
             <p>
-              Think about the traveler who will arrive after you. What would
+              Think about the traveller who will arrive after you. What would
               have made your own trip easier?
             </p>
             <div className="composer-help-list">
@@ -107,7 +107,7 @@ export default async function AddContributionPage({
               </div>
             </div>
             <div className="composer-help-note">
-              You&apos;re helping another traveler, not filling a database.
+              You&apos;re helping another traveller, not filling a database.
             </div>
           </aside>
         </div>

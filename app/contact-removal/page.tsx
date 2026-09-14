@@ -19,7 +19,7 @@ export default async function ContactRemovalPage({
         <h1>Request contact removal</h1>
         <p className="task-lead">
           If a public business or service number was shared on TrailNote and
-          you&apos;d like us to review it, start from the traveler tip where the
+          you&apos;d like us to review it, start from the traveller tip where the
           number appears.
         </p>
         <section className="instruction-panel">
@@ -28,8 +28,8 @@ export default async function ContactRemovalPage({
             <li className="step">
               <span className="step-number">1</span>
               <div>
-                <strong>Open the relevant traveler tip</strong>
-                <p>Find the contribution where the contact is attached.</p>
+                <strong>Open the relevant traveller tip</strong>
+                <p>Find the tip where the contact is attached.</p>
               </div>
             </li>
             <li className="step">
