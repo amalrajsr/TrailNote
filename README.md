@@ -1,36 +1,52 @@
 # TrailNote
 
-TrailNote is a mobile-first knowledge base for practical, first-hand travel
-information in India. The implementation contract lives in
-[`docs/implementation-plan.md`](docs/implementation-plan.md), and progress is
-tracked in [`docs/implementation-status.md`](docs/implementation-status.md).
+Practical, first-hand travel tips for exploring India.
 
-## Local setup
+TrailNote helps travellers discover destinations and share useful, current
+details such as costs, transport, stays, food, safety, and accessibility.
 
-Requirements: Node.js 24 and Corepack.
+## Getting started
+
+### Requirements
+
+- Node.js 24
+- Corepack
+
+### Setup
 
 ```bash
+corepack enable
 corepack pnpm install --frozen-lockfile
 cp .env.example .env.local
+corepack pnpm db:migrate
+corepack pnpm db:seed:dev
 corepack pnpm dev
 ```
 
-Local database development defaults to `file:./data/trailnote.db`. Provider
-credentials are validated only when their corresponding capability is used, so
-the UI and local database can be developed without Google, Turso, or ImageKit.
+Open [http://localhost:3000](http://localhost:3000).
 
-Do not commit `.env` files. Only `.env.example` belongs in version control.
+Local development uses a file-based database by default. Google, Turso,
+ImageKit, and Geoapify credentials are only needed for their respective
+features. See [`.env.example`](.env.example) for all configuration options.
 
-## Quality checks
+## Commands
 
 ```bash
-corepack pnpm format:check
-corepack pnpm lint
-corepack pnpm typecheck
-corepack pnpm test
-corepack pnpm build
+corepack pnpm dev               # Start the development server
+corepack pnpm build             # Create a production build
+corepack pnpm lint              # Run ESLint
+corepack pnpm typecheck         # Check TypeScript
+corepack pnpm test              # Run unit tests
+corepack pnpm test:integration  # Run integration tests
+corepack pnpm test:e2e          # Run end-to-end tests
 ```
 
-The database, browser, visual, moderator, and account scripts are wired in
-`package.json`; their implementations arrive with the work orders that own those
-features.
+## Documentation
+
+- [Implementation plan](docs/implementation-plan.md)
+- [Implementation status](docs/implementation-status.md)
+- [Product specification](docs/crowdsourced-practical-travel-intelligence.md)
+
+## Tech stack
+
+Next.js, React, TypeScript, Drizzle ORM, libSQL, Better Auth, and Tailwind CSS.
