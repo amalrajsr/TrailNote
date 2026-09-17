@@ -2988,6 +2988,59 @@ textarea.field-input {
   justify-content: center;
   margin-top: 20px;
 }
+.toast {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 80;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: min(380px, calc(100vw - 32px));
+  padding: 9px 8px 9px 14px;
+  border: 1px solid var(--brand-border);
+  border-radius: 14px;
+  background: var(--surface-raised);
+  color: var(--success);
+  box-shadow: var(--shadow-popover);
+  animation: toast-in var(--motion-standard) var(--ease);
+}
+.toast[data-tone="error"] {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.toast p {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 550;
+  line-height: 20px;
+}
+.toast-close {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-muted);
+}
+.toast-close:hover {
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
 .dialog {
   position: fixed;
   z-index: 70;

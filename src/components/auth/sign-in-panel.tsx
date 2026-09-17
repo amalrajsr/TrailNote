@@ -22,9 +22,11 @@ export function SignInPanel({
   async function signIn() {
     setPending(true);
     setError(false);
+    const callbackUrl = new URL(returnTo, window.location.origin);
+    callbackUrl.searchParams.set("authToast", "signed-in");
     const result = await authClient.signIn.social({
       provider: "google",
-      callbackURL: returnTo,
+      callbackURL: `${callbackUrl.pathname}${callbackUrl.search}${callbackUrl.hash}`,
       errorCallbackURL: `/sign-in?returnTo=${encodeURIComponent(returnTo)}&error=oauth`,
     });
     if (result.error) {

@@ -34,7 +34,7 @@ export function LogoutProvider({ children }: { children: ReactNode }) {
       if (result.error) throw new Error(result.error.message);
 
       clearDrafts();
-      window.location.replace("/?signedOut=1");
+      window.location.replace("/?authToast=signed-out");
     } catch {
       setState("error");
     }

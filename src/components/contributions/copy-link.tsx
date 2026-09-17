@@ -3,6 +3,7 @@
 import { ArrowUpRight, Copy } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../ui/primitives";
+import { toast } from "../ui/toaster";
 
 export function CopyLink({ tipId }: { tipId: string }) {
   const [message, setMessage] = useState("");
@@ -28,6 +29,7 @@ export function CopyLink({ tipId }: { tipId: string }) {
       ]);
       setFallback(false);
       setMessage("Link copied");
+      toast("Tip link copied");
     } catch {
       setFallbackUrl(url);
       setFallback(true);

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "../src/components/shell/header";
 import { Footer } from "../src/components/shell/footer";
 import { LogoutProvider } from "../src/components/auth/logout-provider";
+import { Toaster } from "../src/components/ui/toaster";
 import { env } from "../src/server/env";
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
           <Footer />
         </LogoutProvider>
+        <Toaster />
       </body>
     </html>
   );

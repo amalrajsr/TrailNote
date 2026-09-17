@@ -15,12 +15,7 @@ import { ArrowRight, Plus } from "lucide-react";
 
 export const metadata = { alternates: { canonical: "/" } };
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ signedOut?: string }>;
-}) {
-  const { signedOut } = await searchParams;
+export default async function HomePage() {
   const { db } = await getDatabase();
   const [page, mapDestinations, featuredTips] = await Promise.all([
     destinationPage(db, { limit: 4 }),
@@ -37,11 +32,6 @@ export default async function HomePage({
       <section className="home-hero" aria-labelledby="home-title">
         <div className="container home-hero-grid">
           <div className="home-copy">
-            {signedOut === "1" && (
-              <p className="account-notice home-notice" role="status">
-                You’ve signed out successfully.
-              </p>
-            )}
             <p className="eyebrow">From travellers who’ve been there</p>
             <h1 id="home-title">
               A little local knowledge.
