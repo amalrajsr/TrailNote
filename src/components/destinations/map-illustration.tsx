@@ -85,7 +85,6 @@ export function MapIllustration({
       className={`map-shell ${compact ? "destination-map" : "hero-map"}${markers.length > 8 ? " dense" : ""}${className ? ` ${className}` : ""}`}
     >
       <div className="map-grid" aria-hidden="true" />
-      <div className="map-water" aria-hidden="true" />
       <div className="india-map-layer">
         <div className="india-shape" aria-hidden="true" />
         <nav className="map-markers" aria-label="Map destinations">

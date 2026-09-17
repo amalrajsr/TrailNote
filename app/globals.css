@@ -463,14 +463,10 @@ main {
 .map-shell {
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--brand-border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-feature);
-  background: linear-gradient(
-    145deg,
-    var(--map-surface-soft),
-    var(--map-surface)
-  );
-  box-shadow: var(--shadow-map);
+  background: var(--brand-faint);
+  box-shadow: none;
 }
 .hero-map {
   height: 430px;
@@ -478,20 +474,11 @@ main {
 .map-grid {
   position: absolute;
   inset: 0;
-  opacity: 0.25;
+  opacity: 0.1;
   background-image:
     linear-gradient(to right, var(--brand-border) 1px, transparent 1px),
     linear-gradient(to bottom, var(--brand-border) 1px, transparent 1px);
-  background-size: 34px 34px;
-}
-.map-water {
-  position: absolute;
-  right: -14%;
-  bottom: -18%;
-  left: 23%;
-  height: 44%;
-  border-radius: 50% 50% 0 0;
-  background: var(--map-water);
+  background-size: 42px 42px;
 }
 .india-map-layer {
   position: absolute;
@@ -1476,8 +1463,7 @@ main {
 .destination-map .india-shape {
   opacity: 0.72;
 }
-.destination-map .marker:not(.active),
-.destination-map .map-water {
+.destination-map .marker:not(.active) {
   display: none;
 }
 .map-info {
