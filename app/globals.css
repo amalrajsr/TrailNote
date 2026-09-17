@@ -19,6 +19,12 @@ body {
   color: var(--ink);
   font: 400 16px/1.625 var(--font-ui);
 }
+.app-shell {
+  min-height: 100%;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
 h1,
 h2,
 h3,
@@ -2947,6 +2953,40 @@ textarea.field-input {
   inset: 0;
   z-index: 60;
   background: var(--scrim);
+}
+.logout-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--scrim);
+  cursor: wait;
+  touch-action: none;
+}
+.logout-status {
+  width: min(380px, 100%);
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-popover);
+  text-align: center;
+}
+.logout-status h2 {
+  margin-top: 12px;
+  font-size: 22px;
+}
+.logout-status p {
+  margin-top: 8px;
+}
+.logout-spinner {
+  color: var(--brand);
+}
+.logout-actions {
+  justify-content: center;
+  margin-top: 20px;
 }
 .dialog {
   position: fixed;

@@ -1,8 +1,7 @@
 "use client";
 import { Menu } from "../ui/overlays";
-import { authClient } from "../../lib/auth-client";
-import { useRouter } from "next/navigation";
 import { ProfileAvatar, type ProfileAvatarData } from "../profiles/avatar";
+import { useLogout } from "../auth/logout-provider";
 export function AccountMenu({
   id,
   name,
@@ -16,7 +15,7 @@ export function AccountMenu({
   role: "traveler" | "moderator";
   avatar: ProfileAvatarData;
 }) {
-  const router = useRouter();
+  const signOut = useLogout();
 
   return (
     <Menu
@@ -34,14 +33,7 @@ export function AccountMenu({
         { label: "Community guidelines", href: "/community-guidelines" },
         {
           label: "Sign out",
-          onSelect: async () => {
-            await authClient.signOut();
-            for (const key of Object.keys(sessionStorage))
-              if (key.startsWith("fieldnotes:draft:"))
-                sessionStorage.removeItem(key);
-            router.replace("/?signedOut=1");
-            router.refresh();
-          },
+          onSelect: signOut,
         },
       ]}
     />

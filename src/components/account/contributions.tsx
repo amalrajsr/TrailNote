@@ -14,8 +14,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { deleteOwnTip } from "../../../app/me/actions";
-import { authClient } from "../../lib/auth-client";
 import { categoryLabels, type Category } from "../../lib/constants";
+import { useLogout } from "../auth/logout-provider";
 import { CategoryIcon } from "../ui/category-icon";
 import { Dialog } from "../ui/overlays";
 import { Button } from "../ui/primitives";
@@ -31,25 +31,10 @@ type Tip = {
 };
 
 export function AccountSignOut() {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const signOut = useLogout();
 
   return (
-    <Button
-      variant="quiet"
-      busy={pending}
-      className="account-sign-out"
-      onClick={() =>
-        startTransition(async () => {
-          await authClient.signOut();
-          for (const key of Object.keys(sessionStorage))
-            if (key.startsWith("fieldnotes:draft:"))
-              sessionStorage.removeItem(key);
-          router.replace("/?signedOut=1");
-          router.refresh();
-        })
-      }
-    >
+    <Button variant="quiet" className="account-sign-out" onClick={signOut}>
       <LogOut size={16} aria-hidden="true" /> Sign out
     </Button>
   );

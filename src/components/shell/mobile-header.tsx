@@ -1,8 +1,7 @@
 "use client";
 
 import { Menu as MenuIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { authClient } from "../../lib/auth-client";
+import { useLogout } from "../auth/logout-provider";
 import { Menu } from "../ui/overlays";
 
 type Viewer = {
@@ -13,15 +12,7 @@ type Viewer = {
 };
 
 export function MobileHeaderMenu({ user }: { user: Viewer | null }) {
-  const router = useRouter();
-
-  async function signOut() {
-    await authClient.signOut();
-    for (const key of Object.keys(sessionStorage))
-      if (key.startsWith("fieldnotes:draft:")) sessionStorage.removeItem(key);
-    router.replace("/?signedOut=1");
-    router.refresh();
-  }
+  const signOut = useLogout();
 
   return (
     <div className="mobile-header-menu">
