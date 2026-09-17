@@ -10,7 +10,7 @@ import { getDatabase } from "../../src/db";
 import { viewer } from "../../src/server/auth";
 import { accountContributions } from "../../src/server/queries/account";
 
-export const metadata = { title: "My tips", robots: { index: false } };
+export const metadata = { title: "Profile", robots: { index: false } };
 export default async function MePage({
   searchParams,
 }: {

@@ -1,0 +1,60 @@
+"use client";
+
+import { Menu as MenuIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { authClient } from "../../lib/auth-client";
+import { Menu } from "../ui/overlays";
+
+type Viewer = {
+  id: string;
+  name: string;
+  username: string;
+  role: "traveler" | "moderator";
+};
+
+export function MobileHeaderMenu({ user }: { user: Viewer | null }) {
+  const router = useRouter();
+
+  async function signOut() {
+    await authClient.signOut();
+    for (const key of Object.keys(sessionStorage))
+      if (key.startsWith("fieldnotes:draft:")) sessionStorage.removeItem(key);
+    router.replace("/?signedOut=1");
+    router.refresh();
+  }
+
+  return (
+    <div className="mobile-header-menu">
+      <Menu
+        trigger={
+          <button
+            className="mobile-menu-trigger"
+            type="button"
+            aria-label="Open navigation menu"
+          >
+            <MenuIcon size={19} aria-hidden="true" />
+          </button>
+        }
+        items={[
+          { label: "Explore tips", href: "/#tips" },
+          { label: "Places", href: "/#places" },
+          { label: "Share a tip", href: "/search" },
+          ...(user
+            ? [
+                { label: "Profile", href: "/me", separator: true },
+                ...(user.role === "moderator"
+                  ? [{ label: "Moderator dashboard", href: "/moderation" }]
+                  : []),
+                { label: "Public profile", href: `/users/${user.id}` },
+                {
+                  label: "Community guidelines",
+                  href: "/community-guidelines",
+                },
+                { label: "Sign out", onSelect: signOut },
+              ]
+            : [{ label: "Sign in", href: "/sign-in", separator: true }]),
+        ]}
+      />
+    </div>
+  );
+}

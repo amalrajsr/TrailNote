@@ -2,7 +2,8 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import * as MenuPrimitive from "@radix-ui/react-dropdown-menu";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
+import Link from "next/link";
 import { X } from "lucide-react";
 export function Dialog({
   trigger,
@@ -58,22 +59,35 @@ export function Menu({
   items,
 }: {
   trigger: ReactNode;
-  items: Array<{ label: string; href?: string; onSelect?: () => void }>;
+  items: Array<{
+    label: string;
+    href?: string;
+    onSelect?: () => void | Promise<void>;
+    separator?: boolean;
+  }>;
 }) {
   return (
     <MenuPrimitive.Root modal={false}>
       <MenuPrimitive.Trigger asChild>{trigger}</MenuPrimitive.Trigger>
       <MenuPrimitive.Portal>
         <MenuPrimitive.Content className="popover" sideOffset={8} align="end">
-          {items.map((item) => (
-            <MenuPrimitive.Item
-              key={item.label}
-              className="menu-item"
-              onSelect={item.onSelect}
-              asChild={!!item.href}
-            >
-              {item.href ? <a href={item.href}>{item.label}</a> : item.label}
-            </MenuPrimitive.Item>
+          {items.map((item, index) => (
+            <Fragment key={`${item.label}-${index}`}>
+              {item.separator && (
+                <MenuPrimitive.Separator className="menu-separator" />
+              )}
+              <MenuPrimitive.Item
+                className="menu-item"
+                onSelect={item.onSelect}
+                asChild={!!item.href}
+              >
+                {item.href ? (
+                  <Link href={item.href}>{item.label}</Link>
+                ) : (
+                  item.label
+                )}
+              </MenuPrimitive.Item>
+            </Fragment>
           ))}
         </MenuPrimitive.Content>
       </MenuPrimitive.Portal>

@@ -19,7 +19,7 @@ export function ReportTip({ id, revision }: { id: string; revision: number }) {
       description="Tell us why this needs review."
       trigger={
         <button className="quiet" type="button">
-          Report
+          Report this tip
         </button>
       }
     >

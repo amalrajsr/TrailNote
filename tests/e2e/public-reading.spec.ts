@@ -5,6 +5,7 @@ import { makeSignature } from "better-auth/crypto";
 test.describe.configure({ mode: "serial" });
 
 const changedTipId = "00000000-0000-4000-8000-000000000102";
+const unconfirmedTipId = "00000000-0000-4000-8000-000000000100";
 const observerSessionToken = "fieldnotes-development-observer-session";
 const newObserverSessionToken = "fieldnotes-development-new-observer-session";
 const authSecret = "fieldnotes-e2e-secret-with-more-than-thirty-two-characters";
@@ -26,6 +27,7 @@ async function signInAsObserver(page: Page, token = observerSessionToken) {
 for (const viewport of [
   { width: 320, height: 800 },
   { width: 390, height: 844 },
+  { width: 768, height: 1024 },
   { width: 1440, height: 1000 },
 ]) {
   test(`core public pages fit at ${viewport.width}px`, async ({ page }) => {
@@ -107,6 +109,49 @@ test("homepage leads with tips and pairs four places with the map", async ({
     "left",
     /.+/,
   );
+});
+
+test("guest mobile menu supports keyboard dismissal and focus restoration", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const trigger = page.getByRole("button", { name: "Open navigation menu" });
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+
+  const menu = page.getByRole("menu");
+  await expect(
+    menu.getByRole("menuitem", { name: "Explore tips" }),
+  ).toBeVisible();
+  await expect(menu.getByRole("menuitem", { name: "Places" })).toBeVisible();
+  await expect(
+    menu.getByRole("menuitem", { name: "Share a tip" }),
+  ).toBeVisible();
+  await expect(menu.getByRole("menuitem", { name: "Sign in" })).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(menu).toBeHidden();
+  await expect(trigger).toBeFocused();
+});
+
+test("signed-in mobile menu exposes account destinations", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await signInAsObserver(page);
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Open navigation menu" }).click();
+  const menu = page.getByRole("menu");
+  await expect(menu.getByRole("menuitem", { name: "My tips" })).toBeVisible();
+  await expect(
+    menu.getByRole("menuitem", { name: "Public profile" }),
+  ).toBeVisible();
+  await expect(
+    menu.getByRole("menuitem", { name: "Community guidelines" }),
+  ).toBeVisible();
+  await expect(menu.getByRole("menuitem", { name: "Sign out" })).toBeVisible();
+  await expect(menu.getByRole("menuitem", { name: "Sign in" })).toHaveCount(0);
 });
 
 test("destination feed explains what tips contain", async ({ page }) => {
@@ -247,6 +292,31 @@ test("guest composer validates first, preserves its draft, and returns from sign
       "Give the next traveller one detail they can use — for example a price, route, timing, place, or something to avoid.",
     ),
   ).toBeVisible();
+  await expect(body).toBeFocused();
+  await expect
+    .poll(() =>
+      body.evaluate((element) => {
+        const styles = getComputedStyle(element);
+        return styles.borderColor === styles.outlineColor;
+      }),
+    )
+    .toBe(true);
+  const invalidBorderColor = await body.evaluate(
+    (element) => getComputedStyle(element).borderColor,
+  );
+  await page.getByRole("heading", { name: "Help the next traveller." }).click();
+  await expect(body).not.toBeFocused();
+  await expect
+    .poll(() =>
+      body.evaluate((element) => getComputedStyle(element).borderColor),
+    )
+    .toBe(invalidBorderColor);
+  await expect
+    .poll(async () => {
+      const box = await body.boundingBox();
+      return box ? box.y >= 0 && box.y + box.height <= 844 : false;
+    })
+    .toBe(true);
 
   const usefulTip = "The north bus stand ticket counter opens before seven.";
   await body.fill(usefulTip);
@@ -292,11 +362,13 @@ test("guest photo selection asks for sign-in before opening a file picker", asyn
   page,
 }) => {
   await page.goto("/destinations/badami/add");
+  await page.getByRole("button", { name: "Explore", exact: true }).click();
   await page
     .getByRole("textbox", {
-      name: "What do you wish you knew before coming here?",
+      name: "What should someone know before visiting this place?",
     })
     .fill("A draft remains available before choosing any photos.");
+  await page.getByRole("button", { name: "Photo", exact: true }).click();
   await page.getByRole("button", { name: "Add photos" }).click();
 
   await expect(page).toHaveURL(/\/sign-in\?returnTo=/);
@@ -320,6 +392,50 @@ test("detail keeps the original fare and attributes the changed fare", async ({
   await expect(
     page.getByText("7 travellers confirmed this version"),
   ).toHaveCount(2);
+});
+
+test("detail freshness avoids a duplicate empty confirmation state", async ({
+  page,
+}) => {
+  await page.goto(`/tips/${unconfirmedTipId}`);
+
+  const freshness = page.locator(".freshness-panel");
+  await expect(freshness.getByText("Not yet confirmed")).toBeVisible();
+  await expect(freshness.getByText("No confirmations yet")).toHaveCount(0);
+  await expect(freshness.locator(".fresh-count")).toHaveCount(0);
+});
+
+test("an author can open an edit form with the tip details populated", async ({
+  page,
+}) => {
+  await signInAsObserver(page, newObserverSessionToken);
+  await page.goto(`/tips/${unconfirmedTipId}`);
+
+  const editLink = page.getByRole("link", { name: "Edit your tip" });
+  await expect(editLink).toHaveAttribute(
+    "href",
+    `/tips/${unconfirmedTipId}/edit`,
+  );
+  await editLink.click();
+
+  await expect(page).toHaveURL(`/tips/${unconfirmedTipId}/edit`);
+  await expect(
+    page.getByRole("heading", { name: "Edit your tip" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("textbox", {
+      name: "What should someone know before staying here?",
+    }),
+  ).toHaveValue(/paid ₹650 for a private room/);
+  await expect(
+    page.getByRole("combobox", { name: "When were you there?" }),
+  ).toHaveValue("2026-08");
+  await expect(
+    page.getByRole("textbox", { name: "What did you pay?" }),
+  ).toHaveValue("650");
+  await expect(
+    page.getByRole("textbox", { name: "Where did you stay?" }),
+  ).toHaveValue("ABC Lodge");
 });
 
 test("guest reaction returns to a focused intent without voting", async ({
@@ -411,7 +527,8 @@ test("copy link reports success or selects the canonical fallback", async ({
   page,
 }) => {
   await page.goto(`/tips/${changedTipId}?intent=helpful`);
-  await page.getByRole("button", { name: "Copy link" }).click();
+  await page.waitForTimeout(1000);
+  await page.getByRole("button", { name: "Copy tip link" }).click();
   await expect(page.getByRole("status")).toContainText(
     /Link copied|Copy unavailable\. The link is selected\./,
   );

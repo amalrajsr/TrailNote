@@ -26,7 +26,7 @@ export function AccountMenu({
         </button>
       }
       items={[
-        { label: "My tips", href: "/me" },
+        { label: "Profile", href: "/me" },
         ...(role === "moderator"
           ? [{ label: "Moderator dashboard", href: "/moderation" }]
           : []),

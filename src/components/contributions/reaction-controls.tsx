@@ -247,7 +247,7 @@ export function ReactionControls({
           </Button>
         )}
         <Link className="quiet" href={`/tips/${rootId}/update`}>
-          <Flag size={18} aria-hidden="true" /> Changed
+          <Flag size={18} aria-hidden="true" /> Report a change
         </Link>
         <Button
           ref={helpfulRef}

@@ -1,4 +1,4 @@
-import { Clock3, Flag } from "lucide-react";
+import { Clock3, Flag, Pencil } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CopyLink } from "../../../src/components/contributions/copy-link";
@@ -157,6 +157,13 @@ function DetailCard({
           </small>
         </p>
       </div>
+      {reaction.isAuthor && (
+        <div className="detail-owner-actions">
+          <Link className="btn secondary" href={`/tips/${detail.id}/edit`}>
+            <Pencil size={16} aria-hidden="true" /> Edit your tip
+          </Link>
+        </div>
+      )}
       {facts.length > 0 && (
         <section className="facts-section" aria-labelledby="useful-details">
           <h2 id="useful-details">Useful details</h2>
@@ -187,7 +194,11 @@ function DetailCard({
         className="detail-actions"
         aria-labelledby="detail-actions-title"
       >
-        <h2 id="detail-actions-title">Know this information?</h2>
+        <h2 id="detail-actions-title">Is this information still accurate?</h2>
+        <p className="reaction-helper">
+          Used this tip recently? Help other travellers know what still holds
+          up.
+        </p>
         <ReactionControls
           id={detail.id}
           rootId={rootId}
@@ -198,7 +209,9 @@ function DetailCard({
           initialHelpfulCount={detail.helpfulCount}
           intent={intent}
         />
-        <ReportTip id={detail.id} revision={detail.revision} />
+        <div className="moderation-action">
+          <ReportTip id={detail.id} revision={detail.revision} />
+        </div>
       </section>
       {detail.hasContact && <ContactReveal contributionId={detail.id} />}
     </article>
@@ -209,14 +222,14 @@ function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
   return (
     <aside className="detail-aside">
       <section className="freshness-panel">
-        <h2>How recent is this?</h2>
+        <h2>Is this tip still current?</h2>
         {detail.changeReported && (
           <span className="badge warning">
             <Flag size={14} aria-hidden="true" /> Change reported
           </span>
         )}
         <p className="fresh-line">
-          <small>Originally visited</small>
+          <small>Trip date</small>
           {detail.visitedMonth
             ? formatMonth(detail.visitedMonth)
             : "Not provided"}
@@ -225,26 +238,30 @@ function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
           <small>Last confirmed</small>
           {detail.lastConfirmedMonth
             ? formatMonth(detail.lastConfirmedMonth)
-            : "No confirmations yet"}
+            : "Not yet confirmed"}
         </p>
-        <p className="fresh-count">
-          {detail.confirmationCount === 0
-            ? "No confirmations yet"
-            : `${detail.confirmationCount} ${detail.confirmationCount === 1 ? "traveller" : "travellers"} confirmed this version`}
-        </p>
+        {detail.confirmationCount > 0 && (
+          <p className="fresh-count">
+            {detail.confirmationCount}{" "}
+            {detail.confirmationCount === 1 ? "traveller" : "travellers"}{" "}
+            confirmed this version
+          </p>
+        )}
         <p className="muted">
           {detail.changeReported
-            ? "A traveller has reported a change. Read the update before relying on the original details."
-            : "Community confirmations reflect travellers' experiences."}
+            ? "Someone reported that these details may have changed. Review the latest update before relying on them."
+            : detail.confirmationCount > 0
+              ? "Traveller confirmations suggest this version is still useful, but details can still change."
+              : "No traveller has confirmed this version yet. Verify important details before relying on it."}
         </p>
       </section>
       <section className="side-note trust-note">
         <h2>
-          <Clock3 size={20} aria-hidden="true" /> From travellers, for travellers
+          <Clock3 size={20} aria-hidden="true" /> Before you rely on this tip
         </h2>
         <p>
-          Community confirmations reflect travellers&apos; experiences. Fares and
-          availability may change.
+          Prices, routes, hours, and availability can change. Confirm important
+          details locally before you go.
         </p>
         <CopyLink tipId={detail.parent?.id ?? detail.id} />
       </section>
@@ -367,15 +384,9 @@ export default async function TipDetailPage({
         <span>{categoryLabels[detail.category]}</span>
       </nav>
       <div className="two-col detail-grid">
-        <div>
-          <DetailCard
-            detail={detail}
-            reaction={reaction}
-            intent={query.intent}
-          />
-          <Updates detail={detail} />
-        </div>
+        <DetailCard detail={detail} reaction={reaction} intent={query.intent} />
         <FreshnessPanel detail={detail} />
+        <Updates detail={detail} />
       </div>
     </main>
   );

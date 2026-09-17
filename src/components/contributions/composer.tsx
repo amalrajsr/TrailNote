@@ -19,7 +19,11 @@ import {
   unitLabels,
   type Category,
 } from "../../lib/constants";
-import { currentMonth, formatMonth } from "../../lib/visit-month";
+import {
+  currentMonth,
+  formatMonth,
+  visitMonthChoice,
+} from "../../lib/visit-month";
 import { parseMoney } from "../../lib/money";
 import { contributionInput } from "../../lib/validation/contribution";
 import { CategoryIcon } from "../ui/category-icon";
@@ -174,6 +178,11 @@ function previousMonth(month: string) {
     : `${year}-${String(value - 1).padStart(2, "0")}`;
 }
 
+function normalizeVisitedChoice(choice: string) {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(choice)) return choice;
+  return visitMonthChoice(choice);
+}
+
 function previewMonth(value: string) {
   if (!value) return "Not sure";
   const [year, month] = value.split("-").map(Number);
@@ -275,11 +284,17 @@ export function ContributionComposer({
       : mode === "edit" && edit
         ? `fieldnotes:draft:v1:${destination.id}:edit-${edit.id}`
         : `fieldnotes:draft:${destination.slug}`;
-  const [draft, setDraft] = useState(() => ({
-    ...makeDraft(initialCategory, initialMutationId),
-    ...initialDraft,
-    mutationId: initialMutationId,
-  }));
+  const [draft, setDraft] = useState(() => {
+    const initial = {
+      ...makeDraft(initialCategory, initialMutationId),
+      ...initialDraft,
+      mutationId: initialMutationId,
+    };
+    return {
+      ...initial,
+      visitedChoice: normalizeVisitedChoice(initial.visitedChoice),
+    };
+  });
   const [restored, setRestored] = useState(false);
   const [details, setDetails] = useState(true);
   const [enabledDetails, setEnabledDetails] = useState<string[]>(() =>
@@ -301,10 +316,35 @@ export function ContributionComposer({
     submitAction,
     initialActionState,
   );
+  const formRef = useRef<HTMLFormElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const draftSaved = useRef(false);
   const month = useMemo(() => currentMonth(), []);
   const lastMonth = useMemo(() => previousMonth(month), [month]);
+
+  const focusAndScrollTo = useCallback((target: HTMLElement | null) => {
+    if (!target) return;
+    target.focus({ preventScroll: true });
+    target.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
+      block: "center",
+    });
+  }, []);
+
+  const revealInvalidField = useCallback(
+    (name: string) => {
+      window.requestAnimationFrame(() => {
+        const namedControl = formRef.current?.elements.namedItem(name);
+        const target =
+          document.getElementById(name) ??
+          (namedControl instanceof HTMLElement ? namedControl : null);
+        focusAndScrollTo(target ?? summaryRef.current);
+      });
+    },
+    [focusAndScrollTo],
+  );
 
   const validateDraft = () => {
     let pricePaise: number | null;
@@ -375,6 +415,7 @@ export function ContributionComposer({
     ) {
       event.preventDefault();
       setShowUsefulnessGuidance(true);
+      revealInvalidField("body");
       return;
     }
     setShowUsefulnessGuidance(false);
@@ -383,6 +424,7 @@ export function ContributionComposer({
       event.preventDefault();
       setClientFieldErrors(result.fieldErrors);
       setShowValidation(true);
+      revealInvalidField(Object.keys(result.fieldErrors)[0]);
     }
   };
 
@@ -395,12 +437,20 @@ export function ContributionComposer({
         if (parsed.body || parsed.category) {
           queueMicrotask(() => {
             if (cancelled) return;
-            setDraft((current) => ({
-              ...current,
-              ...parsed,
-              phone: "",
-              photos: Array.isArray(parsed.photos) ? parsed.photos : [],
-            }));
+            setDraft((current) => {
+              const restoredDraft = {
+                ...current,
+                ...parsed,
+                phone: "",
+                photos: Array.isArray(parsed.photos) ? parsed.photos : [],
+              };
+              return {
+                ...restoredDraft,
+                visitedChoice: normalizeVisitedChoice(
+                  restoredDraft.visitedChoice,
+                ),
+              };
+            });
             setEnabledDetails(initialDetailKeys(parsed));
             setRestored(true);
           });
@@ -448,10 +498,13 @@ export function ContributionComposer({
         `/sign-in?returnTo=${encodeURIComponent(state.returnTo)}${draftSaved.current ? "&draft=1" : ""}`,
       );
     }
-    if (state.status === "error") {
-      summaryRef.current?.focus();
-    }
   }, [draft, router, state, storageKey]);
+
+  useEffect(() => {
+    if (state.status === "error") {
+      focusAndScrollTo(summaryRef.current);
+    }
+  }, [focusAndScrollTo, state]);
 
   const setPhotos = useCallback(
     (photos: UploadedPhoto[]) =>
@@ -676,6 +729,7 @@ export function ContributionComposer({
         </fieldset>
       )}
       <form
+        ref={formRef}
         action={action}
         className="form-card"
         noValidate
@@ -767,7 +821,7 @@ export function ContributionComposer({
                 setShowUsefulnessGuidance(false);
               }}
               aria-describedby={`body-help${error("body") ? " body-error" : ""}${showUsefulnessGuidance ? " body-usefulness" : ""}`}
-              aria-invalid={!!error("body")}
+              aria-invalid={!!error("body") || showUsefulnessGuidance}
             />
             <div id="body-help" className="field-foot">
               <span>Share a useful detail rather than a general review.</span>

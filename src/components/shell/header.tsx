@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Compass } from "lucide-react";
 import { viewerState } from "../../server/auth";
+import { MobileHeaderMenu } from "./mobile-header";
 import { AccountMenu } from "./user-menu";
 export async function Header() {
   const state = await viewerState();
@@ -14,6 +15,7 @@ export async function Header() {
           <Compass size={29} strokeWidth={1.5} aria-hidden />
           TrailNote
         </Link>
+        <MobileHeaderMenu user={user} />
         <nav aria-label="Main navigation" className="nav">
           <Link className="desktop-link" href="/#tips">
             Explore tips

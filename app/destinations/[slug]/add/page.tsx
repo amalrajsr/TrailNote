@@ -107,7 +107,6 @@ export default async function AddContributionPage({
               </div>
             </div>
             <div className="composer-help-note">
-              You&apos;re helping another traveller, not filling a database.
             </div>
           </aside>
         </div>

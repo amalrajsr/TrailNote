@@ -6,6 +6,16 @@ export function currentMonth(now = new Date()): string {
   }).formatToParts(now);
   return `${parts.find((p) => p.type === "year")!.value}-${parts.find((p) => p.type === "month")!.value}`;
 }
+export function visitMonthChoice(value: string | null, now = new Date()) {
+  if (!value) return "";
+  const month = currentMonth(now);
+  const [year, monthNumber] = month.split("-").map(Number);
+  const previous =
+    monthNumber === 1
+      ? `${year - 1}-12`
+      : `${year}-${String(monthNumber - 1).padStart(2, "0")}`;
+  return value === month || value === previous ? value : "custom";
+}
 export function validMonth(value: string, now = new Date()) {
   return (
     /^\d{4}-(0[1-9]|1[0-2])$/.test(value) &&

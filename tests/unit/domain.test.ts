@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { priceUnits, priceUnitsByCategory } from "../../src/lib/constants";
 import { parseMoney, formatMoney } from "../../src/lib/money";
-import { currentMonth, validMonth, freshness } from "../../src/lib/visit-month";
+import {
+  currentMonth,
+  validMonth,
+  freshness,
+  visitMonthChoice,
+} from "../../src/lib/visit-month";
 import { safeReturnUrl, validMapsUrl } from "../../src/lib/urls";
 describe("travel domain rules", () => {
   it("limits price units to choices relevant to each category", () => {
@@ -48,6 +53,10 @@ describe("travel domain rules", () => {
     expect(freshness("2026-08", "2026-09", true, now).label).toBe(
       "Change reported",
     );
+    expect(visitMonthChoice("2026-09", now)).toBe("2026-09");
+    expect(visitMonthChoice("2026-08", now)).toBe("2026-08");
+    expect(visitMonthChoice("2025-01", now)).toBe("custom");
+    expect(visitMonthChoice(null, now)).toBe("");
   });
   it("blocks external redirects and non-maps links", () => {
     for (const url of [
