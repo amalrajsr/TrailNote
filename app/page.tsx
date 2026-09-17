@@ -57,7 +57,7 @@ export default async function HomePage({
               <Link href="/destinations/badami">Badami</Link>
               <Link href="/destinations/hampi">Hampi</Link>
               <Link href="/destinations/varkala">Varkala</Link>
-              <Link href="/destinations/matheran">Matheran</Link>
+              <Link href="/destinations/goa">Goa</Link>
             </nav>
           </div>
           <Notebook />
