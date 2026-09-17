@@ -253,7 +253,6 @@ function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
             Last confirmed
             <InfoTooltip label="Last confirmed" position="right">
               When another traveller most recently confirmed this tip.
-              Confirmations apply only to the version they reviewed.
             </InfoTooltip>
           </small>
           {detail.lastConfirmedAt ? (
