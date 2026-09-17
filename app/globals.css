@@ -2811,6 +2811,13 @@ textarea.field-input {
   font-weight: 400;
   line-height: 18px;
 }
+.info-tooltip-content[data-position="right"] {
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  left: calc(100% + 7px);
+  transform: translateY(-50%);
+}
 .tip-activity time,
 .last-confirmed time {
   font-variant-numeric: tabular-nums;

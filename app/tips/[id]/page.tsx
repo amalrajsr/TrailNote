@@ -251,7 +251,7 @@ function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
         <p className="fresh-line last-confirmed">
           <small className="fresh-label">
             Last confirmed
-            <InfoTooltip label="Last confirmed">
+            <InfoTooltip label="Last confirmed" position="right">
               When another traveller most recently confirmed this tip.
               Confirmations apply only to the version they reviewed.
             </InfoTooltip>
@@ -267,7 +267,10 @@ function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
         <p className="fresh-line tip-activity">
           <small className="fresh-label">
             {wasEdited ? "Last updated" : "Added"}
-            <InfoTooltip label={wasEdited ? "Last updated" : "Added"}>
+            <InfoTooltip
+              label={wasEdited ? "Last updated" : "Added"}
+              position="right"
+            >
               {wasEdited
                 ? "When the original author last edited this tip."
                 : "When the original author first shared this tip."}

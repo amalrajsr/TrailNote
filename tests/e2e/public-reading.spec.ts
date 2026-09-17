@@ -414,9 +414,20 @@ test("detail distinguishes when a tip was added from when it was edited", async 
     "datetime",
     new Date("2026-09-06T06:30:00.000Z").toISOString(),
   );
-  await page.getByRole("button", { name: "About Last confirmed" }).click();
-  await expect(page.getByRole("tooltip")).toContainText(
+  const confirmationTooltipTrigger = page.getByRole("button", {
+    name: "About Last confirmed",
+  });
+  await confirmationTooltipTrigger.click();
+  const confirmationTooltip = page.getByRole("tooltip");
+  await expect(confirmationTooltip).toContainText(
     "Confirmations apply only to the version they reviewed",
+  );
+  const [triggerBox, tooltipBox] = await Promise.all([
+    confirmationTooltipTrigger.boundingBox(),
+    confirmationTooltip.boundingBox(),
+  ]);
+  expect(tooltipBox?.x).toBeGreaterThanOrEqual(
+    (triggerBox?.x ?? 0) + (triggerBox?.width ?? 0),
   );
 
   await page.goto(`/tips/${unconfirmedTipId}`);

@@ -6,9 +6,11 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 export function InfoTooltip({
   label,
   children,
+  position = "top",
 }: {
   label: string;
   children: ReactNode;
+  position?: "top" | "right";
 }) {
   const [open, setOpen] = useState(false);
   const id = useId();
@@ -56,6 +58,7 @@ export function InfoTooltip({
         id={id}
         role="tooltip"
         className="info-tooltip-content"
+        data-position={position}
         hidden={!open}
       >
         {children}
