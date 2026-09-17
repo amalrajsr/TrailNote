@@ -128,6 +128,9 @@ export async function deleteAccount(
     await tx
       .delete(s.moderationEvents)
       .where(eq(s.moderationEvents.moderatorId, userId));
+    await tx
+      .delete(s.usernameClaims)
+      .where(eq(s.usernameClaims.userId, userId));
     await tx.delete(s.profiles).where(eq(s.profiles.userId, userId));
     await tx.delete(s.user).where(eq(s.user.id, userId));
   });

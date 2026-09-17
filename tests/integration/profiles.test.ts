@@ -33,7 +33,7 @@ afterEach(async () => {
 });
 
 describe("public profiles", () => {
-  it("allocates distinct defaults and never transfers a claimed username", async () => {
+  it("allocates distinct defaults and releases renamed usernames", async () => {
     const firstId = "10000000-0000-4000-8000-000000000001";
     const secondId = "10000000-0000-4000-8000-000000000002";
     for (const [id, email] of [
@@ -57,14 +57,14 @@ describe("public profiles", () => {
 
     await updateProfile(connection.db, firstId, {
       displayName: "Amal",
-      username: "amal-new",
+      username: "abcd",
       avatarIntent: "keep",
       avatarId: null,
     });
     await expect(
       updateProfile(connection.db, secondId, {
         displayName: "Other Amal",
-        username: first.username.toUpperCase(),
+        username: "abcd",
         avatarIntent: "keep",
         avatarId: null,
       }),
@@ -72,26 +72,23 @@ describe("public profiles", () => {
     await expect(
       updateProfile(connection.db, firstId, {
         displayName: "Amal",
-        username: first.username,
+        username: "abc",
         avatarIntent: "keep",
         avatarId: null,
       }),
-    ).resolves.toMatchObject({ username: first.username });
-
-    await connection.db
-      .delete(s.profiles)
-      .where(eq(s.profiles.userId, firstId));
-    await connection.db.delete(s.user).where(eq(s.user.id, firstId));
-    expect(
-      await connection.db
-        .select({ userId: s.usernameClaims.userId })
-        .from(s.usernameClaims)
-        .where(eq(s.usernameClaims.username, first.username)),
-    ).toEqual([{ userId: null }]);
+    ).resolves.toMatchObject({ username: "abc" });
     await expect(
       updateProfile(connection.db, secondId, {
         displayName: "Other Amal",
-        username: first.username,
+        username: "abcd",
+        avatarIntent: "keep",
+        avatarId: null,
+      }),
+    ).resolves.toMatchObject({ username: "abcd" });
+    await expect(
+      updateProfile(connection.db, secondId, {
+        displayName: "Other Amal",
+        username: "admin",
         avatarIntent: "keep",
         avatarId: null,
       }),

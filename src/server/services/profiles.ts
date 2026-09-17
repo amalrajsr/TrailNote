@@ -89,6 +89,15 @@ export async function updateProfile(
       throw new DomainError("FORBIDDEN", "This profile cannot be updated.");
     if (!(await reserveUsername(tx, userId, input.username, now)))
       throw new DomainError("CONFLICT", "That username is taken.");
+    if (profile.username !== input.username)
+      await tx
+        .delete(s.usernameClaims)
+        .where(
+          and(
+            eq(s.usernameClaims.userId, userId),
+            eq(s.usernameClaims.username, profile.username),
+          ),
+        );
 
     const currentAvatar = (
       await tx
