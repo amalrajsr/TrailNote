@@ -1,30 +1,52 @@
-import { BedDouble, Clock3, Lightbulb } from "lucide-react";
+import { Clock3, IndianRupee, Route } from "lucide-react";
+
 export function Notebook() {
   return (
-    <div className="notebook" aria-hidden>
-      <svg className="contours" viewBox="0 0 400 340">
-        <path d="M-30 250C110 110 280 450 440 220M-30 270C110 130 280 470 440 240M-30 290C110 150 280 490 440 260M-30 230C110 90 280 430 440 200M-30 40C120-80 270 180 430 30M-30 60C120-60 270 200 430 50M-30 80C120-40 270 220 430 70" />
-      </svg>
-      <div className="paper">
-        <div className="eyebrow">From one traveller to another</div>
-        <h2>
-          Good trips start with
-          <br />
-          useful details.
-        </h2>
-        <div className="notebook-line">
-          <BedDouble size={17} />
-          What you paid
+    <aside className="hero-note" aria-labelledby="hero-note-title">
+      <div className="hero-note-content">
+        <p className="hero-note-label">From one traveller to another</p>
+        <h2 id="hero-note-title">Good trips start with useful details.</h2>
+        <p className="hero-note-intro">
+          The small practical things another traveller can actually use.
+        </p>
+
+        <div className="hero-note-details">
+          <div className="hero-note-row">
+            <span className="hero-note-icon" aria-hidden="true">
+              <IndianRupee size={19} strokeWidth={2} />
+            </span>
+            <div>
+              <strong>What you paid</strong>
+              <span>Room rates, fares, meals and entry fees.</span>
+            </div>
+          </div>
+          <div className="hero-note-row">
+            <span className="hero-note-icon" aria-hidden="true">
+              <Clock3 size={19} strokeWidth={2} />
+            </span>
+            <div>
+              <strong>When you visited</strong>
+              <span>So the next traveller knows how recent it is.</span>
+            </div>
+          </div>
+          <div className="hero-note-row">
+            <span className="hero-note-icon" aria-hidden="true">
+              <Route size={19} strokeWidth={2} />
+            </span>
+            <div>
+              <strong>What to know</strong>
+              <span>Routes, timings, shortcuts and small surprises.</span>
+            </div>
+          </div>
         </div>
-        <div className="notebook-line">
-          <Clock3 size={17} />
-          When you visited
-        </div>
-        <div className="notebook-line">
-          <Lightbulb size={17} />
-          What to know
+
+        <div className="hero-note-example">
+          <p className="hero-note-meta">Explore · Goa</p>
+          <blockquote>
+If you’re exploring South Goa, don’t skip Butterfly Beach. Take the off-road route if you can ,it makes the visit even better.          </blockquote>
+          <p className="hero-note-date">Visited Juanuary 2026</p>
         </div>
       </div>
-    </div>
+    </aside>
   );
 }

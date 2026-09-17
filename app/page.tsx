@@ -2,6 +2,7 @@ import Link from "next/link";
 import { DestinationSearch } from "../src/components/destinations/search";
 import { DestinationTiles } from "../src/components/destinations/tiles";
 import { MapIllustration } from "../src/components/destinations/map-illustration";
+import { Notebook } from "../src/components/destinations/notebook";
 import { HomepageTipCard } from "../src/components/contributions/homepage-card";
 import { getDatabase } from "../src/db";
 import {
@@ -34,29 +35,32 @@ export default async function HomePage({
   return (
     <main id="main" className="home-page">
       <section className="home-hero" aria-labelledby="home-title">
-        <div className="container home-copy">
-          {signedOut === "1" && (
-            <p className="account-notice home-notice" role="status">
-              You’ve signed out successfully.
+        <div className="container home-hero-grid">
+          <div className="home-copy">
+            {signedOut === "1" && (
+              <p className="account-notice home-notice" role="status">
+                You’ve signed out successfully.
+              </p>
+            )}
+            <p className="eyebrow">From travellers who’ve been there</p>
+            <h1 id="home-title">
+              A little local knowledge.
+              <span>A better trip.</span>
+            </h1>
+            <p className="intro">
+              What travellers paid, how they got around, and the little things
+              worth knowing.
             </p>
-          )}
-          <p className="eyebrow">From travellers who’ve been there</p>
-          <h1 id="home-title">
-            A little local knowledge.
-            <span>A better trip.</span>
-          </h1>
-          <p className="intro">
-            What travellers paid, how they got around, and the little things
-            worth knowing.
-          </p>
-          <DestinationSearch />
-          <nav className="suggestions" aria-label="Suggested destinations">
-            <span>A few places to start:</span>
-            <Link href="/destinations/badami">Badami</Link>
-            <Link href="/destinations/hampi">Hampi</Link>
-            <Link href="/destinations/varkala">Varkala</Link>
-            <Link href="/destinations/matheran">Matheran</Link>
-          </nav>
+            <DestinationSearch />
+            <nav className="suggestions" aria-label="Suggested destinations">
+              <span>A few places to start:</span>
+              <Link href="/destinations/badami">Badami</Link>
+              <Link href="/destinations/hampi">Hampi</Link>
+              <Link href="/destinations/varkala">Varkala</Link>
+              <Link href="/destinations/matheran">Matheran</Link>
+            </nav>
+          </div>
+          <Notebook />
         </div>
       </section>
 
