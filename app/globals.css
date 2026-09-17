@@ -3043,6 +3043,8 @@ textarea.field-input {
   margin-top: 8px;
 }
 .logout-spinner {
+  display: block;
+  margin-inline: auto;
   color: var(--brand);
 }
 .logout-actions {
@@ -4174,6 +4176,7 @@ summary {
     letter-spacing: -0.04em;
   }
   .auth-story-lede {
+    display: none;
     font-size: 14px;
     line-height: 1.65;
   }
