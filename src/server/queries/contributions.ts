@@ -240,6 +240,9 @@ export async function cardsForRows(db: Database, rows: Tip[]) {
           id: s.confirmations.contributionId,
           revision: s.confirmations.revision,
           month: sql<string>`max(${s.confirmations.visitedMonth})`,
+          confirmedAt: sql<number>`max(${s.confirmations.updatedAt})`.mapWith(
+            Number,
+          ),
           count: sql<number>`count(*)`.mapWith(Number),
         })
         .from(s.confirmations)
@@ -355,6 +358,7 @@ export async function cardsForRows(db: Database, rows: Tip[]) {
             },
       visitedMonth: t.visitedMonth,
       lastConfirmedMonth: confirmation?.month ?? null,
+      lastConfirmedAt: confirmation?.confirmedAt ?? null,
       confirmationCount: confirmation?.count ?? 0,
       helpfulCount: helpful.find((h) => h.id === t.id)?.count ?? 0,
       changeReported: changed,
@@ -379,6 +383,7 @@ export async function cardsForRows(db: Database, rows: Tip[]) {
       },
       revision: t.revision,
       createdAt: t.createdAt,
+      updatedAt: t.updatedAt,
       parentContributionId: t.parentContributionId,
       parentRevision: t.parentRevision,
       photos: photos

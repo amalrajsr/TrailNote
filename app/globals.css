@@ -1677,6 +1677,13 @@ textarea.field-input {
   font-size: 13px;
   margin-top: 8px;
 }
+.contribution-form .field-input[aria-invalid="true"] {
+  border-color: var(--brand);
+  background: var(--brand-faint);
+}
+.contribution-form .field-error {
+  color: var(--brand);
+}
 .field-foot {
   display: flex;
   justify-content: space-between;
@@ -2761,6 +2768,53 @@ textarea.field-input {
   display: block;
   color: var(--ink-muted);
 }
+.fresh-line .fresh-label {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.info-tooltip {
+  position: relative;
+  display: inline-flex;
+}
+.info-tooltip-trigger {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  margin: -5px -7px -5px -3px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-muted);
+}
+.info-tooltip-trigger:hover,
+.info-tooltip-trigger[aria-expanded="true"] {
+  background: var(--brand-faint);
+  color: var(--brand);
+}
+.info-tooltip-content {
+  position: absolute;
+  right: -6px;
+  bottom: calc(100% + 7px);
+  z-index: 20;
+  width: max-content;
+  max-width: min(240px, calc(100vw - 64px));
+  padding: 9px 11px;
+  border: 1px solid var(--brand-border);
+  border-radius: 9px;
+  background: var(--ink);
+  box-shadow: var(--shadow-popover);
+  color: var(--surface);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+.tip-activity time,
+.last-confirmed time {
+  font-variant-numeric: tabular-nums;
+}
 .freshness-panel p {
   font-size: 13px;
   line-height: 21px;
@@ -3105,6 +3159,11 @@ textarea.field-input {
   border-radius: 10px;
   background: var(--danger-soft);
   color: var(--danger);
+}
+.contribution-form .error-notice {
+  border-color: var(--brand-border);
+  background: var(--brand-soft);
+  color: var(--brand);
 }
 .skeleton {
   background: var(--surface-soft);
@@ -4425,12 +4484,13 @@ body:has(.composer-page) .site-footer .footer-grid::after {
   color: var(--ink-muted);
   font-size: 12px;
 }
-.composer-main .usefulness-guidance {
+.contribution-form .usefulness-guidance {
   margin-top: 10px;
   padding: 10px 12px;
   border-radius: 10px;
-  background: var(--warning-soft);
-  color: var(--warning);
+  border: 1px solid var(--brand-border);
+  background: var(--brand-faint);
+  color: var(--brand);
   font-size: 13px;
   line-height: 20px;
 }

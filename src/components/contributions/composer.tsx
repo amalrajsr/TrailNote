@@ -25,7 +25,12 @@ import {
   visitMonthChoice,
 } from "../../lib/visit-month";
 import { parseMoney } from "../../lib/money";
-import { contributionInput } from "../../lib/validation/contribution";
+import {
+  contributionBodyMaxLength,
+  contributionBodyMinLength,
+  contributionInput,
+  textLength,
+} from "../../lib/validation/contribution";
 import { CategoryIcon } from "../ui/category-icon";
 import { Button, Field, Input, Select, Textarea } from "../ui/primitives";
 import { PhotoUploader, type UploadedPhoto } from "./photo-uploader";
@@ -410,7 +415,7 @@ export function ContributionComposer({
     setClientFieldErrors({});
     const body = draft.body.trim();
     if (
-      body.length < 12 ||
+      textLength(body) < contributionBodyMinLength ||
       genericTipPatterns.some((pattern) => pattern.test(body))
     ) {
       event.preventDefault();
@@ -731,7 +736,7 @@ export function ContributionComposer({
       <form
         ref={formRef}
         action={action}
-        className="form-card"
+        className="form-card contribution-form"
         noValidate
         onChange={() => setShowValidation(false)}
         onSubmit={handleSubmit}
@@ -812,12 +817,16 @@ export function ContributionComposer({
             <Textarea
               id="body"
               name="body"
-              maxLength={1000}
               required
               placeholder={categoryCopy[category].placeholder}
               value={draft.body}
               onChange={(event) => {
-                setValue("body", event.target.value);
+                setValue(
+                  "body",
+                  Array.from(event.target.value)
+                    .slice(0, contributionBodyMaxLength)
+                    .join(""),
+                );
                 setShowUsefulnessGuidance(false);
               }}
               aria-describedby={`body-help${error("body") ? " body-error" : ""}${showUsefulnessGuidance ? " body-usefulness" : ""}`}
@@ -825,7 +834,10 @@ export function ContributionComposer({
             />
             <div id="body-help" className="field-foot">
               <span>Share a useful detail rather than a general review.</span>
-              <span>{Array.from(draft.body).length} / 1,000</span>
+              <span>
+                {textLength(draft.body)} /{" "}
+                {contributionBodyMaxLength.toLocaleString("en-IN")}
+              </span>
             </div>
             {showUsefulnessGuidance && (
               <p

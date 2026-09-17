@@ -193,6 +193,18 @@ describe("transactional contribution services", () => {
     await expect(
       setConfirmation(conn.db, fixtureId(4), tip.id, 1, "2026-09"),
     ).rejects.toMatchObject({ code: "CONFLICT" });
+    const confirmedAt = new Date("2026-09-17T10:30:00.000Z");
+    await setConfirmation(
+      conn.db,
+      fixtureId(5),
+      tip.id,
+      2,
+      "2026-09",
+      confirmedAt,
+    );
+    const detail = await contributionDetail(conn.db, tip.id);
+    expect(detail.confirmationCount).toBe(1);
+    expect(detail.lastConfirmedAt).toBe(+confirmedAt);
   });
   it("rolls back an entire contribution when a photo cannot be attached", async () => {
     const before = await conn.db.select().from(s.contributions);
@@ -210,6 +222,8 @@ describe("transactional contribution services", () => {
     const parent = await visibleContribution(conn.db, fixtureId(102));
     expect(parent.pricePaise).toBe(3500);
     const detail = await contributionDetail(conn.db, parent.id);
+    expect(detail.updatedAt).toBe(parent.updatedAt);
+    expect(detail.createdAt).toBe(parent.createdAt);
     expect(
       (await visibleContribution(conn.db, fixtureId(200))).pricePaise,
     ).toBe(4000);
@@ -245,6 +259,7 @@ describe("transactional contribution services", () => {
     const detail = await contributionDetail(conn.db, parent.id);
     expect(detail.revision).toBe(2);
     expect(detail.confirmationCount).toBe(0);
+    expect(detail.lastConfirmedAt).toBeNull();
     expect(detail.changeReported).toBe(false);
     expect(detail.updates).toHaveLength(0);
     expect(detail.earlierUpdates.map((update) => update.id)).toContain(

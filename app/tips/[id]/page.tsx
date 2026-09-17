@@ -8,6 +8,7 @@ import { ContactReveal } from "../../../src/components/contributions/contact-rev
 import { ReportTip } from "../../../src/components/contributions/report-tip";
 import { ProfileAvatar } from "../../../src/components/profiles/avatar";
 import { CategoryIcon } from "../../../src/components/ui/category-icon";
+import { InfoTooltip } from "../../../src/components/ui/info-tooltip";
 import { getDatabase } from "../../../src/db";
 import { categoryLabels } from "../../../src/lib/constants";
 import { formatMoney, priceSuffix } from "../../../src/lib/money";
@@ -41,6 +42,16 @@ const humanize = (value: string) =>
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+
+const tipDateFormatter = new Intl.DateTimeFormat("en-IN", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: "Asia/Kolkata",
+  timeZoneName: "short",
+});
 
 function Price({ price }: { price: ContributionCardDTO["price"] }) {
   if (!price) return null;
@@ -219,6 +230,9 @@ function DetailCard({
 }
 
 function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
+  const wasEdited = detail.revision > 1;
+  const activityAt = wasEdited ? detail.updatedAt : detail.createdAt;
+
   return (
     <aside className="detail-aside">
       <section className="freshness-panel">
@@ -234,11 +248,34 @@ function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
             ? formatMonth(detail.visitedMonth)
             : "Not provided"}
         </p>
-        <p className="fresh-line">
-          <small>Last confirmed</small>
-          {detail.lastConfirmedMonth
-            ? formatMonth(detail.lastConfirmedMonth)
-            : "Not yet confirmed"}
+        <p className="fresh-line last-confirmed">
+          <small className="fresh-label">
+            Last confirmed
+            <InfoTooltip label="Last confirmed">
+              When another traveller most recently confirmed this tip.
+              Confirmations apply only to the version they reviewed.
+            </InfoTooltip>
+          </small>
+          {detail.lastConfirmedAt ? (
+            <time dateTime={new Date(detail.lastConfirmedAt).toISOString()}>
+              {tipDateFormatter.format(detail.lastConfirmedAt)}
+            </time>
+          ) : (
+            "Not yet confirmed"
+          )}
+        </p>
+        <p className="fresh-line tip-activity">
+          <small className="fresh-label">
+            {wasEdited ? "Last updated" : "Added"}
+            <InfoTooltip label={wasEdited ? "Last updated" : "Added"}>
+              {wasEdited
+                ? "When the original author last edited this tip."
+                : "When the original author first shared this tip."}
+            </InfoTooltip>
+          </small>
+          <time dateTime={new Date(activityAt).toISOString()}>
+            {tipDateFormatter.format(activityAt)}
+          </time>
         </p>
         {detail.confirmationCount > 0 && (
           <p className="fresh-count">
@@ -251,8 +288,8 @@ function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
           {detail.changeReported
             ? "Someone reported that these details may have changed. Review the latest update before relying on them."
             : detail.confirmationCount > 0
-              ? "Traveller confirmations suggest this version is still useful, but details can still change."
-              : "No traveller has confirmed this version yet. Verify important details before relying on it."}
+              ? "Traveller confirmations suggest this tip is still useful, but details can still change."
+              : "No traveller has confirmed this tip yet. Verify important details before relying on it."}
         </p>
       </section>
       <section className="side-note trust-note">
@@ -269,93 +306,93 @@ function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
   );
 }
 
-function Updates({ detail }: { detail: ContributionDetailDTO }) {
-  if (
-    detail.isUpdate ||
-    (!detail.updates.length && !detail.earlierUpdates.length)
-  )
-    return null;
+// function Updates({ detail }: { detail: ContributionDetailDTO }) {
+//   if (
+//     detail.isUpdate ||
+//     (!detail.updates.length && !detail.earlierUpdates.length)
+//   )
+//     return null;
 
-  const cards = (updates: ContributionDetailDTO["updates"]) =>
-    updates.map((update) => {
-      const originalPrice = detail.updateOriginalPrices[update.id];
-      return (
-        <article className="update-card" key={update.id}>
-          <div className="row between update-byline">
-            <Link className="update-author" href={`/users/${update.author.id}`}>
-              <ProfileAvatar
-                name={update.author.displayName}
-                avatar={update.author.avatar}
-                className="update-author-avatar"
-                sizes="32px"
-              />
-              <span>
-                <strong>{update.author.displayName}</strong>
-                <small className="profile-handle">
-                  @{update.author.username}
-                </small>
-              </span>
-            </Link>
-            <span>
-              {update.visitedMonth
-                ? `Visited ${formatMonth(update.visitedMonth)}`
-                : formatMonth(null)}
-            </span>
-          </div>
-          <p>{update.body}</p>
-          {(originalPrice || update.price) && (
-            <div className="update-prices">
-              {originalPrice && (
-                <div>
-                  <span>Original report</span>
-                  <strong>
-                    {formatMoney(originalPrice.paise, originalPrice.unit)}{" "}
-                    <small>
-                      {priceSuffix(originalPrice.unit, originalPrice.unitLabel)}
-                    </small>
-                  </strong>
-                </div>
-              )}
-              {update.price && (
-                <div>
-                  <span>Update reported</span>
-                  <strong>
-                    {formatMoney(update.price.paise, update.price.unit)}{" "}
-                    <small>
-                      {priceSuffix(update.price.unit, update.price.unitLabel)}
-                    </small>
-                  </strong>
-                </div>
-              )}
-            </div>
-          )}
-          <Link className="quiet update-link" href={`/tips/${update.id}`}>
-            Read full update →
-          </Link>
-        </article>
-      );
-    });
+//   const cards = (updates: ContributionDetailDTO["updates"]) =>
+//     updates.map((update) => {
+//       const originalPrice = detail.updateOriginalPrices[update.id];
+//       return (
+//         <article className="update-card" key={update.id}>
+//           <div className="row between update-byline">
+//             <Link className="update-author" href={`/users/${update.author.id}`}>
+//               <ProfileAvatar
+//                 name={update.author.displayName}
+//                 avatar={update.author.avatar}
+//                 className="update-author-avatar"
+//                 sizes="32px"
+//               />
+//               <span>
+//                 <strong>{update.author.displayName}</strong>
+//                 <small className="profile-handle">
+//                   @{update.author.username}
+//                 </small>
+//               </span>
+//             </Link>
+//             <span>
+//               {update.visitedMonth
+//                 ? `Visited ${formatMonth(update.visitedMonth)}`
+//                 : formatMonth(null)}
+//             </span>
+//           </div>
+//           <p>{update.body}</p>
+//           {(originalPrice || update.price) && (
+//             <div className="update-prices">
+//               {originalPrice && (
+//                 <div>
+//                   <span>Original report</span>
+//                   <strong>
+//                     {formatMoney(originalPrice.paise, originalPrice.unit)}{" "}
+//                     <small>
+//                       {priceSuffix(originalPrice.unit, originalPrice.unitLabel)}
+//                     </small>
+//                   </strong>
+//                 </div>
+//               )}
+//               {update.price && (
+//                 <div>
+//                   <span>Update reported</span>
+//                   <strong>
+//                     {formatMoney(update.price.paise, update.price.unit)}{" "}
+//                     <small>
+//                       {priceSuffix(update.price.unit, update.price.unitLabel)}
+//                     </small>
+//                   </strong>
+//                 </div>
+//               )}
+//             </div>
+//           )}
+//           <Link className="quiet update-link" href={`/tips/${update.id}`}>
+//             Read full update →
+//           </Link>
+//         </article>
+//       );
+//     });
 
-  return (
-    <section className="updates" id="updates" aria-labelledby="updates-title">
-      <h2 id="updates-title">
-        Traveller updates <small>{detail.updates.length}</small>
-      </h2>
-      <div className="timeline">{cards(detail.updates)}</div>
-      {detail.earlierUpdates.length > 0 && (
-        <details className="revision-disclosure">
-          <summary>
-            Updates on an earlier version ({detail.earlierUpdates.length})
-          </summary>
-          <p className="muted">
-            Edited since these updates. They remain visible for context.
-          </p>
-          <div className="timeline">{cards(detail.earlierUpdates)}</div>
-        </details>
-      )}
-    </section>
-  );
-}
+//   return (
+//     <section className="updates" id="updates" aria-labelledby="updates-title">
+//       <h2 id="updates-title">
+//         Traveller updates <small>{detail.updates.length}</small>
+//       </h2>
+//       <div className="timeline">{cards(detail.updates)}</div>
+//       {detail.earlierUpdates.length > 0 && (
+//         <details className="revision-disclosure">
+//           <summary>
+//             Updates on an earlier version ({detail.earlierUpdates.length})
+//           </summary>
+//           <p className="muted">
+//             Edited since these updates. They remain visible for context.
+//           </p>
+//           <div className="timeline">{cards(detail.earlierUpdates)}</div>
+//         </details>
+//       )}
+//     </section>
+//   );
+// }
 
 export default async function TipDetailPage({
   params,
@@ -386,7 +423,7 @@ export default async function TipDetailPage({
       <div className="two-col detail-grid">
         <DetailCard detail={detail} reaction={reaction} intent={query.intent} />
         <FreshnessPanel detail={detail} />
-        <Updates detail={detail} />
+        {/* <Updates detail={detail} /> */}
       </div>
     </main>
   );

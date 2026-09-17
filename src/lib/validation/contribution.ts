@@ -9,7 +9,13 @@ import {
 } from "../constants";
 import { validMonth } from "../visit-month";
 import { validMapsUrl } from "../urls";
-export const textLength = (value: string) => Array.from(value).length;
+export const normalizeTextLineEndings = (value: string) =>
+  value.replace(/\r\n?/g, "\n");
+export const textLength = (value: string) =>
+  Array.from(normalizeTextLineEndings(value)).length;
+export const contributionBodyMinLength = 10;
+export const contributionBodyMaxLength = 1000;
+
 const nullableText = (max: number) =>
   z.preprocess(
     (v) =>
@@ -36,13 +42,18 @@ export const contributionInput = z
   .object({
     destinationId: z.uuid(),
     category: z.enum(categories),
-    body: z
-      .string()
-      .trim()
-      .refine(
-        (v) => textLength(v) >= 10 && textLength(v) <= 1000,
-        "Write between 10 and 1,000 characters.",
-      ),
+    body: z.preprocess(
+      (v) => (typeof v === "string" ? normalizeTextLineEndings(v) : v),
+      z
+        .string()
+        .trim()
+        .refine(
+          (v) =>
+            textLength(v) >= contributionBodyMinLength &&
+            textLength(v) <= contributionBodyMaxLength,
+          `Write between ${contributionBodyMinLength} and ${contributionBodyMaxLength.toLocaleString("en-IN")} characters.`,
+        ),
+    ),
     visitedMonth: nullableText(7).refine(
       (v) => v === null || validMonth(v),
       "Choose a valid month from January 2000 through this month.",

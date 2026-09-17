@@ -6,6 +6,7 @@ test.describe.configure({ mode: "serial" });
 
 const changedTipId = "00000000-0000-4000-8000-000000000102";
 const unconfirmedTipId = "00000000-0000-4000-8000-000000000100";
+const editedTipId = "00000000-0000-4000-8000-000000000109";
 const observerSessionToken = "fieldnotes-development-observer-session";
 const newObserverSessionToken = "fieldnotes-development-new-observer-session";
 const authSecret = "fieldnotes-e2e-secret-with-more-than-thirty-two-characters";
@@ -403,6 +404,37 @@ test("detail freshness avoids a duplicate empty confirmation state", async ({
   await expect(freshness.getByText("Not yet confirmed")).toBeVisible();
   await expect(freshness.getByText("No confirmations yet")).toHaveCount(0);
   await expect(freshness.locator(".fresh-count")).toHaveCount(0);
+});
+
+test("detail distinguishes when a tip was added from when it was edited", async ({
+  page,
+}) => {
+  await page.goto(`/tips/${changedTipId}`);
+  await expect(page.locator(".last-confirmed time")).toHaveAttribute(
+    "datetime",
+    new Date("2026-09-06T06:30:00.000Z").toISOString(),
+  );
+  await page.getByRole("button", { name: "About Last confirmed" }).click();
+  await expect(page.getByRole("tooltip")).toContainText(
+    "Confirmations apply only to the version they reviewed",
+  );
+
+  await page.goto(`/tips/${unconfirmedTipId}`);
+  await expect(page.locator(".tip-activity .fresh-label")).toContainText(
+    "Added",
+  );
+  await expect(page.locator(".tip-activity time")).toHaveAttribute(
+    "datetime",
+    /.+/,
+  );
+  await page.goto(`/tips/${editedTipId}`);
+  await expect(page.locator(".tip-activity .fresh-label")).toContainText(
+    "Last updated",
+  );
+  await page.getByRole("button", { name: "About Last updated" }).click();
+  await expect(page.getByRole("tooltip")).toHaveText(
+    "When the original author last edited this tip.",
+  );
 });
 
 test("an author can open an edit form with the tip details populated", async ({
