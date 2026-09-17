@@ -131,6 +131,67 @@ export async function listContributions(
       : null;
   return { cards, nextCursor };
 }
+
+export async function homepageContributions(db: Database, limit = 3) {
+  const requestedLimit = Math.min(Math.max(Math.trunc(limit), 1), 6);
+  const helpfulCount = sql<number>`(select count(*) from helpful_votes h join profiles p on p.user_id=h.user_id and p.status='active' where h.contribution_id=${c.id})`;
+  const confirmationCount = sql<number>`(select count(*) from confirmations f join profiles p on p.user_id=f.user_id and p.status='active' where f.contribution_id=${c.id} and f.revision=${c.revision} and f.user_id<>${c.authorId})`;
+  const candidates = await db
+    .select({ tip: c })
+    .from(c)
+    .where(
+      and(
+        eq(c.status, "published"),
+        sql`${c.parentContributionId} is null`,
+        visible,
+      ),
+    )
+    .orderBy(
+      desc(effective),
+      desc(confirmationCount),
+      desc(helpfulCount),
+      desc(c.createdAt),
+      desc(c.id),
+    )
+    .limit(24);
+
+  const selected: Tip[] = [];
+  const selectedIds = new Set<string>();
+  const destinations = new Set<string>();
+  const categories = new Set<Category>();
+
+  const take = (requireBoth: boolean) => {
+    for (const { tip } of candidates) {
+      if (selected.length >= requestedLimit) break;
+      if (selectedIds.has(tip.id)) continue;
+      const newDestination = !destinations.has(tip.destinationId);
+      const newCategory = !categories.has(tip.category);
+      if (
+        requireBoth
+          ? !newDestination || !newCategory
+          : !newDestination && !newCategory
+      )
+        continue;
+      selected.push(tip);
+      selectedIds.add(tip.id);
+      destinations.add(tip.destinationId);
+      categories.add(tip.category);
+    }
+  };
+
+  take(true);
+  take(false);
+  for (const { tip } of candidates) {
+    if (selected.length >= requestedLimit) break;
+    if (!selectedIds.has(tip.id)) {
+      selected.push(tip);
+      selectedIds.add(tip.id);
+    }
+  }
+
+  return cardsForRows(db, selected);
+}
+
 type Tip = typeof c.$inferSelect;
 export async function cardsForRows(db: Database, rows: Tip[]) {
   if (!rows.length) return [];
@@ -165,6 +226,7 @@ export async function cardsForRows(db: Database, rows: Tip[]) {
           id: s.destinations.id,
           slug: s.destinations.slug,
           name: s.destinations.name,
+          state: s.destinations.state,
         })
         .from(s.destinations)
         .where(
@@ -263,6 +325,7 @@ export async function cardsForRows(db: Database, rows: Tip[]) {
       destination: {
         slug: destination?.slug ?? "",
         name: destination?.name ?? "Destination",
+        state: destination?.state ?? "",
       },
       category: t.category,
       title,

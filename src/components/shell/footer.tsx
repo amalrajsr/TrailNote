@@ -5,11 +5,12 @@ export function Footer() {
       <div className="container footer-grid">
         <div className="footer-brand">
           <strong className="footer-wordmark">TrailNote</strong>
-          <p>Tell the next traveller what you wish someone had told you.</p>
+          <p>Practical travel tips from people who’ve been there.</p>
         </div>
         <nav className="footer-col" aria-label="Explore">
           <strong>Explore</strong>
           <Link href="/search">Search destinations</Link>
+          <Link href="/#tips">Recent tips</Link>
           <Link href="/search">Share a tip</Link>
         </nav>
         <nav className="footer-col" aria-label="Community">

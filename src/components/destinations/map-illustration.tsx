@@ -68,10 +68,12 @@ export function MapIllustration({
   destinations,
   compact = false,
   activeSlug,
+  className,
 }: {
   destinations: MapDestination[];
   compact?: boolean;
   activeSlug?: string;
+  className?: string;
 }) {
   const markers = destinations.flatMap((destination) => {
     const position = markerPosition(destination);
@@ -80,7 +82,7 @@ export function MapIllustration({
 
   return (
     <div
-      className={`map-shell ${compact ? "destination-map" : "hero-map"}${markers.length > 8 ? " dense" : ""}`}
+      className={`map-shell ${compact ? "destination-map" : "hero-map"}${markers.length > 8 ? " dense" : ""}${className ? ` ${className}` : ""}`}
     >
       <div className="map-grid" aria-hidden="true" />
       <div className="map-water" aria-hidden="true" />

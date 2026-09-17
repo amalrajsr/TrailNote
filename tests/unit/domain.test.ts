@@ -9,6 +9,7 @@ describe("travel domain rules", () => {
       "room_night",
       "bed_night",
       "person_night",
+      "day",
       "other",
     ]);
     expect(priceUnitsByCategory.food).toEqual([

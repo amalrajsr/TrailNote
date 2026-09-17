@@ -17,6 +17,7 @@ export const priceUnits = [
   "room_night",
   "bed_night",
   "person_night",
+  "day",
   "breakfast",
   "lunch",
   "dinner",
@@ -31,7 +32,7 @@ export const priceUnits = [
 ] as const;
 export type PriceUnit = (typeof priceUnits)[number];
 export const priceUnitsByCategory = {
-  stay: ["room_night", "bed_night", "person_night", "other"],
+  stay: ["room_night", "bed_night", "person_night", "day", "other"],
   food: ["breakfast", "lunch", "dinner", "snacks", "other"],
   transport: ["person_trip", "vehicle_trip", "other"],
   explore: ["entry_person", "other"],
@@ -41,6 +42,7 @@ export const unitLabels: Record<PriceUnit, string> = {
   room_night: "/ room / night",
   bed_night: "/ bed / night",
   person_night: "/ person / night",
+  day: "/ day",
   breakfast: "/ breakfast",
   lunch: "/ lunch",
   dinner: "/ dinner",

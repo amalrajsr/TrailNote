@@ -1,0 +1,1312 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TrailNote — Final Reader-first Homepage Reference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --canvas:#f7faf7;
+      --surface:#ffffff;
+      --surface-soft:#f0f4f0;
+      --ink:#17251d;
+      --ink-muted:#5c6c62;
+      --ink-subtle:#7a887f;
+      --brand:#245c43;
+      --brand-hover:#1b4c36;
+      --brand-soft:#e6f1e9;
+      --brand-faint:#f0f7f2;
+      --brand-border:#c9ddcf;
+      --accent:#b45a3c;
+      --accent-soft:#f8ebe4;
+      --transport:#4f7181;
+      --transport-soft:#e9f0f3;
+      --sand:#9a7b3f;
+      --sand-soft:#f5f0e4;
+      --warning:#866313;
+      --warning-soft:#fbf3d8;
+      --border:#dce4dd;
+      --control:#829087;
+      --shadow-card:0 4px 16px rgb(23 37 29 / 5%);
+      --shadow-hover:0 10px 28px rgb(23 37 29 / 9%);
+      --shadow-popover:0 18px 46px rgb(23 37 29 / 14%);
+      --font:"Commissioner",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--canvas);color:var(--ink);font:400 16px/1.6 var(--font)}
+    button,input,a{font:inherit}
+    button{cursor:pointer}
+    a{color:inherit;text-decoration:none}
+    h1,h2,h3,p{margin:0}
+    img{max-width:100%;display:block}
+
+    button:focus-visible,a:focus-visible,input:focus-visible{
+      outline:2px solid var(--brand);outline-offset:3px
+    }
+
+    .icon{
+      width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;
+      stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto
+    }
+
+    .reference-note{
+      padding:8px 16px;
+      background:#e9eef1;
+      border-bottom:1px solid #ccd4d8;
+      color:#334047;
+      font-size:12px;
+      text-align:center;
+    }
+
+    .site-header{
+      height:72px;
+      position:sticky;
+      top:0;
+      z-index:30;
+      background:rgb(247 250 247 / 94%);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--border);
+    }
+
+    .header-inner{
+      width:min(1200px,calc(100% - 64px));
+      height:100%;
+      margin:auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:24px;
+    }
+
+    .wordmark{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:27px;
+      font-weight:700;
+      letter-spacing:-1px;
+    }
+
+    .wordmark .icon{
+      width:28px;height:28px;color:var(--brand)
+    }
+
+    .nav{
+      display:flex;
+      align-items:center;
+      gap:22px;
+      font-size:14px;
+      font-weight:650;
+    }
+
+    .nav a:hover{color:var(--brand)}
+
+    .btn{
+      min-height:46px;
+      padding:11px 18px;
+      border:1px solid transparent;
+      border-radius:12px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      background:var(--brand);
+      color:#fff;
+      font-size:14px;
+      font-weight:700;
+      transition:background 120ms ease, transform 120ms ease;
+    }
+
+    .btn:hover{background:var(--brand-hover)}
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{background:#fff;color:var(--ink);border-color:var(--control)}
+    .btn.secondary:hover{background:var(--surface-soft)}
+
+    .container{
+      width:min(1200px,calc(100% - 64px));
+      margin:auto;
+    }
+
+    /* hero */
+    .hero{
+      padding:72px 0 44px;
+      text-align:center;
+    }
+
+    .eyebrow{
+      color:var(--brand);
+      font-size:12px;
+      line-height:18px;
+      text-transform:uppercase;
+      letter-spacing:1.6px;
+      font-weight:800;
+    }
+
+    .hero h1{
+      max-width:850px;
+      margin:12px auto 0;
+      font-size:60px;
+      line-height:64px;
+      font-weight:500;
+      letter-spacing:-2.2px;
+    }
+
+    .hero-copy{
+      max-width:680px;
+      margin:18px auto 0;
+      color:var(--ink-muted);
+      font-size:17px;
+      line-height:28px;
+    }
+
+    .search-wrap{
+      position:relative;
+      width:min(740px,100%);
+      margin:30px auto 0;
+      text-align:left;
+    }
+
+    .search-box{
+      min-height:62px;
+      padding:8px 8px 8px 19px;
+      border:1px solid var(--control);
+      border-radius:16px;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      box-shadow:0 10px 30px rgb(23 37 29 / 6%);
+    }
+
+    .search-box>.icon{color:var(--ink-muted);width:22px;height:22px}
+
+    .search-box input{
+      flex:1;
+      min-width:0;
+      border:0;
+      outline:0;
+      background:transparent;
+      color:var(--ink);
+      font-size:16px;
+    }
+
+    .search-box input::placeholder{color:#87938b}
+
+    .search-btn{
+      min-height:46px;
+      padding:10px 16px;
+      border:0;
+      border-radius:11px;
+      background:var(--brand);
+      color:#fff;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .suggestions{
+      position:absolute;
+      left:0;right:0;
+      top:70px;
+      display:none;
+      padding:8px;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:14px;
+      box-shadow:var(--shadow-popover);
+      z-index:20;
+    }
+
+    .suggestions.show{display:block}
+
+    .suggestion{
+      width:100%;
+      border:0;
+      border-radius:10px;
+      background:transparent;
+      padding:11px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      text-align:left;
+    }
+
+    .suggestion:hover{background:var(--brand-faint)}
+    .suggestion strong{display:block;font-size:14px}
+    .suggestion span{font-size:12px;color:var(--ink-muted)}
+
+    .starter{
+      margin-top:13px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      flex-wrap:wrap;
+      color:var(--ink-muted);
+      font-size:12px;
+    }
+
+    .starter a{
+      padding:5px 8px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--border);
+      color:var(--ink);
+      font-weight:600;
+    }
+
+    .starter a:hover{border-color:var(--brand);color:var(--brand)}
+
+    /* proof strip */
+    .proof-strip{
+      margin:10px auto 0;
+      width:min(920px,100%);
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:1px;
+      overflow:hidden;
+      border:1px solid var(--brand-border);
+      border-radius:16px;
+      background:var(--brand-border);
+    }
+
+    .proof-item{
+      padding:15px 18px;
+      background:var(--brand-faint);
+      text-align:left;
+    }
+
+    .proof-item strong{font-size:13px}
+    .proof-item span{
+      display:block;
+      margin-top:2px;
+      color:var(--ink-muted);
+      font-size:12px;
+    }
+
+    /* recent knowledge */
+    .section{
+      padding:70px 0;
+    }
+
+    .section.white{
+      background:#fff;
+      border-top:1px solid var(--border);
+      border-bottom:1px solid var(--border);
+    }
+
+    .section-head{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:24px;
+      margin-bottom:25px;
+    }
+
+    .section-head h2{
+      margin-top:5px;
+      font-size:36px;
+      line-height:43px;
+      font-weight:600;
+      letter-spacing:-.7px;
+    }
+
+    .section-head p{
+      max-width:610px;
+      margin-top:7px;
+      color:var(--ink-muted);
+      font-size:14px;
+      line-height:23px;
+    }
+
+    .text-link{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      color:var(--brand);
+      font-size:13px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .text-link:hover{text-decoration:underline;text-underline-offset:4px}
+
+    .tips-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:16px;
+    }
+
+    .tip-card{
+      min-height:285px;
+      padding:22px;
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:#fff;
+      display:flex;
+      flex-direction:column;
+      box-shadow:var(--shadow-card);
+      transition:transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+    }
+
+    .tip-card:hover{
+      transform:translateY(-2px);
+      box-shadow:var(--shadow-hover);
+      border-color:var(--brand-border);
+    }
+
+    .tip-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .category{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:1px;
+      text-transform:uppercase;
+    }
+
+    .category.transport{color:var(--transport)}
+    .category.stay{color:var(--sand)}
+    .category.food{color:var(--accent)}
+    .category.explore{color:var(--brand)}
+    .category.general{color:#667369}
+
+    .cat-line{
+      width:4px;height:20px;border-radius:4px;background:currentColor
+    }
+
+    .place-tag{
+      font-size:11px;
+      color:var(--ink-muted);
+      font-weight:650;
+    }
+
+    .tip-card h3{
+      margin-top:14px;
+      font-size:20px;
+      line-height:28px;
+      font-weight:600;
+    }
+
+    .tip-primary{
+      margin-top:6px;
+      font-size:28px;
+      line-height:34px;
+      font-weight:700;
+      font-variant-numeric:tabular-nums;
+    }
+
+    .tip-primary small{
+      margin-left:3px;
+      color:var(--ink-muted);
+      font-size:12px;
+      font-weight:500;
+    }
+
+    .tip-facts{
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px;
+      margin-top:7px;
+      color:var(--ink-muted);
+      font-size:12px;
+    }
+
+    .tip-facts span+span:before{
+      content:"·";
+      margin-right:7px;
+      color:var(--ink-subtle);
+    }
+
+    .tip-body{
+      margin-top:11px;
+      color:#334239;
+      font-size:14px;
+      line-height:22px;
+    }
+
+    .tip-footer{
+      margin-top:auto;
+      padding-top:16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      color:var(--ink-muted);
+      font-size:11px;
+    }
+
+    .freshness{
+      padding:4px 7px;
+      border-radius:7px;
+      background:var(--brand-soft);
+      color:var(--brand);
+      font-weight:700;
+    }
+
+    .tip-card.text-first .tip-primary,
+    .tip-card.text-first .tip-facts{display:none}
+
+    .tip-card.text-first .tip-body{
+      margin-top:16px;
+      font-size:16px;
+      line-height:25px;
+    }
+
+    .why-row{
+      margin-top:22px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      color:var(--ink-muted);
+      font-size:12px;
+    }
+
+    .why-row .icon{width:15px;height:15px;color:var(--brand)}
+
+    /* explore */
+    .explore-grid{
+      display:grid;
+      grid-template-columns:360px minmax(0,1fr);
+      gap:34px;
+      align-items:stretch;
+    }
+
+    .places-panel{
+      padding:8px 0;
+    }
+
+    .places-panel h2{
+      margin-top:5px;
+      font-size:36px;
+      line-height:43px;
+      font-weight:600;
+      letter-spacing:-.7px;
+    }
+
+    .places-panel>p{
+      margin-top:9px;
+      color:var(--ink-muted);
+      font-size:14px;
+      line-height:23px;
+    }
+
+    .place-list{
+      margin-top:22px;
+      display:grid;
+      gap:8px;
+    }
+
+    .place-row{
+      min-height:58px;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:13px;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .place-row:hover{
+      border-color:var(--brand-border);
+      background:var(--brand-faint);
+    }
+
+    .place-row strong{display:block;font-size:14px}
+    .place-row span{display:block;color:var(--ink-muted);font-size:11px}
+    .note-count{
+      padding:5px 8px;
+      border-radius:999px;
+      background:var(--brand-soft);
+      color:var(--brand);
+      font-size:11px!important;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .map-shell{
+      position:relative;
+      min-height:515px;
+      overflow:hidden;
+      border-radius:26px;
+      border:1px solid var(--brand-border);
+      background:
+        radial-gradient(circle at 70% 16%, rgb(255 255 255 / 70%), transparent 22%),
+        linear-gradient(180deg,#edf7ef 0%,#e5f1e9 100%);
+    }
+
+    .map-grid{
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(rgb(36 92 67 / 5%) 1px,transparent 1px),
+        linear-gradient(90deg,rgb(36 92 67 / 5%) 1px,transparent 1px);
+      background-size:38px 38px;
+      mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),rgba(0,0,0,.15));
+    }
+
+    .map-copy{
+      position:absolute;
+      left:24px;top:22px;
+      z-index:3;
+      max-width:220px;
+    }
+
+    .map-copy strong{font-size:14px}
+    .map-copy span{
+      display:block;
+      margin-top:2px;
+      color:var(--ink-muted);
+      font-size:11px;
+    }
+
+    .india-map{
+      position:absolute;
+      height:82%;
+      width:auto;
+      right:10%;
+      bottom:3%;
+      opacity:.82;
+      filter:sepia(1) saturate(.35) hue-rotate(80deg) brightness(.8);
+      mix-blend-mode:multiply;
+    }
+
+    .map-marker{
+      position:absolute;
+      z-index:5;
+      transform:translate(-50%,-50%);
+      display:flex;
+      align-items:center;
+      gap:6px;
+      padding:5px 8px 5px 6px;
+      border:1px solid rgb(36 92 67 / 22%);
+      border-radius:999px;
+      background:rgb(255 255 255 / 92%);
+      color:var(--ink);
+      box-shadow:0 5px 16px rgb(23 37 29 / 10%);
+      font-size:10px;
+      font-weight:700;
+    }
+
+    .dot{
+      width:8px;height:8px;border-radius:50%;background:var(--brand);
+      box-shadow:0 0 0 3px rgb(36 92 67 / 12%);
+    }
+
+    .m-ladakh{left:66%;top:19%}
+    .m-varanasi{left:73%;top:47%}
+    .m-hampi{left:55%;top:69%}
+    .m-goa{left:47%;top:65%}
+    .m-ooty{left:54%;top:77%}
+    .m-varkala{left:56%;top:86%}
+
+    .map-attribution{
+      position:absolute;
+      right:14px;
+      bottom:10px;
+      z-index:6;
+      padding:3px 6px;
+      border-radius:5px;
+      background:rgb(255 255 255 / 80%);
+      color:#647168;
+      font-size:9px;
+    }
+
+    /* CTA */
+    .cta-wrap{padding:20px 0 76px}
+    .cta{
+      padding:38px 42px;
+      border-radius:26px;
+      background:var(--brand);
+      color:white;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:32px;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .cta:after{
+      content:"";
+      position:absolute;
+      width:260px;height:260px;border-radius:50%;
+      right:-80px;top:-100px;
+      border:1px solid rgb(255 255 255 / 15%);
+      box-shadow:0 0 0 38px rgb(255 255 255 / 4%),0 0 0 76px rgb(255 255 255 / 3%);
+    }
+
+    .cta-content{position:relative;z-index:2}
+    .cta .eyebrow{color:#bad4c4}
+    .cta h2{
+      margin-top:7px;
+      font-size:34px;
+      line-height:41px;
+      font-weight:600;
+      letter-spacing:-.6px;
+    }
+    .cta p{margin-top:7px;color:#d7e8dc;font-size:14px}
+
+    .cta .btn{
+      position:relative;z-index:2;
+      background:#fff;color:var(--brand);
+      min-width:150px;
+    }
+
+    /* footer */
+    .footer{
+      padding:34px 0;
+      border-top:1px solid var(--border);
+      background:var(--surface-soft);
+    }
+
+    .footer-grid{
+      display:grid;
+      grid-template-columns:1.5fr 1fr 1fr;
+      gap:36px;
+    }
+
+    .footer-brand strong{font-size:20px}
+    .footer-brand p{
+      max-width:360px;
+      margin-top:5px;
+      color:var(--ink-muted);
+      font-size:12px;
+      line-height:20px;
+    }
+
+    .footer-col strong{
+      display:block;
+      margin-bottom:7px;
+      font-size:12px;
+    }
+
+    .footer-col a{
+      display:block;
+      margin-top:5px;
+      color:var(--ink-muted);
+      font-size:12px;
+    }
+
+    .footer-col a:hover{color:var(--brand)}
+
+    @media(max-width:1000px){
+      .hero h1{font-size:50px;line-height:55px}
+      .tips-grid{grid-template-columns:1fr 1fr}
+      .tip-card:nth-child(3){grid-column:1/-1}
+      .explore-grid{grid-template-columns:1fr}
+      .place-list{grid-template-columns:repeat(2,1fr)}
+      .map-shell{min-height:480px}
+    }
+
+    @media(max-width:767px){
+      .site-header{height:64px}
+      .header-inner,.container{width:calc(100% - 32px)}
+      .nav .desktop{display:none}
+      .wordmark{font-size:24px}
+      .hero{padding:47px 0 30px;text-align:left}
+      .hero h1{font-size:39px;line-height:44px;letter-spacing:-1.4px;margin-left:0}
+      .hero-copy{margin-left:0;font-size:15px;line-height:24px}
+      .search-wrap{margin-top:24px}
+      .search-box{min-height:58px;padding-left:15px}
+      .search-btn span{display:none}
+      .starter{justify-content:flex-start}
+      .proof-strip{grid-template-columns:1fr}
+      .section{padding:52px 0}
+      .section-head{display:block}
+      .section-head h2,.places-panel h2{font-size:30px;line-height:37px}
+      .section-head .text-link{margin-top:12px}
+      .tips-grid{grid-template-columns:1fr}
+      .tip-card:nth-child(3){grid-column:auto}
+      .tip-card{min-height:auto}
+      .place-list{grid-template-columns:1fr}
+      .map-shell{min-height:390px}
+      .india-map{right:4%;height:78%}
+      .map-marker{font-size:0;padding:6px}
+      .map-marker .dot{width:9px;height:9px}
+      .cta{padding:30px 24px;display:block}
+      .cta h2{font-size:29px;line-height:36px}
+      .cta .btn{margin-top:20px}
+      .footer-grid{grid-template-columns:1fr;gap:22px}
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      *{scroll-behavior:auto!important;transition:none!important}
+    }
+  
+  /* ===== Revised Explore India: 50 / 50 ===== */
+  .explore-grid{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:28px;
+    align-items:stretch;
+  }
+
+  .places-panel{
+    padding:0;
+    min-width:0;
+  }
+
+  .explore-place-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:14px;
+    margin-top:22px;
+  }
+
+  /* Reuse the same destination-card language already used by TrailNote */
+  .place-card{
+    position:relative;
+    min-height:175px;
+    padding:22px;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:var(--shadow-card);
+    transition:border-color 120ms ease,transform 120ms ease,box-shadow 120ms ease;
+  }
+
+  .place-card:hover{
+    border-color:var(--brand);
+    transform:translateY(-2px);
+    box-shadow:var(--shadow-hover);
+  }
+
+  .place-card:before{
+    content:"";
+    position:absolute;
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    right:-30px;
+    top:-35px;
+    background:var(--brand-soft);
+  }
+
+  .place-card h3{
+    position:relative;
+    font-size:23px;
+    line-height:31px;
+    font-weight:600;
+  }
+
+  .place-card .state{
+    position:relative;
+    margin-top:2px;
+    color:var(--ink-muted);
+    font-size:13px;
+  }
+
+  .place-meta{
+    position:relative;
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:22px;
+  }
+
+  .mini-tag{
+    display:inline-flex;
+    align-items:center;
+    min-height:25px;
+    padding:3px 8px;
+    border-radius:999px;
+    background:var(--brand-soft);
+    color:var(--brand);
+    font-size:10px;
+    line-height:16px;
+    font-weight:700;
+  }
+
+  .mini-tag.transport{
+    background:var(--transport-soft);
+    color:var(--transport);
+  }
+
+  .mini-tag.stay{
+    background:var(--sand-soft);
+    color:var(--sand);
+  }
+
+  .mini-tag.food{
+    background:var(--accent-soft);
+    color:var(--accent);
+  }
+
+  .place-count{
+    position:relative;
+    margin-top:12px;
+    color:var(--ink-muted);
+    font-size:12px;
+    font-weight:600;
+  }
+
+  .map-shell{
+    min-height:488px;
+    height:100%;
+  }
+
+  /* Keep the old TrailNote home sharing CTA unchanged */
+  .home-cta{
+    margin-top:46px;
+    padding:30px 32px;
+    border-radius:24px;
+    background:var(--brand);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+  }
+
+  .home-cta h2{
+    font-size:29px;
+    line-height:37px;
+    font-weight:600;
+  }
+
+  .home-cta p{
+    margin-top:4px;
+    color:#dce8df;
+  }
+
+  .home-cta .btn{
+    background:#fff;
+    color:var(--brand);
+  }
+
+  .home-cta .btn:hover{
+    background:#f7faf7;
+  }
+
+  @media(max-width:1000px){
+    .explore-grid{
+      grid-template-columns:1fr;
+    }
+
+    .map-shell{
+      min-height:470px;
+      height:auto;
+    }
+  }
+
+  @media(max-width:767px){
+    .explore-place-grid{
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .place-card{
+      min-height:165px;
+      padding:18px;
+    }
+
+    .place-card h3{
+      font-size:20px;
+      line-height:28px;
+    }
+
+    .home-cta{
+      display:block;
+      padding:24px;
+    }
+
+    .home-cta .btn{
+      width:100%;
+      margin-top:18px;
+    }
+  }
+
+  @media(max-width:430px){
+    .explore-place-grid{
+      grid-template-columns:1fr;
+    }
+  }
+
+
+  /* ===== Final copy-direction refinements ===== */
+  .hero-line{display:block}
+
+  .search-label{
+    display:block;
+    margin:0 0 8px 2px;
+    color:var(--ink);
+    font-size:14px;
+    line-height:20px;
+    font-weight:700;
+  }
+
+  .hero{padding-bottom:56px}
+
+  .section.white{
+    border-top:1px solid var(--border);
+  }
+
+  .places-panel>h2{
+    font-size:36px;
+    line-height:43px;
+    font-weight:600;
+    letter-spacing:-.7px;
+  }
+
+  .place-card{
+    min-height:142px;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+  }
+
+  .place-card .place-count{
+    margin-top:auto;
+    padding-top:26px;
+    color:var(--brand);
+    font-size:13px;
+    font-weight:700;
+  }
+
+  .home-cta{
+    padding:36px 40px;
+  }
+
+  .home-cta-copy{
+    position:relative;
+    z-index:2;
+    max-width:760px;
+  }
+
+  .cta-eyebrow{
+    color:#bad4c4;
+    font-size:11px;
+    line-height:17px;
+    letter-spacing:1.35px;
+    font-weight:800;
+  }
+
+  .home-cta h2{
+    margin-top:7px;
+    max-width:720px;
+    font-size:32px;
+    line-height:40px;
+    letter-spacing:-.45px;
+  }
+
+  .home-cta p{
+    margin-top:7px;
+  }
+
+  .footer-brand{
+    min-height:40px;
+  }
+
+  @media(max-width:767px){
+    .hero-line{display:inline}
+    .hero-line+.hero-line:before{content:" "}
+    .places-panel>h2{font-size:30px;line-height:37px}
+    .home-cta{padding:28px 24px}
+    .home-cta h2{font-size:28px;line-height:35px}
+  }
+
+</style>
+</head>
+
+<body>
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute">
+    <defs>
+      <symbol id="compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="m16.5 7.5-3 6-6 3 3-6 6-3Z"/></symbol>
+      <symbol id="search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></symbol>
+      <symbol id="arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></symbol>
+      <symbol id="pin" viewBox="0 0 24 24"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0Z"/><circle cx="12" cy="10" r="2"/></symbol>
+      <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+      <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="reference-note">
+    Design reference · reader-first homepage
+  </div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="wordmark" href="#">
+        <svg class="icon"><use href="#compass"/></svg>
+        TrailNote
+      </a>
+
+      <nav class="nav">
+        <a class="desktop" href="#fresh">Explore tips</a>
+        <a class="desktop" href="#places">Places</a>
+        <a class="desktop" href="#share">Share a tip</a>
+        <button class="btn secondary" type="button">Sign in</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <div class="eyebrow">FROM TRAVELLERS WHO'VE BEEN THERE</div>
+
+        <h1><span class="hero-line">A little local knowledge.</span><span class="hero-line">A better trip.</span></h1>
+
+        <p class="hero-copy">
+          What travellers paid, how they got around, and the little things worth knowing.
+        </p>
+
+        <div class="search-wrap">
+          <label class="search-label" for="destination-search">Where are you going?</label>
+          <div class="search-box">
+            <svg class="icon"><use href="#search"/></svg>
+            <input id="destination-search" type="search" placeholder="Try Badami, Hampi, Varkala…" autocomplete="off">
+            <button class="search-btn" type="button">
+              <span>Search</span>
+              <svg class="icon"><use href="#arrow"/></svg>
+            </button>
+          </div>
+
+          <div class="suggestions" id="suggestions">
+            <button class="suggestion" type="button"><span><strong>Hampi</strong>Karnataka</span><span>12 tips</span></button>
+            <button class="suggestion" type="button"><span><strong>Ooty</strong>Tamil Nadu</span><span>8 tips</span></button>
+            <button class="suggestion" type="button"><span><strong>Varkala</strong>Kerala</span><span>6 tips</span></button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ACTUAL PRODUCT VALUE -->
+    <section class="section white" id="fresh">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>From travellers who've been there</h2>
+          </div>
+
+          <a class="text-link" href="#">
+            Explore all tips
+            <svg class="icon"><use href="#arrow"/></svg>
+          </a>
+        </div>
+
+        <div class="tips-grid">
+          <a class="tip-card" href="#">
+            <div class="tip-top">
+              <div class="category transport"><span class="cat-line"></span>Transport</div>
+              <span class="place-tag">Badami · Karnataka</span>
+            </div>
+
+            <h3>Badami → Pattadakal</h3>
+            <div class="tip-primary">₹35 <small>/ person / trip</small></div>
+            <div class="tip-facts">
+              <span>Local bus</span>
+              <span>~40 min</span>
+            </div>
+
+            <p class="tip-body">
+              Autos were asking around ₹400. The local bus was easy and much cheaper.
+            </p>
+
+            <div class="tip-footer">
+              <span>Visited Sep 2026</span>
+              <span class="freshness">Recently confirmed</span>
+            </div>
+          </a>
+
+          <a class="tip-card" href="#">
+            <div class="tip-top">
+              <div class="category stay"><span class="cat-line"></span>Stay</div>
+              <span class="place-tag">Hampi · Karnataka</span>
+            </div>
+
+            <h3>Green View Guesthouse</h3>
+            <div class="tip-primary">₹650 <small>/ room / night</small></div>
+            <div class="tip-facts">
+              <span>Called directly</span>
+              <span>Near bus stand</span>
+            </div>
+
+            <p class="tip-body">
+              Calling directly was cheaper than the online rate when I stayed.
+            </p>
+
+            <div class="tip-footer">
+              <span>Visited Aug 2026</span>
+              <span class="freshness">Recent visit</span>
+            </div>
+          </a>
+
+          <a class="tip-card text-first" href="#">
+            <div class="tip-top">
+              <div class="category general"><span class="cat-line"></span>Quick tip</div>
+              <span class="place-tag">Varkala · Kerala</span>
+            </div>
+
+            <h3>Carry cash for smaller rides</h3>
+            <div class="tip-primary"></div>
+            <div class="tip-facts"></div>
+
+            <p class="tip-body">
+              A few short-distance auto rides were cash-only. Keeping smaller notes saved a lot of back-and-forth.
+            </p>
+
+            <div class="tip-footer">
+              <span>Visited Sep 2026</span>
+              <span class="freshness">Recent visit</span>
+            </div>
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- EXPLORE INDIA -->
+    <section class="section" id="places">
+      <div class="container">
+        <div class="explore-grid">
+          <div class="places-panel">
+            <h2>Explore India</h2>
+            <p>Practical tips from places across India.</p>
+
+            <div class="explore-place-grid">
+              <a class="place-card" href="#">
+                <h3>Badami</h3>
+                <div class="state">Karnataka</div>
+                <div class="place-count">18 tips</div>
+              </a>
+
+              <a class="place-card" href="#">
+                <h3>Hampi</h3>
+                <div class="state">Karnataka</div>
+                <div class="place-count">24 tips</div>
+              </a>
+
+              <a class="place-card" href="#">
+                <h3>Varkala</h3>
+                <div class="state">Kerala</div>
+                <div class="place-count">16 tips</div>
+              </a>
+
+              <a class="place-card" href="#">
+                <h3>Gokarna</h3>
+                <div class="state">Karnataka</div>
+                <div class="place-count">12 tips</div>
+              </a>
+            </div>
+
+            <a class="text-link" href="#" style="margin-top:17px">
+              View all places
+              <svg class="icon"><use href="#arrow"/></svg>
+            </a>
+          </div>
+
+          <div class="map-shell">
+            <div class="map-grid" aria-hidden="true"></div>
+
+            <div class="map-copy">
+              <strong>Where travellers are sharing from</strong>
+              <span>A quick geographic view of places with useful TrailNote tips.</span>
+            </div>
+
+            <img
+              class="india-map"
+              alt="Outline map of India"
+              src="https://commons.wikimedia.org/wiki/Special:Redirect/file/India%20outline.svg"
+            >
+
+            <a class="map-marker m-ladakh" href="#"><span class="dot"></span>Ladakh</a>
+            <a class="map-marker m-varanasi" href="#"><span class="dot"></span>Varanasi</a>
+            <a class="map-marker m-hampi" href="#"><span class="dot"></span>Hampi</a>
+            <a class="map-marker m-goa" href="#"><span class="dot"></span>Goa</a>
+            <a class="map-marker m-ooty" href="#"><span class="dot"></span>Ooty</a>
+            <a class="map-marker m-varkala" href="#"><span class="dot"></span>Varkala</a>
+
+            <a
+              class="map-attribution"
+              href="https://commons.wikimedia.org/wiki/File:India_outline.svg"
+              target="_blank"
+              rel="noreferrer"
+            >India outline · CC BY-SA 3.0</a>
+          </div>
+        </div>
+
+        <div class="home-cta" id="share">
+          <div class="home-cta-copy">
+            <div class="cta-eyebrow">KNOW SOMETHING USEFUL?</div>
+            <h2>Tell the next traveller what you wish someone had told you.</h2>
+            <p>A fare, a room rate, a shortcut, a good meal — one detail is enough.</p>
+          </div>
+          <a class="btn" href="#">
+            <svg class="icon"><use href="#plus"/></svg>
+            Share a tip
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <strong>TrailNote</strong>
+      </div>
+
+      <div class="footer-col">
+        <strong>Explore</strong>
+        <a href="#">Search destinations</a>
+        <a href="#">Recent tips</a>
+        <a href="#">Share a tip</a>
+      </div>
+
+      <div class="footer-col">
+        <strong>Community</strong>
+        <a href="#">Guidelines</a>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact removal</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const input = document.getElementById("destination-search");
+    const suggestions = document.getElementById("suggestions");
+
+    input.addEventListener("focus", () => suggestions.classList.add("show"));
+    input.addEventListener("input", () => suggestions.classList.toggle("show", input.value.length >= 0));
+
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".search-wrap")) suggestions.classList.remove("show");
+    });
+
+    suggestions.querySelectorAll(".suggestion").forEach(button => {
+      button.addEventListener("click", () => {
+        input.value = button.querySelector("strong").textContent;
+        suggestions.classList.remove("show");
+      });
+    });
+
+    document.querySelectorAll(".pill").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".pill").forEach(x => x.classList.remove("active"));
+        button.classList.add("active");
+      });
+    });
+  </script>
+</body>
+</html>

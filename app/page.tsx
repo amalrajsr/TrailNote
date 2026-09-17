@@ -2,12 +2,14 @@ import Link from "next/link";
 import { DestinationSearch } from "../src/components/destinations/search";
 import { DestinationTiles } from "../src/components/destinations/tiles";
 import { MapIllustration } from "../src/components/destinations/map-illustration";
+import { HomepageTipCard } from "../src/components/contributions/homepage-card";
 import { getDatabase } from "../src/db";
 import {
   categoryCountsForDestinations,
   destinationMapList,
   destinationPage,
 } from "../src/server/queries/destinations";
+import { homepageContributions } from "../src/server/queries/contributions";
 import { ArrowRight, Plus } from "lucide-react";
 
 export const metadata = { alternates: { canonical: "/" } };
@@ -19,9 +21,10 @@ export default async function HomePage({
 }) {
   const { signedOut } = await searchParams;
   const { db } = await getDatabase();
-  const [page, mapDestinations] = await Promise.all([
-    destinationPage(db, { limit: 6 }),
+  const [page, mapDestinations, featuredTips] = await Promise.all([
+    destinationPage(db, { limit: 4 }),
     destinationMapList(db),
+    homepageContributions(db),
   ]);
   const countsByDestination = await categoryCountsForDestinations(
     db,
@@ -29,23 +32,22 @@ export default async function HomePage({
   );
 
   return (
-    <main id="main" className="container">
-      <section className="hero home-hero" aria-labelledby="home-title">
-        <div className="home-copy">
+    <main id="main" className="home-page">
+      <section className="home-hero" aria-labelledby="home-title">
+        <div className="container home-copy">
           {signedOut === "1" && (
             <p className="account-notice home-notice" role="status">
               You’ve signed out successfully.
             </p>
           )}
-          <p className="eyebrow">Traveller knowledge for India</p>
+          <p className="eyebrow">From travellers who’ve been there</p>
           <h1 id="home-title">
-            Tell the next traveller
-            <br />
-            <span>what you wish someone had told you.</span>
+            A little local knowledge.
+            <span>A better trip.</span>
           </h1>
           <p className="intro">
-            Practical notes from people who were actually there — what they
-            paid, how they got around, and the little things worth knowing.
+            What travellers paid, how they got around, and the little things
+            worth knowing.
           </p>
           <DestinationSearch />
           <nav className="suggestions" aria-label="Suggested destinations">
@@ -56,38 +58,83 @@ export default async function HomePage({
             <Link href="/destinations/matheran">Matheran</Link>
           </nav>
         </div>
-        <MapIllustration destinations={mapDestinations} />
       </section>
 
-      <section className="home-section" aria-labelledby="destinations-title">
-        <div className="section-head">
-          <div>
-            <h2 id="destinations-title">Explore places</h2>
-            <p>See what travellers have shared from places across India.</p>
+      {featuredTips.length > 0 && (
+        <section
+          className="home-section home-tips-section"
+          id="tips"
+          aria-labelledby="tips-title"
+        >
+          <div className="container">
+            <div className="section-head">
+              <div>
+                <p className="eyebrow">Useful right now</p>
+                <h2 id="tips-title">From travellers who’ve been there</h2>
+                <p>Real, practical tips from people who were actually there.</p>
+              </div>
+            </div>
+            <div className="home-tips-grid">
+              {featuredTips.map((tip) => (
+                <HomepageTipCard tip={tip} key={tip.id} />
+              ))}
+            </div>
           </div>
-          <Link className="quiet" href="/search">
-            View all places
-            <ArrowRight size={17} aria-hidden="true" />
-          </Link>
-        </div>
-        <DestinationTiles
-          destinations={page.destinations}
-          categoryCounts={countsByDestination}
-        />
+        </section>
+      )}
 
-        <aside className="home-cta" aria-labelledby="home-cta-title">
-          <div>
-            <h2 id="home-cta-title">Know something useful?</h2>
-            <p>
-              A fare, a room rate, a shortcut, a good meal — one detail is
-              enough.
-            </p>
+      <section
+        className="home-section home-explore-section"
+        id="places"
+        aria-labelledby="destinations-title"
+      >
+        <div className="container">
+          <div className="home-explore-grid">
+            <div className="home-places-panel">
+              <div className="section-head">
+                <div>
+                  <p className="eyebrow">Find your next stop</p>
+                  <h2 id="destinations-title">Explore India</h2>
+                  <p>Practical tips from places across India.</p>
+                </div>
+              </div>
+              <DestinationTiles
+                destinations={page.destinations}
+                categoryCounts={countsByDestination}
+              />
+              <Link className="home-text-link" href="/search">
+                View all places
+                <ArrowRight size={17} aria-hidden="true" />
+              </Link>
+            </div>
+
+            <MapIllustration
+              className="home-explore-map"
+              destinations={mapDestinations}
+            />
           </div>
-          <Link className="btn" href="/search">
-            <Plus size={19} aria-hidden="true" />
-            Share a tip
-          </Link>
-        </aside>
+
+          <aside
+            className="home-cta"
+            id="share"
+            aria-labelledby="home-cta-title"
+          >
+            <div>
+              <p className="home-cta-eyebrow">Know something useful?</p>
+              <h2 id="home-cta-title">
+                Tell the next traveller what you wish someone had told you.
+              </h2>
+              <p>
+                A fare, a room rate, a shortcut, a good meal — one detail is
+                enough.
+              </p>
+            </div>
+            <Link className="btn" href="/search">
+              <Plus size={19} aria-hidden="true" />
+              Share a tip
+            </Link>
+          </aside>
+        </div>
       </section>
     </main>
   );

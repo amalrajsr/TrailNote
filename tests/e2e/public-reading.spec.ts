@@ -78,19 +78,27 @@ test("destination API pages through all enabled locations", async ({
   ).toBe(false);
 });
 
-test("homepage shows six place tiles and links to full search", async ({
+test("homepage leads with tips and pairs four places with the map", async ({
   page,
 }) => {
   await page.goto("/");
 
-  await expect(page.locator(".destination-tile")).toHaveCount(6);
+  await expect(
+    page.getByRole("heading", {
+      name: "A little local knowledge. A better trip.",
+    }),
+  ).toBeVisible();
+  await expect(page.locator(".home-tip-card")).toHaveCount(3);
+  await expect(page.locator(".destination-tile")).toHaveCount(4);
   await expect(
     page.getByRole("link", { name: "View all places" }),
   ).toHaveAttribute("href", "/search");
 
   const map = page.getByRole("navigation", { name: "Map destinations" });
   await expect(map.getByRole("link")).toHaveCount(6);
-  expect((await page.locator(".hero-map").boundingBox())?.height).toBe(430);
+  expect(
+    (await page.locator(".home-explore-map").boundingBox())?.height,
+  ).toBeGreaterThanOrEqual(470);
   await expect(page.locator(".india-shape")).toHaveCSS(
     "mask-image",
     /india-outline\.svg/,
@@ -101,9 +109,7 @@ test("homepage shows six place tiles and links to full search", async ({
   );
 });
 
-test("destination feed explains what tips contain", async ({
-  page,
-}) => {
+test("destination feed explains what tips contain", async ({ page }) => {
   await page.goto("/destinations/badami");
 
   const guide = page.locator(".destination-aside");
@@ -264,6 +270,7 @@ test("composer only offers price units relevant to the selected category", async
       "room / night",
       "bed / night",
       "person / night",
+      "day",
       "Other",
     ],
     Food: ["Choose a unit", "breakfast", "lunch", "dinner", "snacks", "Other"],
@@ -286,7 +293,9 @@ test("guest photo selection asks for sign-in before opening a file picker", asyn
 }) => {
   await page.goto("/destinations/badami/add");
   await page
-    .getByRole("textbox", { name: "What do you wish you knew before coming here?" })
+    .getByRole("textbox", {
+      name: "What do you wish you knew before coming here?",
+    })
     .fill("A draft remains available before choosing any photos.");
   await page.getByRole("button", { name: "Add photos" }).click();
 

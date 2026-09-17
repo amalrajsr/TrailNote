@@ -15,8 +15,11 @@ export async function Header() {
           TrailNote
         </Link>
         <nav aria-label="Main navigation" className="nav">
-          <Link className="desktop-link" href="/">
-            Explore
+          <Link className="desktop-link" href="/#tips">
+            Explore tips
+          </Link>
+          <Link className="desktop-link" href="/#places">
+            Places
           </Link>
           <Link className="desktop-link" href="/search">
             Share a tip
