@@ -12,6 +12,7 @@ import {
 import { currentMonth, formatMonth } from "../../lib/visit-month";
 import { Button, Input } from "../ui/primitives";
 import { Popover } from "../ui/overlays";
+import { toast } from "../ui/toaster";
 
 type State = {
   authenticated: boolean;
@@ -92,15 +93,16 @@ export function ReactionControls({
       setConfirmationMonth(before.confirmationMonth);
       setConfirmationCount(before.confirmationCount);
       setError(result.message);
+      toast(result.message, "error");
     } else {
       setConfirmationMonth(result.data.confirmationMonth);
       setConfirmationCount(result.data.confirmationCount);
       setHelpful(result.data.helpful);
       setHelpfulCount(result.data.helpfulCount);
       setMonthDraft(result.data.confirmationMonth ?? month);
-      setMessage(
-        `Thanks. You confirmed this tip for ${formatMonth(result.data.confirmationMonth ?? month)}.`,
-      );
+      const confirmationMessage = "Thanks. You confirmed this tip.";
+      setMessage(confirmationMessage);
+      toast(confirmationMessage);
       setConfirmationOpen(true);
     }
     setPending(null);
@@ -128,10 +130,13 @@ export function ReactionControls({
       setConfirmationMonth(before.confirmationMonth);
       setConfirmationCount(before.confirmationCount);
       setError(result.message);
+      toast(result.message, "error");
     } else {
       setConfirmationMonth(null);
       setConfirmationCount(result.data.confirmationCount);
-      setMessage("Your confirmation was removed.");
+      const confirmationMessage = "Your confirmation was removed.";
+      setMessage(confirmationMessage);
+      toast(confirmationMessage);
       setConfirmationOpen(false);
     }
     setPending(null);
@@ -161,14 +166,17 @@ export function ReactionControls({
       setHelpful(before.helpful);
       setHelpfulCount(before.helpfulCount);
       setError(result.message);
+      toast(result.message, "error");
     } else {
       setHelpful(result.data.helpful);
       setHelpfulCount(result.data.helpfulCount);
       setConfirmationMonth(result.data.confirmationMonth);
       setConfirmationCount(result.data.confirmationCount);
-      setMessage(
-        result.data.helpful ? "Marked helpful." : "Removed your helpful mark.",
-      );
+      const helpfulMessage = result.data.helpful
+        ? "Marked helpful."
+        : "Removed your helpful mark.";
+      setMessage(helpfulMessage);
+      toast(helpfulMessage);
     }
     setPending(null);
   }

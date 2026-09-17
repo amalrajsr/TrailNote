@@ -11,6 +11,7 @@ import {
 } from "../../../app/moderation/actions";
 import { Dialog } from "../ui/overlays";
 import { Button, Input, Select, Textarea } from "../ui/primitives";
+import { toast } from "../ui/toaster";
 
 type Event = { targetType: string; targetId: string; action: string; reason: string; createdAt: number };
 type Tip = { id: string; body: string; destination: string; authorId: string; authorName: string; authorUsername: string; status: "published" | "hidden" | "deleted"; createdAt: number };
@@ -34,11 +35,17 @@ function ActionDialog({ label, description, onConfirm, danger = false }: { label
   const submit = () => startTransition(async () => {
     const result = await onConfirm(reason);
     if (result.ok) {
-      setMessage("Saved.");
+      const successMessage = "Moderation action saved.";
+      setMessage(successMessage);
+      toast(successMessage);
       setOpen(false);
       setReason("");
       router.refresh();
-    } else setMessage(result.message ?? "Could not save this action.");
+    } else {
+      const errorMessage = result.message ?? "Could not save this action.";
+      setMessage(errorMessage);
+      toast(errorMessage, "error");
+    }
   });
   return <>
     <Button type="button" variant="secondary" className={danger ? "danger-outline" : undefined} onClick={() => { setMessage(""); setOpen(true); }}>{label}</Button>

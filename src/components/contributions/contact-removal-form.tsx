@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button, Input, Textarea } from "../ui/primitives";
+import { toast } from "../ui/toaster";
 
 export function ContactRemovalForm({
   contributionId,
@@ -36,13 +37,16 @@ export function ContactRemovalForm({
         throw new Error(
           data.message ?? "Please check the request and try again.",
         );
-      setMessage("Your request has been sent for review.");
+      const successMessage = "Your request has been sent for review.";
+      setMessage(successMessage);
+      toast(successMessage);
     } catch (error) {
-      setMessage(
+      const errorMessage =
         error instanceof Error
           ? error.message
-          : "Please check the request and try again.",
-      );
+          : "Please check the request and try again.";
+      setMessage(errorMessage);
+      toast(errorMessage, "error");
     } finally {
       setBusy(false);
     }

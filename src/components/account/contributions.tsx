@@ -19,6 +19,7 @@ import { useLogout } from "../auth/logout-provider";
 import { CategoryIcon } from "../ui/category-icon";
 import { Dialog } from "../ui/overlays";
 import { Button } from "../ui/primitives";
+import { toast } from "../ui/toaster";
 
 type Tip = {
   id: string;
@@ -152,9 +153,11 @@ function ContributionRow({
                       if (result.ok) {
                         setOpen(false);
                         onDeleted();
+                        toast("Tip deleted.");
                         router.refresh();
                       } else {
                         setError(result.message);
+                        toast(result.message, "error");
                       }
                     })
                   }

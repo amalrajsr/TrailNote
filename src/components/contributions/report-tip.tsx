@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { reportTip } from "../../../app/tips/[id]/actions";
 import { Dialog } from "../ui/overlays";
 import { Button, Select, Textarea } from "../ui/primitives";
+import { toast } from "../ui/toaster";
 
 export function ReportTip({ id, revision }: { id: string; revision: number }) {
   const [open, setOpen] = useState(false);
@@ -60,8 +61,12 @@ export function ReportTip({ id, revision }: { id: string; revision: number }) {
               const result = await reportTip(id, revision, reason, details);
               if (result.ok) {
                 setMessage("Thanks. Your report is queued for review.");
+                toast("Report sent. A moderator will review it.");
                 setDetails("");
-              } else setMessage(result.message);
+              } else {
+                setMessage(result.message);
+                toast(result.message, "error");
+              }
             })
           }
         >

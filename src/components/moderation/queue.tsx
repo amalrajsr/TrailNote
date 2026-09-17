@@ -10,6 +10,7 @@ import {
 } from "../../../app/moderation/actions";
 import { Dialog } from "../ui/overlays";
 import { Button, Textarea } from "../ui/primitives";
+import { toast } from "../ui/toaster";
 
 type Event = {
   targetType: string;
@@ -79,9 +80,12 @@ function ContributionRow({
   const run = (work: () => Promise<Result>, success: string) =>
     startTransition(async () => {
       const result = await work();
-      setMessage(
-        result.ok ? success : (result.message ?? "Could not save this review."),
-      );
+      const nextMessage = result.ok
+        ? success
+        : (result.message ?? "Could not save this review.");
+      setMessage(nextMessage);
+      if (result.ok) toast(success);
+      else toast(nextMessage, "error");
       if (result.ok || result.code === "CONFLICT") router.refresh();
     });
   const confirmed = () => {
@@ -267,13 +271,14 @@ function ContactRow({ item, events }: { item: Contact; events: Event[] }) {
   const run = (disposition: "hide" | "dismiss") =>
     startTransition(async () => {
       const result = await reviewContactRequest(item.id, disposition, reason);
-      setMessage(
-        result.ok
-          ? disposition === "hide"
-            ? "Contact hidden."
-            : "Request dismissed."
-          : (result.message ?? "Could not save this review."),
-      );
+      const nextMessage = result.ok
+        ? disposition === "hide"
+          ? "Contact hidden."
+          : "Request dismissed."
+        : (result.message ?? "Could not save this review.");
+      setMessage(nextMessage);
+      if (result.ok) toast(nextMessage);
+      else toast(nextMessage, "error");
       if (result.ok || result.code === "CONFLICT") router.refresh();
     });
   return (
