@@ -5,7 +5,7 @@ export function SortSelect({ sort }: { sort: string }) {
     search = useSearchParams();
   return (
     <label className="sort">
-      Sort by{" "}
+      <span>Sort by</span>
       <select
         className="field-input"
         value={sort}

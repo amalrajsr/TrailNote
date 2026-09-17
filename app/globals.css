@@ -3683,7 +3683,18 @@ summary {
     display: block;
   }
   .filters-row .sort {
-    margin-top: 14px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+    margin-top: 18px;
+  }
+  .filters-row .sort > span {
+    font-weight: 600;
+  }
+  .filters-row .sort select {
+    width: 100%;
   }
   .destination-map {
     height: 250px;
