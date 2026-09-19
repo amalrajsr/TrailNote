@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TrailNote — Profile redesign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --canvas: #f7faf7;
+      --surface: #ffffff;
+      --surface-soft: #f0f4f0;
+      --ink: #17251d;
+      --ink-muted: #5c6c62;
+      --ink-subtle: #7a887f;
+      --brand: #245c43;
+      --brand-hover: #1b4c36;
+      --brand-soft: #e6f1e9;
+      --brand-faint: #f0f7f2;
+      --brand-border: #c9ddcf;
+      --on-brand: #ffffff;
+      --border: #dce4dd;
+      --control-border: #829087;
+      --danger: #b42318;
+      --danger-soft: #fff0ed;
+      --success: #245c43;
+      --success-soft: #e6f1e9;
+      --warning: #866313;
+      --warning-soft: #fbf3d8;
+      --shadow-card: 0 4px 16px rgb(23 37 29 / 5%);
+      --shadow-hover: 0 10px 28px rgb(23 37 29 / 8%);
+      --shadow-popover: 0 18px 45px rgb(23 37 29 / 14%);
+      --radius-control: 12px;
+      --radius-card: 18px;
+      --radius-feature: 26px;
+      --radius-pill: 999px;
+      --font: "Commissioner", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { color-scheme: light; }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    h1, h2, h3, p { margin: 0; }
+    svg { display: block; }
+
+    .container {
+      width: min(1200px, calc(100% - 48px));
+      margin-inline: auto;
+    }
+
+    .site-header {
+      height: 72px;
+      border-bottom: 1px solid var(--border);
+      background: color-mix(in srgb, var(--canvas) 94%, transparent);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .header-inner {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .wordmark {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 27px;
+      font-weight: 700;
+      line-height: 32px;
+      letter-spacing: -1px;
+    }
+    .wordmark svg { color: var(--brand); }
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .nav-link { transition: color .15s ease; }
+    .nav-link:hover { color: var(--brand); }
+
+    .account-menu-wrap { position: relative; }
+    .nav-avatar {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 50%;
+      background: #edf3ee;
+      color: var(--brand);
+      font-weight: 650;
+    }
+    .nav-avatar:hover { background: var(--brand-soft); }
+    .account-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 10px);
+      width: 230px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow-popover);
+      z-index: 30;
+    }
+    .account-menu.open { display: block; }
+    .menu-user {
+      padding: 11px 12px 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 6px;
+    }
+    .menu-user strong { display: block; font-size: 14px; }
+    .menu-user span { color: var(--ink-muted); font-size: 12px; }
+    .menu-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 11px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--ink);
+      font-size: 13px;
+      text-align: left;
+    }
+    .menu-item:hover { background: var(--surface-soft); }
+    .menu-item.danger {
+      color: var(--danger);
+      margin-top: 5px;
+      border-top: 1px solid var(--border);
+      border-radius: 0 0 9px 9px;
+      padding-top: 13px;
+    }
+
+    main {
+      width: min(1040px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 48px 0 64px;
+    }
+
+    .profile-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr) auto;
+      gap: 28px;
+      align-items: start;
+      padding: 32px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-feature);
+      background: var(--surface);
+      box-shadow: var(--shadow-card);
+    }
+    .profile-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand), #5f8a70 55%, #b8cdbd);
+    }
+
+    .profile-avatar {
+      width: 88px;
+      height: 88px;
+      display: grid;
+      place-items: center;
+      border: 6px solid var(--brand-faint);
+      border-radius: 50%;
+      background: var(--brand);
+      color: white;
+      font-size: 30px;
+      font-weight: 700;
+      box-shadow: 0 0 0 1px var(--brand-border);
+    }
+
+    .profile-copy { min-width: 0; }
+    .identity-row {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 8px 10px;
+    }
+    .profile-name {
+      font-size: 31px;
+      line-height: 1.2;
+      font-weight: 650;
+      letter-spacing: -0.8px;
+    }
+    .profile-handle {
+      color: var(--ink-muted);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .profile-bio {
+      max-width: 640px;
+      margin-top: 13px;
+      color: #33443a;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    .social-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 17px;
+    }
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 36px;
+      padding: 7px 11px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      background: #fbfdfb;
+      color: #345344;
+      font-size: 13px;
+      font-weight: 600;
+      transition: border-color .15s ease, background .15s ease;
+    }
+    .social-link:hover {
+      border-color: var(--brand-border);
+      background: var(--brand-faint);
+    }
+
+    .profile-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      margin-top: 21px;
+      color: var(--ink-muted);
+      font-size: 13px;
+    }
+    .profile-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .profile-meta span + span::before {
+      content: "";
+      width: 3px;
+      height: 3px;
+      margin: 0 12px;
+      border-radius: 50%;
+      background: #a8b4ac;
+    }
+    .profile-meta strong {
+      color: var(--ink);
+      font-weight: 650;
+    }
+
+    .profile-actions {
+      min-width: 170px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+    }
+    .btn {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 15px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-control);
+      background: var(--brand);
+      color: var(--on-brand);
+      font-size: 13px;
+      font-weight: 650;
+      transition: background .15s ease, border-color .15s ease, transform .15s ease;
+    }
+    .btn:hover { background: var(--brand-hover); }
+    .btn:active { transform: translateY(1px); }
+    .btn.secondary {
+      border-color: var(--border);
+      background: var(--surface);
+      color: var(--ink);
+    }
+    .btn.secondary:hover {
+      border-color: var(--brand-border);
+      background: var(--brand-faint);
+    }
+    .public-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 40px;
+      color: var(--ink-muted);
+      font-size: 13px;
+      font-weight: 550;
+      border-radius: 10px;
+    }
+    .public-link:hover { color: var(--brand); background: var(--brand-faint); }
+
+    .contributions-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-top: 42px;
+    }
+    .section-kicker {
+      color: var(--brand);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .contributions-head h2 {
+      margin-top: 4px;
+      font-size: 27px;
+      line-height: 1.25;
+      font-weight: 650;
+      letter-spacing: -0.5px;
+    }
+    .contributions-head p {
+      margin-top: 5px;
+      color: var(--ink-muted);
+      font-size: 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin: 22px 0 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tabs {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--ink-muted);
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .tab:hover { background: var(--surface-soft); color: var(--ink); }
+    .tab.selected {
+      background: var(--brand-soft);
+      color: var(--brand);
+    }
+    .count {
+      min-width: 20px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      padding-inline: 5px;
+      border-radius: var(--radius-pill);
+      background: rgba(255,255,255,.65);
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .contribution-list {
+      display: grid;
+      gap: 14px;
+    }
+    .tip-card {
+      padding: 23px 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      background: var(--surface);
+      box-shadow: var(--shadow-card);
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .tip-card:hover {
+      border-color: var(--brand-border);
+      box-shadow: var(--shadow-hover);
+    }
+    .tip-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .destination {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 27px;
+      padding: 4px 9px;
+      border-radius: var(--radius-pill);
+      background: var(--success-soft);
+      color: var(--success);
+      font-size: 11px;
+      font-weight: 650;
+    }
+    .status.hidden { background: var(--warning-soft); color: var(--warning); }
+    .category {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #697a70;
+      font-size: 12px;
+      font-weight: 650;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+    .tip-card h3 {
+      margin-top: 7px;
+      font-size: 21px;
+      line-height: 1.35;
+      font-weight: 650;
+      letter-spacing: -.3px;
+    }
+    .tip-copy {
+      display: -webkit-box;
+      max-width: 780px;
+      margin-top: 8px;
+      overflow: hidden;
+      color: var(--ink-muted);
+      font-size: 14px;
+      line-height: 1.7;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+    .tip-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid #edf1ee;
+    }
+    .read-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .row-actions { display: flex; align-items: center; gap: 7px; }
+    .tiny-btn {
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface);
+      color: var(--ink-muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .tiny-btn:hover { background: var(--surface-soft); color: var(--ink); }
+    .tiny-btn.delete:hover { background: var(--danger-soft); border-color: #f0c6c1; color: var(--danger); }
+
+    .mobile-menu { display: none; }
+
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      place-items: center;
+      padding: 24px;
+      background: rgb(23 37 29 / 52%);
+    }
+    .modal-backdrop.open { display: grid; }
+    .modal {
+      width: min(620px, 100%);
+      max-height: min(760px, calc(100vh - 48px));
+      overflow: auto;
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: 0 24px 70px rgb(23 37 29 / 24%);
+    }
+    .modal-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 24px 26px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-head h2 { font-size: 23px; font-weight: 650; }
+    .modal-head p { margin-top: 4px; color: var(--ink-muted); font-size: 13px; }
+    .close-btn {
+      width: 38px; height: 38px; display: grid; place-items: center;
+      border: 0; border-radius: 10px; background: transparent; color: var(--ink-muted);
+    }
+    .close-btn:hover { background: var(--surface-soft); color: var(--ink); }
+    .modal-body { padding: 24px 26px 26px; }
+    .form-avatar-row { display: flex; align-items: center; gap: 18px; margin-bottom: 23px; }
+    .form-avatar-row .profile-avatar { width: 72px; height: 72px; font-size: 24px; border-width: 5px; }
+    .form-avatar-row .tiny-btn { min-height: 39px; }
+    .field { margin-top: 17px; }
+    .field:first-of-type { margin-top: 0; }
+    .field label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 650; }
+    .optional { color: var(--ink-subtle); font-weight: 400; }
+    .input, .textarea {
+      width: 100%;
+      border: 1px solid #aab5ae;
+      border-radius: 11px;
+      background: white;
+      color: var(--ink);
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .input { height: 46px; padding: 10px 12px; }
+    .textarea { min-height: 96px; padding: 10px 12px; resize: vertical; }
+    .input:focus, .textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgb(36 92 67 / 12%); }
+    .helper { margin-top: 5px; color: var(--ink-muted); font-size: 11px; }
+    .form-section { margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--border); }
+    .form-section h3 { font-size: 15px; font-weight: 650; }
+    .form-section > p { margin-top: 3px; color: var(--ink-muted); font-size: 12px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 26px; }
+
+    @media (max-width: 860px) {
+      .desktop-link { display: none; }
+      main { width: min(100% - 32px, 760px); padding-top: 28px; }
+      .profile-card {
+        grid-template-columns: 80px minmax(0,1fr);
+        gap: 20px;
+        padding: 26px;
+      }
+      .profile-avatar { width: 72px; height: 72px; font-size: 24px; }
+      .profile-actions {
+        grid-column: 2;
+        min-width: 0;
+        flex-direction: row;
+        align-items: center;
+      }
+      .profile-actions .btn { min-width: 130px; }
+      .contributions-head { margin-top: 34px; }
+    }
+
+    @media (max-width: 620px) {
+      .container { width: calc(100% - 32px); }
+      .site-header { height: 64px; }
+      .wordmark { font-size: 23px; }
+      .wordmark svg { width: 26px; height: 26px; }
+      .nav { gap: 12px; }
+      main { width: calc(100% - 28px); padding: 20px 0 40px; }
+      .profile-card {
+        grid-template-columns: 58px minmax(0,1fr);
+        gap: 15px;
+        padding: 22px 18px 20px;
+        border-radius: 20px;
+      }
+      .profile-avatar { width: 56px; height: 56px; border-width: 4px; font-size: 20px; }
+      .profile-name { font-size: 24px; }
+      .profile-handle { width: 100%; margin-top: 1px; }
+      .profile-bio { grid-column: 1 / -1; margin-top: 14px; font-size: 14px; }
+      .social-row, .profile-meta { grid-column: 1 / -1; }
+      .profile-copy { display: contents; }
+      .identity-row { align-self: center; }
+      .profile-actions {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin-top: 4px;
+      }
+      .profile-actions .btn { min-width: 0; }
+      .public-link { border: 1px solid var(--border); }
+      .contributions-head { align-items: start; margin-top: 30px; }
+      .contributions-head .btn { display: none; }
+      .contributions-head h2 { font-size: 24px; }
+      .toolbar { margin-top: 17px; }
+      .share-mobile { display: inline-flex; }
+      .tip-card { padding: 19px 17px; }
+      .tip-top { align-items: start; }
+      .tip-card h3 { font-size: 19px; }
+      .tip-actions { align-items: flex-start; }
+      .row-actions .tiny-btn span { display: none; }
+      .modal-backdrop { padding: 10px; align-items: end; }
+      .modal { max-height: 92vh; border-radius: 22px 22px 0 0; }
+      .modal-head, .modal-body { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="wordmark" href="#" aria-label="TrailNote home">
+        <svg width="29" height="29" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="m15.4 8.6-2.1 4.7-4.7 2.1 2.1-4.7 4.7-2.1Z"></path>
+        </svg>
+        TrailNote
+      </a>
+
+      <nav class="nav" aria-label="Main navigation">
+        <a class="nav-link desktop-link" href="#contributions">Explore tips</a>
+        <a class="nav-link desktop-link" href="#">Places</a>
+        <a class="nav-link desktop-link" href="#">Share a tip</a>
+        <div class="account-menu-wrap">
+          <button class="nav-avatar" id="menuToggle" aria-label="Account menu" aria-expanded="false">A</button>
+          <div class="account-menu" id="accountMenu">
+            <div class="menu-user">
+              <strong>Amal</strong>
+              <span>@wanderlust</span>
+            </div>
+            <button class="menu-item">Profile</button>
+            <button class="menu-item">View public profile</button>
+            <button class="menu-item">Community guidelines</button>
+            <button class="menu-item danger">Sign out</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="profile-card" aria-labelledby="profile-name">
+      <div class="profile-avatar" aria-hidden="true">A</div>
+
+      <div class="profile-copy">
+        <div class="identity-row">
+          <h1 class="profile-name" id="profile-name">Amal</h1>
+          <span class="profile-handle">@wanderlust</span>
+        </div>
+        <p class="profile-bio">I travel mostly by public transport and share practical details I wish someone had told me before I went.</p>
+
+        <div class="social-row" aria-label="Social profiles">
+          <a class="social-link" href="#">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.6" cy="6.4" r="1" fill="currentColor" stroke="none"></circle></svg>
+            Instagram
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M7 7h10v10"></path></svg>
+          </a>
+          <a class="social-link" href="#">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 12s0-4-1-5-4-1-8-1-7 0-8 1-1 5-1 5 0 4 1 5 4 1 8 1 7 0 8-1 1-5 1-5Z"></path><path d="m10 9 5 3-5 3V9Z"></path></svg>
+            YouTube
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M7 7h10v10"></path></svg>
+          </a>
+        </div>
+
+        <div class="profile-meta" aria-label="Contribution summary">
+          <span><strong>12</strong> tips shared</span>
+          <span><strong>8</strong> places</span>
+          <span>Joined TrailNote in 2026</span>
+        </div>
+      </div>
+
+      <div class="profile-actions">
+        <button class="btn secondary" id="editProfile">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>
+          Edit profile
+        </button>
+        <a class="public-link" href="#">
+          View public profile
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M7 7h10v10"></path></svg>
+        </a>
+      </div>
+    </section>
+
+    <section id="contributions" aria-labelledby="your-contributions">
+      <div class="contributions-head">
+        <div>
+          <div class="section-kicker">Your TrailNotes</div>
+          <h2 id="your-contributions">Your contributions</h2>
+          <p>Manage the practical tips you have shared with other travellers.</p>
+        </div>
+        <a class="btn" href="#">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+          Share a tip
+        </a>
+      </div>
+
+      <div class="toolbar">
+        <div class="tabs" role="tablist" aria-label="Tip status">
+          <button class="tab selected" data-filter="all" role="tab" aria-selected="true">All <span class="count">12</span></button>
+          <button class="tab" data-filter="published" role="tab" aria-selected="false">Published <span class="count">10</span></button>
+          <button class="tab" data-filter="hidden" role="tab" aria-selected="false">Hidden <span class="count">2</span></button>
+        </div>
+      </div>
+
+      <div class="contribution-list">
+        <article class="tip-card" data-status="published">
+          <div class="tip-top">
+            <a class="destination" href="#">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+              Ooty, Tamil Nadu
+            </a>
+            <span class="status">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>
+              Published
+            </span>
+          </div>
+          <div class="category">Transport</div>
+          <h3>Agree on the auto fare before you get in</h3>
+          <p class="tip-copy">Auto fares around the tourist areas can be higher than expected. Agree on the price before the ride, especially for short trips from the bus stand or railway station.</p>
+          <div class="tip-actions">
+            <a class="read-link" href="#">Read tip
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M7 7h10v10"></path></svg>
+            </a>
+            <div class="row-actions">
+              <button class="tiny-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>
+                <span>Edit</span>
+              </button>
+              <button class="tiny-btn delete">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg>
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article class="tip-card" data-status="hidden">
+          <div class="tip-top">
+            <a class="destination" href="#">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+              Hampi, Karnataka
+            </a>
+            <span class="status hidden">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m3 3 18 18"></path><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"></path><path d="M9.9 4.2A11.8 11.8 0 0 1 12 4c6.5 0 10 8 10 8a16.3 16.3 0 0 1-2.2 3.1M6.6 6.6C3.8 8.5 2 12 2 12s3.5 8 10 8a10.7 10.7 0 0 0 4.3-.9"></path></svg>
+              Hidden
+            </span>
+          </div>
+          <div class="category">Stay</div>
+          <h3>Stay on the Hampi Bazaar side if you rely on buses</h3>
+          <p class="tip-copy">It makes the early-morning temple areas and the bus connection easier to manage without arranging a separate ride.</p>
+          <div class="tip-actions">
+            <span style="font-size:12px;color:var(--ink-subtle)">Not visible publicly</span>
+            <div class="row-actions">
+              <button class="tiny-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>
+                <span>Edit</span>
+              </button>
+              <button class="tiny-btn delete">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg>
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h2 id="edit-title">Edit profile</h2>
+          <p>Your profile details and image appear publicly with your tips.</p>
+        </div>
+        <button class="close-btn" id="closeModal" aria-label="Close edit profile dialog">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-avatar-row">
+          <div class="profile-avatar" aria-hidden="true">A</div>
+          <div>
+            <button class="tiny-btn" type="button">Choose image</button>
+            <p class="helper">JPEG, PNG, or WebP up to 20 MB.</p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="displayName">Display name</label>
+          <input class="input" id="displayName" value="Amal" />
+        </div>
+        <div class="field">
+          <label for="username">Username</label>
+          <input class="input" id="username" value="wanderlust" />
+          <p class="helper">Your unique public identity. Letters, numbers, and internal hyphens.</p>
+        </div>
+
+        <div class="form-section">
+          <h3>About you</h3>
+          <div class="field">
+            <label for="bio">Bio <span class="optional">Optional</span></label>
+            <textarea class="textarea" id="bio">I travel mostly by public transport and share practical details I wish someone had told me before I went.</textarea>
+            <p class="helper" style="text-align:right">105 / 160</p>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Social profiles</h3>
+          <p>Optional links other travellers can use to find you.</p>
+          <div class="field">
+            <label for="instagram">Instagram <span class="optional">Optional</span></label>
+            <input class="input" id="instagram" value="@wanderlust" />
+          </div>
+          <div class="field">
+            <label for="youtube">YouTube <span class="optional">Optional</span></label>
+            <input class="input" id="youtube" value="@wanderlust" />
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn secondary" id="cancelModal">Cancel</button>
+          <button class="btn" id="saveModal">Save profile</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const menuToggle = document.getElementById('menuToggle');
+    const accountMenu = document.getElementById('accountMenu');
+    menuToggle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      accountMenu.classList.toggle('open');
+      menuToggle.setAttribute('aria-expanded', accountMenu.classList.contains('open'));
+    });
+    document.addEventListener('click', () => {
+      accountMenu.classList.remove('open');
+      menuToggle.setAttribute('aria-expanded', 'false');
+    });
+
+    const modal = document.getElementById('profileModal');
+    const openModal = () => { modal.classList.add('open'); document.body.style.overflow = 'hidden'; };
+    const closeModal = () => { modal.classList.remove('open'); document.body.style.overflow = ''; };
+    document.getElementById('editProfile').addEventListener('click', openModal);
+    document.getElementById('closeModal').addEventListener('click', closeModal);
+    document.getElementById('cancelModal').addEventListener('click', closeModal);
+    document.getElementById('saveModal').addEventListener('click', closeModal);
+    modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeModal(); });
+
+    const tabs = [...document.querySelectorAll('.tab')];
+    const cards = [...document.querySelectorAll('.tip-card')];
+    tabs.forEach(tab => tab.addEventListener('click', () => {
+      tabs.forEach(item => {
+        item.classList.remove('selected');
+        item.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('selected');
+      tab.setAttribute('aria-selected', 'true');
+      const filter = tab.dataset.filter;
+      cards.forEach(card => {
+        card.style.display = filter === 'all' || card.dataset.status === filter ? '' : 'none';
+      });
+    }));
+  </script>
+</body>
+</html>

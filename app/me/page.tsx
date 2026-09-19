@@ -1,10 +1,7 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  AccountSignOut,
-  MyContributions,
-} from "../../src/components/account/contributions";
+import { MyContributions } from "../../src/components/account/contributions";
 import { AccountProfileEditor } from "../../src/components/account/profile-editor";
 import { getDatabase } from "../../src/db";
 import { viewer } from "../../src/server/auth";
@@ -31,56 +28,58 @@ export default async function MePage({
   };
   return (
     <main id="main" className="container page-top account-page">
-      <header className="account-hero">
-        <div className="account-heading">
-          <p className="eyebrow">Your TrailNote</p>
-          <h1 className="page-title">Profile</h1>
-          <p>Everything you&apos;ve shared to help another traveller.</p>
-        </div>
-        <div className="account-profile-column">
-          <AccountProfileEditor
-            id={user.id}
-            name={user.name}
-            username={user.username}
-            avatar={user.avatar}
-            bio={user.bio}
-            instagramUrl={user.instagramUrl}
-            youtubeUrl={user.youtubeUrl}
-          >
-            <AccountSignOut />
-          </AccountProfileEditor>
-        </div>
-      </header>
+      <AccountProfileEditor
+        id={user.id}
+        name={user.name}
+        username={user.username}
+        avatar={user.avatar}
+        bio={user.bio}
+        instagramUrl={user.instagramUrl}
+        youtubeUrl={user.youtubeUrl}
+        tipsSharedCount={counts.all}
+        placesCount={new Set(allTips.map((tip) => tip.destination.slug)).size}
+      />
 
-      <div className="account-toolbar">
-        <nav className="tabs account-tabs" aria-label="Tip status">
-          <Link
-            className={filter === "all" ? "selected" : ""}
-            aria-current={filter === "all" ? "page" : undefined}
-            href="/me"
-          >
-            All <span>{counts.all}</span>
+      <section id="contributions" aria-labelledby="your-contributions">
+        <div className="contributions-head">
+          <div>
+            <div className="section-kicker">Your TrailNotes</div>
+            <h2 id="your-contributions">Your contributions</h2>
+            <p>Manage the practical tips you have shared with other travellers.</p>
+          </div>
+          <Link className="btn account-share-tip" href="/search">
+            <Plus size={17} aria-hidden="true" /> Share a tip
           </Link>
-          <Link
-            className={filter === "published" ? "selected" : ""}
-            aria-current={filter === "published" ? "page" : undefined}
-            href="/me?status=published"
-          >
-            Published <span>{counts.published}</span>
-          </Link>
-          <Link
-            className={filter === "hidden" ? "selected" : ""}
-            aria-current={filter === "hidden" ? "page" : undefined}
-            href="/me?status=hidden"
-          >
-            Hidden <span>{counts.hidden}</span>
-          </Link>
-        </nav>
-        <Link className="btn account-add" href="/search">
-          <Plus size={17} aria-hidden="true" /> Share a tip
-        </Link>
-      </div>
-      <MyContributions tips={tips} />
+        </div>
+
+        <div className="toolbar">
+          <nav className="tabs" aria-label="Tip status">
+            <Link
+              className={filter === "all" ? "tab selected" : "tab"}
+              aria-current={filter === "all" ? "page" : undefined}
+              href="/me"
+            >
+              All <span className="count">{counts.all}</span>
+            </Link>
+            <Link
+              className={filter === "published" ? "tab selected" : "tab"}
+              aria-current={filter === "published" ? "page" : undefined}
+              href="/me?status=published"
+            >
+              Published <span className="count">{counts.published}</span>
+            </Link>
+            <Link
+              className={filter === "hidden" ? "tab selected" : "tab"}
+              aria-current={filter === "hidden" ? "page" : undefined}
+              href="/me?status=hidden"
+            >
+              Hidden <span className="count">{counts.hidden}</span>
+            </Link>
+          </nav>
+        </div>
+
+        <MyContributions tips={tips} />
+      </section>
     </main>
   );
 }

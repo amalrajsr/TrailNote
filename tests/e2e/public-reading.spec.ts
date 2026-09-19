@@ -157,42 +157,42 @@ test("signed-in mobile menu exposes account destinations", async ({ page }) => {
   await expect(menu.getByRole("menuitem", { name: "Sign in" })).toHaveCount(0);
 });
 
-test("profile keeps sign out inside the account card at every breakpoint", async ({
+test("profile presents identity and owner actions at every breakpoint", async ({
   page,
 }) => {
   await signInAsObserver(page);
 
   for (const viewport of [
-    { width: 1280, height: 900 },
-    { width: 390, height: 844 },
+    { width: 320, height: 720 },
+    { width: 375, height: 812 },
+    { width: 430, height: 932 },
+    { width: 768, height: 900 },
+    { width: 1024, height: 900 },
+    { width: 1440, height: 1000 },
   ]) {
     await page.setViewportSize(viewport);
     await page.goto("/me");
 
-    const card = page.locator(".account-profile");
-    const signOut = card.getByRole("button", { name: "Sign out" });
-    await expect(signOut).toBeVisible();
-
-    const [cardBox, signOutBox] = await Promise.all([
-      card.boundingBox(),
-      signOut.boundingBox(),
-    ]);
-    expect(cardBox).not.toBeNull();
-    expect(signOutBox).not.toBeNull();
-    expect(signOutBox!.x).toBeGreaterThanOrEqual(cardBox!.x);
-    expect(signOutBox!.x + signOutBox!.width).toBeLessThanOrEqual(
-      cardBox!.x + cardBox!.width,
+    const profile = page.locator(".account-profile-header");
+    await expect(profile.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(
+      profile.getByRole("button", { name: "Edit profile" }),
+    ).toBeVisible();
+    await expect(
+      profile.getByRole("link", { name: "View public profile" }),
+    ).toBeVisible();
+    await expect(profile.getByLabel("Contribution summary")).toBeVisible();
+    await expect(profile.getByRole("button", { name: "Sign out" })).toHaveCount(
+      0,
     );
-    expect(signOutBox!.y + signOutBox!.height).toBeLessThanOrEqual(
-      cardBox!.y + cardBox!.height,
-    );
-
-    if (viewport.width < 768) {
-      expect(signOutBox!.width).toBeLessThan(cardBox!.width / 2);
-      expect(
-        cardBox!.x + cardBox!.width - (signOutBox!.x + signOutBox!.width),
-      ).toBeLessThanOrEqual(24);
-    }
+    await expect(
+      page.getByRole("heading", { level: 2, name: "Your contributions" }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      ),
+    ).toBe(0);
   }
 });
 

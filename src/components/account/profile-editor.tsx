@@ -1,6 +1,11 @@
 "use client";
 
-import { ImagePlus, Pencil, Trash2 } from "lucide-react";
+import {
+  ArrowUpRight,
+  ImagePlus,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -9,7 +14,6 @@ import {
   useRef,
   useState,
   type ChangeEvent,
-  type ReactNode,
 } from "react";
 import {
   updateOwnProfile,
@@ -376,7 +380,8 @@ export function AccountProfileEditor({
   bio,
   instagramUrl,
   youtubeUrl,
-  children,
+  tipsSharedCount,
+  placesCount,
 }: {
   id: string;
   name: string;
@@ -385,32 +390,85 @@ export function AccountProfileEditor({
   bio: string | null;
   instagramUrl: string | null;
   youtubeUrl: string | null;
-  children: ReactNode;
+  tipsSharedCount: number;
+  placesCount: number;
 }) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <div className="account-profile">
+      <section className="profile-card" aria-labelledby="profile-name">
         <ProfileAvatar
           name={name}
           avatar={avatar}
-          className="account-avatar"
-          sizes="52px"
+          className="profile-avatar"
+          sizes="88px"
         />
-        <div>
-          <strong>{name}</strong>
-          <span className="profile-handle">@{username}</span>
+
+        <div className="profile-copy">
+          <div className="identity-row">
+            <h1 className="profile-name" id="profile-name">
+              {name}
+            </h1>
+            <span className="profile-handle">@{username}</span>
+          </div>
+
+          {bio && <p className="profile-bio">{bio}</p>}
+
+          {(instagramUrl || youtubeUrl) && (
+            <div className="social-row" aria-label="Social profiles">
+              {instagramUrl && (
+                <a
+                  className="social-link"
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow ugc"
+                >
+                  <InstagramIcon />
+                  Instagram
+                  <ArrowUpRight size={12} aria-hidden="true" />
+                </a>
+              )}
+              {youtubeUrl && (
+                <a
+                  className="social-link"
+                  href={youtubeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow ugc"
+                >
+                  <YouTubeIcon />
+                  YouTube
+                  <ArrowUpRight size={12} aria-hidden="true" />
+                </a>
+              )}
+            </div>
+          )}
+
+          <div className="profile-meta" aria-label="Contribution summary">
+            <span>
+              <strong>{tipsSharedCount}</strong> tips shared
+            </span>
+            <span>
+              <strong>{placesCount}</strong> places
+            </span>
+            <span>Joined TrailNote in 2026</span>
+          </div>
         </div>
-        <div className="account-profile-actions">
-          <Button type="button" variant="quiet" onClick={() => setOpen(true)}>
+
+        <div className="profile-actions">
+          <Button
+            type="button"
+            variant="secondary"
+            className="account-profile-edit"
+            onClick={() => setOpen(true)}
+          >
             <Pencil size={16} aria-hidden="true" /> Edit profile
           </Button>
-          <Link className="quiet" href={`/users/${id}`}>
+          <Link className="public-link" href={`/users/${id}`}>
             View public profile
+            <ArrowUpRight size={13} aria-hidden="true" />
           </Link>
         </div>
-        <div className="account-profile-session">{children}</div>
-      </div>
+      </section>
       <Dialog
         open={open}
         onOpenChange={setOpen}
@@ -437,3 +495,38 @@ export function AccountProfileEditor({
     </>
   );
 }
+
+function YouTubeIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <rect x="3" y="5" width="18" height="14" rx="4" fill="currentColor" />
+      <path d="m10 8.5 6 3.5-6 3.5v-7Z" fill="white" />
+    </svg>
+  );
+}
+
+function InstagramIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden="true"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.6" cy="6.4" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+

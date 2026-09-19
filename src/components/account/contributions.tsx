@@ -4,7 +4,6 @@ import {
   ArrowUpRight,
   Eye,
   EyeOff,
-  LogOut,
   MapPin,
   Pencil,
   Trash2,
@@ -15,8 +14,6 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { deleteOwnTip } from "../../../app/me/actions";
 import { categoryLabels, type Category } from "../../lib/constants";
-import { useLogout } from "../auth/logout-provider";
-import { CategoryIcon } from "../ui/category-icon";
 import { Dialog } from "../ui/overlays";
 import { Button } from "../ui/primitives";
 import { toast } from "../ui/toaster";
@@ -31,21 +28,7 @@ type Tip = {
   destination: { name: string; slug: string };
 };
 
-export function AccountSignOut() {
-  const signOut = useLogout();
-
-  return (
-    <Button variant="quiet" className="account-sign-out" onClick={signOut}>
-      <LogOut size={16} aria-hidden="true" /> Sign out
-    </Button>
-  );
-}
-
-function ContributionRow({
-  tip,
-}: {
-  tip: Tip;
-}) {
+function ContributionRow({ tip }: { tip: Tip }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
@@ -80,7 +63,6 @@ function ContributionRow({
       </div>
 
       <div className={`category-label ${tip.category}`}>
-        <CategoryIcon category={tip.category} />
         {categoryLabels[tip.category]}
       </div>
       <h2>
@@ -99,9 +81,10 @@ function ContributionRow({
               Read tip <ArrowUpRight size={16} aria-hidden="true" />
             </Link>
           )}
-          <div className="row">
-            <Link className="btn secondary" href={`/tips/${tip.id}/edit`}>
-              <Pencil size={16} aria-hidden="true" /> Edit
+          <div className="account-tip-row-actions">
+            <Link className="account-tip-small-action" href={`/tips/${tip.id}/edit`}>
+              <Pencil size={14} aria-hidden="true" />
+              <span>Edit</span>
             </Link>
             <Dialog
               open={open}
@@ -118,8 +101,9 @@ function ContributionRow({
                 </span>
               }
               trigger={
-                <button type="button" className="btn account-delete-trigger">
-                  <Trash2 size={16} aria-hidden="true" /> Delete
+                <button type="button" className="account-tip-small-action delete">
+                  <Trash2 size={14} aria-hidden="true" />
+                  <span>Delete</span>
                 </button>
               }
             >
@@ -186,10 +170,7 @@ export function MyContributions({ tips }: { tips: Tip[] }) {
   return (
     <div className="account-contributions">
       {tips.map((tip) => (
-        <ContributionRow
-          tip={tip}
-          key={tip.id}
-        />
+        <ContributionRow tip={tip} key={tip.id} />
       ))}
     </div>
   );
