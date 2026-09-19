@@ -66,7 +66,6 @@ function ProfileForm({
   const [uploadStatus, setUploadStatus] = useState<
     "idle" | "preparing" | "uploading" | "error"
   >("idle");
-  const [uploadError, setUploadError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const preview = uploaded ?? (avatarIntent === "remove" ? null : avatar);
@@ -110,7 +109,6 @@ function ProfileForm({
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    setUploadError("");
     setUploadStatus("preparing");
     try {
       const { preparePhoto } = await import("../../lib/photo-normalization");
@@ -137,10 +135,11 @@ function ProfileForm({
       setUploadStatus("idle");
     } catch (error) {
       setUploadStatus("error");
-      setUploadError(
+      toast(
         error instanceof Error
           ? error.message
           : "The profile image could not be uploaded.",
+        "error",
       );
     }
   }
@@ -153,7 +152,7 @@ function ProfileForm({
     setUploaded(null);
     setAvatarIntent("remove");
     setUploadStatus("idle");
-    setUploadError("");
+    toast("Profile image removed.");
   }
 
   return (
@@ -203,11 +202,6 @@ function ProfileForm({
               {uploadStatus === "preparing"
                 ? "Preparing image…"
                 : "Uploading and verifying…"}
-            </p>
-          )}
-          {uploadError && (
-            <p className="field-error" role="alert">
-              {uploadError}
             </p>
           )}
         </div>

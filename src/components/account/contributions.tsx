@@ -43,10 +43,8 @@ export function AccountSignOut() {
 
 function ContributionRow({
   tip,
-  onDeleted,
 }: {
   tip: Tip;
-  onDeleted: () => void;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -152,7 +150,6 @@ function ContributionRow({
                       const result = await deleteOwnTip(tip.id, tip.revision);
                       if (result.ok) {
                         setOpen(false);
-                        onDeleted();
                         toast("Tip deleted.");
                         router.refresh();
                       } else {
@@ -174,7 +171,6 @@ function ContributionRow({
 }
 
 export function MyContributions({ tips }: { tips: Tip[] }) {
-  const [message, setMessage] = useState("");
   if (!tips.length)
     return (
       <section className="empty-state account-empty-state">
@@ -189,16 +185,10 @@ export function MyContributions({ tips }: { tips: Tip[] }) {
     );
   return (
     <div className="account-contributions">
-      {message && (
-        <p className="account-notice" role="status">
-          {message}
-        </p>
-      )}
       {tips.map((tip) => (
         <ContributionRow
           tip={tip}
           key={tip.id}
-          onDeleted={() => setMessage("Tip deleted.")}
         />
       ))}
     </div>

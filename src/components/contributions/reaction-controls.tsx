@@ -54,8 +54,6 @@ export function ReactionControls({
   const [monthDraft, setMonthDraft] = useState(
     initialState.confirmationMonth ?? currentMonth(),
   );
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
   const confirmRef = useRef<HTMLButtonElement>(null);
   const helpfulRef = useRef<HTMLButtonElement>(null);
 
@@ -73,7 +71,6 @@ export function ReactionControls({
   async function saveConfirmation(month: string) {
     if (!initialState.authenticated) return requestSignIn("confirm");
     const before = { confirmationMonth, confirmationCount };
-    setError("");
     setPending("confirm");
     setConfirmationMonth(month);
     if (!confirmationMonth) setConfirmationCount((count) => count + 1);
@@ -83,8 +80,9 @@ export function ReactionControls({
     } catch {
       setConfirmationMonth(before.confirmationMonth);
       setConfirmationCount(before.confirmationCount);
-      setError(
+      toast(
         "The confirmation could not be saved. Your previous choice is unchanged.",
+        "error",
       );
       setPending(null);
       return;
@@ -92,7 +90,6 @@ export function ReactionControls({
     if (!result.ok) {
       setConfirmationMonth(before.confirmationMonth);
       setConfirmationCount(before.confirmationCount);
-      setError(result.message);
       toast(result.message, "error");
     } else {
       setConfirmationMonth(result.data.confirmationMonth);
@@ -101,7 +98,6 @@ export function ReactionControls({
       setHelpfulCount(result.data.helpfulCount);
       setMonthDraft(result.data.confirmationMonth ?? month);
       const confirmationMessage = "Thanks. You confirmed this tip.";
-      setMessage(confirmationMessage);
       toast(confirmationMessage);
       setConfirmationOpen(true);
     }
@@ -110,7 +106,6 @@ export function ReactionControls({
 
   async function remove() {
     const before = { confirmationMonth, confirmationCount };
-    setError("");
     setPending("confirm");
     setConfirmationMonth(null);
     setConfirmationCount((count) => Math.max(0, count - 1));
@@ -120,8 +115,9 @@ export function ReactionControls({
     } catch {
       setConfirmationMonth(before.confirmationMonth);
       setConfirmationCount(before.confirmationCount);
-      setError(
+      toast(
         "The confirmation could not be removed. Your previous choice is unchanged.",
+        "error",
       );
       setPending(null);
       return;
@@ -129,13 +125,11 @@ export function ReactionControls({
     if (!result.ok) {
       setConfirmationMonth(before.confirmationMonth);
       setConfirmationCount(before.confirmationCount);
-      setError(result.message);
       toast(result.message, "error");
     } else {
       setConfirmationMonth(null);
       setConfirmationCount(result.data.confirmationCount);
       const confirmationMessage = "Your confirmation was removed.";
-      setMessage(confirmationMessage);
       toast(confirmationMessage);
       setConfirmationOpen(false);
     }
@@ -146,7 +140,6 @@ export function ReactionControls({
     if (!initialState.authenticated) return requestSignIn("helpful");
     const before = { helpful, helpfulCount };
     const next = !helpful;
-    setError("");
     setPending("helpful");
     setHelpful(next);
     setHelpfulCount((count) => Math.max(0, count + (next ? 1 : -1)));
@@ -156,8 +149,9 @@ export function ReactionControls({
     } catch {
       setHelpful(before.helpful);
       setHelpfulCount(before.helpfulCount);
-      setError(
+      toast(
         "Helpful could not be updated. Your previous choice is unchanged.",
+        "error",
       );
       setPending(null);
       return;
@@ -165,7 +159,6 @@ export function ReactionControls({
     if (!result.ok) {
       setHelpful(before.helpful);
       setHelpfulCount(before.helpfulCount);
-      setError(result.message);
       toast(result.message, "error");
     } else {
       setHelpful(result.data.helpful);
@@ -175,7 +168,6 @@ export function ReactionControls({
       const helpfulMessage = result.data.helpful
         ? "Marked helpful."
         : "Removed your helpful mark.";
-      setMessage(helpfulMessage);
       toast(helpfulMessage);
     }
     setPending(null);
@@ -271,15 +263,6 @@ export function ReactionControls({
         {confirmationCount === 0
           ? ""
           : `${confirmationCount} ${confirmationCount === 1 ? "traveller" : "travellers"} confirmed this tip.`}
-      </p>
-      <p
-        className={error ? "field-error" : "sr-only"}
-        role={error ? "alert" : undefined}
-      >
-        {error}
-      </p>
-      <p className="sr-only" aria-live="polite" aria-atomic="true">
-        {message}
       </p>
     </div>
   );

@@ -1,7 +1,6 @@
 "use client";
 
-import { ArrowRight, Check, MapPin } from "lucide-react";
-import Link from "next/link";
+import { ArrowRight, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   useActionState,
@@ -33,6 +32,7 @@ import {
 } from "../../lib/validation/contribution";
 import { CategoryIcon } from "../ui/category-icon";
 import { Button, Field, Input, Select, Textarea } from "../ui/primitives";
+import { toast } from "../ui/toaster";
 import { PhotoUploader, type UploadedPhoto } from "./photo-uploader";
 import {
   shareContribution,
@@ -419,6 +419,7 @@ export function ContributionComposer({
       genericTipPatterns.some((pattern) => pattern.test(body))
     ) {
       event.preventDefault();
+      toast("Give the next traveller one detail they can use.", "error");
       setShowUsefulnessGuidance(true);
       revealInvalidField("body");
       return;
@@ -427,6 +428,7 @@ export function ContributionComposer({
     const result = validateDraft();
     if (!result.success) {
       event.preventDefault();
+      toast("Review the highlighted fields and try again.", "error");
       setClientFieldErrors(result.fieldErrors);
       setShowValidation(true);
       revealInvalidField(Object.keys(result.fieldErrors)[0]);
@@ -472,6 +474,14 @@ export function ContributionComposer({
   useEffect(() => {
     if (state.status === "success") {
       sessionStorage.removeItem(storageKey);
+      toast(
+        mode === "update"
+          ? "Update shared."
+          : mode === "edit"
+            ? "Changes saved."
+            : "Tip added.",
+      );
+      if (state.tipId) router.push(`/tips/${state.tipId}`);
       return;
     }
     const timer = window.setTimeout(() => {
@@ -486,7 +496,7 @@ export function ContributionComposer({
       }
     }, 300);
     return () => window.clearTimeout(timer);
-  }, [draft, state.status, storageKey]);
+  }, [draft, mode, router, state.status, state.tipId, storageKey]);
 
   useEffect(() => {
     if (state.status === "auth" && state.returnTo) {
@@ -507,9 +517,13 @@ export function ContributionComposer({
 
   useEffect(() => {
     if (state.status === "error") {
+      toast(
+        state.message ?? "Review the highlighted fields and try again.",
+        "error",
+      );
       focusAndScrollTo(summaryRef.current);
     }
-  }, [focusAndScrollTo, state]);
+  }, [focusAndScrollTo, state.message, state.status]);
 
   const setPhotos = useCallback(
     (photos: UploadedPhoto[]) =>
@@ -534,81 +548,7 @@ export function ContributionComposer({
     );
   }, [destination.slug, draft, edit, mode, original, router, storageKey]);
 
-  if (state.status === "success" && state.tipId) {
-    const startAnother = (nextCategory: Category) => {
-      const nextDraft = {
-        ...makeDraft(nextCategory, crypto.randomUUID()),
-        visitedChoice: draft.visitedChoice,
-        visitedMonth: draft.visitedMonth,
-      };
-      try {
-        sessionStorage.setItem(
-          storageKey,
-          JSON.stringify(storableDraft(nextDraft)),
-        );
-      } catch {
-        // Navigation still starts a clean contribution if storage is unavailable.
-      }
-      router.refresh();
-    };
-
-    return (
-      <section className="composer-success" aria-live="polite">
-        <div className="success-mark" aria-hidden="true">
-          <Check size={28} strokeWidth={2.5} />
-        </div>
-        <p className="eyebrow">Shared with travellers</p>
-        <h2>
-          {mode === "update"
-            ? "Update shared"
-            : mode === "edit"
-              ? "Changes saved"
-              : "Tip added"}
-        </h2>
-        <p className="success-copy">
-          {mode === "update"
-            ? "Thanks for helping travellers understand what changed."
-            : mode === "edit"
-              ? "Your newest version is now visible to travellers."
-              : `Your tip about ${destination.name} is now ready to help the next traveller.`}
-        </p>
-        <Link className="btn success-primary" href={`/tips/${state.tipId}`}>
-          {mode === "update" ? "View updated discussion" : "View your tip"}
-          <ArrowRight size={17} aria-hidden="true" />
-        </Link>
-
-        {mode === "create" && (
-          <div className="success-another">
-            <div>
-              <h3>Add another thing about {destination.name}?</h3>
-              <p>Choose what you want to share next.</p>
-            </div>
-            <div className="success-categories">
-              {[
-                "general",
-                ...categories.filter((value) => value !== "general"),
-              ].map((value) => (
-                <button
-                  type="button"
-                  key={value}
-                  onClick={() => startAnother(value as Category)}
-                >
-                  <CategoryIcon category={value as Category} />
-                  {categoryNames[value as Category]}
-                </button>
-              ))}
-            </div>
-            <Link
-              className="success-back"
-              href={`/destinations/${destination.slug}`}
-            >
-              Back to {destination.name}
-            </Link>
-          </div>
-        )}
-      </section>
-    );
-  }
+  if (state.status === "success") return null;
 
   const error = (name: string) => {
     if (!showValidation) return undefined;
@@ -781,11 +721,9 @@ export function ContributionComposer({
             <div
               ref={summaryRef}
               tabIndex={-1}
-              className="error-notice"
-              role="alert"
-            >
-              {state.message ?? "Review the highlighted fields and try again."}
-            </div>
+              className="sr-only"
+              aria-hidden="true"
+            />
           )}
 
         {mode === "update" && original ? (

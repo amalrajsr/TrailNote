@@ -220,6 +220,7 @@ describe("transactional contribution services", () => {
   });
   it("keeps changed prices separate and hides children when the root is deleted", async () => {
     const parent = await visibleContribution(conn.db, fixtureId(102));
+    const update = await visibleContribution(conn.db, fixtureId(200));
     expect(parent.pricePaise).toBe(3500);
     const detail = await contributionDetail(conn.db, parent.id);
     expect(detail.updatedAt).toBe(parent.updatedAt);
@@ -235,6 +236,33 @@ describe("transactional contribution services", () => {
     await expect(
       visibleContribution(conn.db, fixtureId(200)),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(
+      createContribution(conn.db, fixtureId(4), crypto.randomUUID(), {
+        ...input(),
+        parentContributionId: parent.id,
+        parentRevision: parent.revision,
+      }),
+    ).rejects.toMatchObject({
+      code: "NOT_FOUND",
+      message: "This tip is unavailable. Author may have deleted it",
+    });
+    await expect(
+      editContribution(
+        conn.db,
+        update.authorId,
+        update.id,
+        update.revision,
+        crypto.randomUUID(),
+        {
+          ...input(),
+          parentContributionId: parent.id,
+          parentRevision: parent.revision,
+        },
+      ),
+    ).rejects.toMatchObject({
+      code: "NOT_FOUND",
+      message: "This tip is unavailable. Author may have deleted it",
+    });
   });
   it("moves confirmations and updates into revision history after an edit", async () => {
     const parent = await visibleContribution(conn.db, fixtureId(102));

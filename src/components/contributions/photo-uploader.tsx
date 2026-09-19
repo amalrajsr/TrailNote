@@ -5,6 +5,7 @@
 import { ArrowDown, ArrowUp, ImagePlus, RotateCcw, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Button, Input } from "../ui/primitives";
+import { toast } from "../ui/toaster";
 import imageKitLoader from "../../lib/imagekit-loader";
 
 export type UploadedPhoto = {
@@ -129,8 +130,15 @@ export function PhotoUploader({
             : entry,
         ),
       );
+      toast("Photo uploaded.");
     } catch (error) {
       if (controller.signal.aborted) return;
+      toast(
+        error instanceof Error
+          ? error.message
+          : "The photo could not be uploaded.",
+        "error",
+      );
       setItems((current) =>
         current.map((entry) =>
           entry.localId === item.localId
@@ -196,6 +204,7 @@ export function PhotoUploader({
     setItems((current) =>
       current.filter((entry) => entry.localId !== item.localId),
     );
+    toast("Photo removed.");
   }
 
   function move(index: number, offset: -1 | 1) {

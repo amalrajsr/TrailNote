@@ -14,12 +14,10 @@ export function ContactRemovalForm({
   const [requestText, setRequestText] = useState("");
   const [replyEmail, setReplyEmail] = useState("");
   const [honeypot, setHoneypot] = useState("");
-  const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setBusy(true);
-    setMessage("");
     try {
       const response = await fetch("/api/contact-removal", {
         method: "POST",
@@ -38,14 +36,12 @@ export function ContactRemovalForm({
           data.message ?? "Please check the request and try again.",
         );
       const successMessage = "Your request has been sent for review.";
-      setMessage(successMessage);
       toast(successMessage);
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
           : "Please check the request and try again.";
-      setMessage(errorMessage);
       toast(errorMessage, "error");
     } finally {
       setBusy(false);
@@ -84,18 +80,6 @@ export function ContactRemovalForm({
         value={honeypot}
         onChange={(event) => setHoneypot(event.target.value)}
       />
-      {message && (
-        <p
-          className={
-            message.startsWith("Your request")
-              ? "status-message"
-              : "field-error"
-          }
-          role="status"
-        >
-          {message}
-        </p>
-      )}
       <Button busy={busy}>Send request</Button>
     </form>
   );

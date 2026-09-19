@@ -29,27 +29,23 @@ function StatusBadge({ value }: { value: string }) {
 function ActionDialog({ label, description, onConfirm, danger = false }: { label: string; description: string; onConfirm: (reason: string) => Promise<ActionResult>; danger?: boolean }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
-  const [message, setMessage] = useState("");
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const submit = () => startTransition(async () => {
     const result = await onConfirm(reason);
     if (result.ok) {
       const successMessage = "Moderation action saved.";
-      setMessage(successMessage);
       toast(successMessage);
       setOpen(false);
       setReason("");
       router.refresh();
     } else {
       const errorMessage = result.message ?? "Could not save this action.";
-      setMessage(errorMessage);
       toast(errorMessage, "error");
     }
   });
   return <>
-    <Button type="button" variant="secondary" className={danger ? "danger-outline" : undefined} onClick={() => { setMessage(""); setOpen(true); }}>{label}</Button>
-    {message && <span className="moderation-feedback" role="status">{message}</span>}
+    <Button type="button" variant="secondary" className={danger ? "danger-outline" : undefined} onClick={() => { setOpen(true); }}>{label}</Button>
     <Dialog open={open} onOpenChange={setOpen} title={`${label}?`} description={description}>
       <label className="label" htmlFor={`moderation-reason-${label}`}>Reason <span className="optional">(required)</span></label>
       <Textarea id={`moderation-reason-${label}`} value={reason} maxLength={1000} required aria-required="true" onChange={(event) => setReason(event.target.value)} />

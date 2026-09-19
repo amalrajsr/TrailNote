@@ -29,6 +29,7 @@ export async function activeProfile(
 export async function visibleContribution(
   db: Database | Transaction,
   id: string,
+  unavailableMessage = "This tip is unavailable.",
 ) {
   const row = (
     await db
@@ -55,11 +56,15 @@ export async function visibleContribution(
         ),
       )
   )[0]?.tip;
-  if (!row) throw new DomainError("NOT_FOUND", "This tip is unavailable.");
+  if (!row) throw new DomainError("NOT_FOUND", unavailableMessage);
   if (row.parentContributionId) {
-    const root = await visibleContribution(db, row.parentContributionId);
+    const root = await visibleContribution(
+      db,
+      row.parentContributionId,
+      unavailableMessage,
+    );
     if (root.parentContributionId)
-      throw new DomainError("NOT_FOUND", "This tip is unavailable.");
+      throw new DomainError("NOT_FOUND", unavailableMessage);
   }
   return row;
 }
@@ -191,7 +196,11 @@ export async function createContribution(
     if (!destination)
       throw new DomainError("NOT_FOUND", "This destination is unavailable.");
     if (input.parentContributionId) {
-      const parent = await visibleContribution(tx, input.parentContributionId);
+      const parent = await visibleContribution(
+        tx,
+        input.parentContributionId,
+        "This tip is unavailable. Author may have deleted it",
+      );
       if (
         parent.parentContributionId ||
         parent.category !== input.category ||
@@ -262,7 +271,11 @@ export async function editContribution(
       return JSON.parse(receipt.resultRef) as { id: string; revision: number };
     }
     await consumeRateLimit(tx, userId, "contribution_write", 20, 3_600_000);
-    const old = await visibleContribution(tx, id);
+    const old = await visibleContribution(
+      tx,
+      id,
+      "This tip is unavailable. Author may have deleted it",
+    );
     if (old.authorId !== userId)
       throw new DomainError("FORBIDDEN", "Only the author can edit this tip.");
     if (old.revision !== expectedRevision)

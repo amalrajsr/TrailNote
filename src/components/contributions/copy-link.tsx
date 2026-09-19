@@ -6,7 +6,6 @@ import { Button } from "../ui/primitives";
 import { toast } from "../ui/toaster";
 
 export function CopyLink({ tipId }: { tipId: string }) {
-  const [message, setMessage] = useState("");
   const [fallback, setFallback] = useState(false);
   const [fallbackUrl, setFallbackUrl] = useState("");
   const input = useRef<HTMLInputElement>(null);
@@ -28,12 +27,11 @@ export function CopyLink({ tipId }: { tipId: string }) {
         ),
       ]);
       setFallback(false);
-      setMessage("Link copied");
       toast("Tip link copied");
     } catch {
       setFallbackUrl(url);
       setFallback(true);
-      setMessage("Copy unavailable. The link is selected.");
+      toast("Copy unavailable. The link is selected.", "error");
     }
   }
 
@@ -56,9 +54,6 @@ export function CopyLink({ tipId }: { tipId: string }) {
           readOnly
         />
       )}
-      <p className="small muted" role="status" aria-live="polite">
-        {message}
-      </p>
     </div>
   );
 }

@@ -10,7 +10,6 @@ export function ReportTip({ id, revision }: { id: string; revision: number }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("inaccurate");
   const [details, setDetails] = useState("");
-  const [message, setMessage] = useState("");
   const [pending, startTransition] = useTransition();
   return (
     <Dialog
@@ -48,11 +47,6 @@ export function ReportTip({ id, revision }: { id: string; revision: number }) {
           maxLength={1000}
           onChange={(event) => setDetails(event.target.value)}
         />
-        {message && (
-          <p className="field-error" role="alert">
-            {message}
-          </p>
-        )}
         <Button
           busy={pending}
           type="button"
@@ -60,11 +54,9 @@ export function ReportTip({ id, revision }: { id: string; revision: number }) {
             startTransition(async () => {
               const result = await reportTip(id, revision, reason, details);
               if (result.ok) {
-                setMessage("Thanks. Your report is queued for review.");
                 toast("Report sent. A moderator will review it.");
                 setDetails("");
               } else {
-                setMessage(result.message);
                 toast(result.message, "error");
               }
             })

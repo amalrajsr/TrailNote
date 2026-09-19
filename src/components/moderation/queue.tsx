@@ -75,7 +75,6 @@ function ContributionRow({
   const router = useRouter();
   const [reason, setReason] = useState("");
   const [confirm, setConfirm] = useState<"hide" | "suspend" | null>(null);
-  const [message, setMessage] = useState("");
   const [pending, startTransition] = useTransition();
   const run = (work: () => Promise<Result>, success: string) =>
     startTransition(async () => {
@@ -83,7 +82,6 @@ function ContributionRow({
       const nextMessage = result.ok
         ? success
         : (result.message ?? "Could not save this review.");
-      setMessage(nextMessage);
       if (result.ok) toast(success);
       else toast(nextMessage, "error");
       if (result.ok || result.code === "CONFLICT") router.refresh();
@@ -223,11 +221,6 @@ function ContributionRow({
           </Button>
         )}
       </div>
-      {message && (
-        <p className="status-message" role="status">
-          {message}
-        </p>
-      )}
       <Dialog
         open={!!confirm}
         onOpenChange={(open) => !open && setConfirm(null)}
@@ -266,7 +259,6 @@ function ContactRow({ item, events }: { item: Contact; events: Event[] }) {
   const router = useRouter();
   const [reason, setReason] = useState("");
   const [confirm, setConfirm] = useState(false);
-  const [message, setMessage] = useState("");
   const [pending, startTransition] = useTransition();
   const run = (disposition: "hide" | "dismiss") =>
     startTransition(async () => {
@@ -276,7 +268,6 @@ function ContactRow({ item, events }: { item: Contact; events: Event[] }) {
           ? "Contact hidden."
           : "Request dismissed."
         : (result.message ?? "Could not save this review.");
-      setMessage(nextMessage);
       if (result.ok) toast(nextMessage);
       else toast(nextMessage, "error");
       if (result.ok || result.code === "CONFLICT") router.refresh();
@@ -327,11 +318,6 @@ function ContactRow({ item, events }: { item: Contact; events: Event[] }) {
             </Button>
           </div>
         </>
-      )}
-      {message && (
-        <p className="status-message" role="status">
-          {message}
-        </p>
       )}
       <Dialog
         open={confirm}

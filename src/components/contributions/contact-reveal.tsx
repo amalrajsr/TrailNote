@@ -4,16 +4,15 @@ import { Copy, Phone } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "../ui/primitives";
+import { toast } from "../ui/toaster";
 
 export function ContactReveal({ contributionId }: { contributionId: string }) {
   const [contact, setContact] = useState<{ id: string; phone: string } | null>(
     null,
   );
-  const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const reveal = async () => {
     setBusy(true);
-    setMessage("");
     try {
       const response = await fetch(`/api/contacts/${contributionId}/reveal`, {
         method: "POST",
@@ -28,11 +27,13 @@ export function ContactReveal({ contributionId }: { contributionId: string }) {
           data.message ?? "Couldn't reveal this contact. Try again.",
         );
       setContact({ id: data.id, phone: data.phone });
+      toast("Contact revealed.");
     } catch (error) {
-      setMessage(
+      toast(
         error instanceof Error
           ? error.message
           : "Couldn't reveal this contact. Try again.",
+        "error",
       );
     } finally {
       setBusy(false);
@@ -42,9 +43,9 @@ export function ContactReveal({ contributionId }: { contributionId: string }) {
     if (!contact) return;
     try {
       await navigator.clipboard.writeText(contact.phone);
-      setMessage("Number copied");
+      toast("Number copied.");
     } catch {
-      setMessage("Copy isn't available. Select the number to copy it.");
+      toast("Copy isn't available. Select the number to copy it.", "error");
     }
   };
   if (!contact)
@@ -55,11 +56,6 @@ export function ContactReveal({ contributionId }: { contributionId: string }) {
         <Button type="button" variant="secondary" busy={busy} onClick={reveal}>
           Show contact
         </Button>
-        {message && (
-          <p className="field-error" role="alert">
-            {message}
-          </p>
-        )}
       </section>
     );
   return (
@@ -80,7 +76,6 @@ export function ContactReveal({ contributionId }: { contributionId: string }) {
           Report this number
         </Link>
       </div>
-      {message && <p className="status-message">{message}</p>}
     </section>
   );
 }
