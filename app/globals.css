@@ -2487,6 +2487,8 @@ textarea.field-input {
   display: flex;
   align-items: center;
   gap: 7px;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .account-tip-small-action {
@@ -4256,7 +4258,8 @@ summary {
 
   .profile-card {
     grid-template-columns: 58px minmax(0, 1fr);
-    gap: 15px;
+    row-gap: 9px;
+    column-gap: 15px;
     padding: 22px 18px 20px;
     border-radius: 20px;
   }
@@ -4279,13 +4282,21 @@ summary {
 
   .profile-bio {
     grid-column: 1 / -1;
-    margin-top: 14px;
+    margin-top: 9px;
     font-size: 14px;
   }
 
   .social-row,
   .profile-meta {
     grid-column: 1 / -1;
+  }
+
+  .social-row {
+    margin-top: 10px;
+  }
+
+  .profile-meta {
+    margin-top: 12px;
   }
 
   .profile-copy {
@@ -4300,7 +4311,7 @@ summary {
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    margin-top: 4px;
+    margin-top: 0;
   }
 
   .account-profile-edit {
@@ -4342,6 +4353,13 @@ summary {
 
   .account-tip-actions {
     align-items: flex-start;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+  }
+
+  .account-read-link {
+    min-width: 0;
+    flex-shrink: 1;
   }
 
   .account-tip-small-action span {
