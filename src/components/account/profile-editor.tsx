@@ -19,6 +19,7 @@ import { ProfileAvatar, type ProfileAvatarData } from "../profiles/avatar";
 import { Dialog } from "../ui/overlays";
 import { Button, Field, Input, Textarea } from "../ui/primitives";
 import { toast } from "../ui/toaster";
+import { InfoTooltip } from "../ui/info-tooltip";
 
 type UploadedAvatar = NonNullable<ProfileAvatarData> & {
   id: string;
@@ -296,7 +297,14 @@ function ProfileForm({
         </p>
         <Field
           id="profile-instagram"
-          label="Instagram"
+          label={
+            <>
+              Instagram{" "}
+              <InfoTooltip label="Instagram profile URL" position="right">
+                Example: https://www.instagram.com/trailnote/
+              </InfoTooltip>
+            </>
+          }
           optional
           error={state.fieldErrors?.instagramUrl?.[0]}
         >
@@ -319,7 +327,14 @@ function ProfileForm({
         </Field>
         <Field
           id="profile-youtube"
-          label="YouTube"
+          label={
+            <>
+              YouTube{" "}
+              <InfoTooltip label="YouTube channel URL" position="right">
+                Example: https://www.youtube.com/@trailnote
+              </InfoTooltip>
+            </>
+          }
           optional
           error={state.fieldErrors?.youtubeUrl?.[0]}
         >

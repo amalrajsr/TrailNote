@@ -2246,6 +2246,14 @@ textarea.field-input {
   font-size: 15px;
   font-weight: 700;
 }
+.profile-form .label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.profile-form .label .info-tooltip {
+  margin: 0;
+}
 .profile-section-helper {
   margin: -6px 0 14px;
 }

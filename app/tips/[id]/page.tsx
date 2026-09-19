@@ -133,7 +133,7 @@ function DetailCard({
       </div>
       {detail.parent && (
         <p className="parent-reference">
-          Update to{" "}
+          This is an update to{" "}
           <Link href={`/tips/${detail.parent.id}`}>{detail.parent.title}</Link>
         </p>
       )}
@@ -308,93 +308,93 @@ function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
   );
 }
 
-// function Updates({ detail }: { detail: ContributionDetailDTO }) {
-//   if (
-//     detail.isUpdate ||
-//     (!detail.updates.length && !detail.earlierUpdates.length)
-//   )
-//     return null;
+function Updates({ detail }: { detail: ContributionDetailDTO }) {
+  if (
+    detail.isUpdate ||
+    (!detail.updates.length && !detail.earlierUpdates.length)
+  )
+    return null;
 
-//   const cards = (updates: ContributionDetailDTO["updates"]) =>
-//     updates.map((update) => {
-//       const originalPrice = detail.updateOriginalPrices[update.id];
-//       return (
-//         <article className="update-card" key={update.id}>
-//           <div className="row between update-byline">
-//             <Link className="update-author" href={`/users/${update.author.id}`}>
-//               <ProfileAvatar
-//                 name={update.author.displayName}
-//                 avatar={update.author.avatar}
-//                 className="update-author-avatar"
-//                 sizes="32px"
-//               />
-//               <span>
-//                 <strong>{update.author.displayName}</strong>
-//                 <small className="profile-handle">
-//                   @{update.author.username}
-//                 </small>
-//               </span>
-//             </Link>
-//             <span>
-//               {update.visitedMonth
-//                 ? `Visited ${formatMonth(update.visitedMonth)}`
-//                 : formatMonth(null)}
-//             </span>
-//           </div>
-//           <p>{update.body}</p>
-//           {(originalPrice || update.price) && (
-//             <div className="update-prices">
-//               {originalPrice && (
-//                 <div>
-//                   <span>Original report</span>
-//                   <strong>
-//                     {formatMoney(originalPrice.paise, originalPrice.unit)}{" "}
-//                     <small>
-//                       {priceSuffix(originalPrice.unit, originalPrice.unitLabel)}
-//                     </small>
-//                   </strong>
-//                 </div>
-//               )}
-//               {update.price && (
-//                 <div>
-//                   <span>Update reported</span>
-//                   <strong>
-//                     {formatMoney(update.price.paise, update.price.unit)}{" "}
-//                     <small>
-//                       {priceSuffix(update.price.unit, update.price.unitLabel)}
-//                     </small>
-//                   </strong>
-//                 </div>
-//               )}
-//             </div>
-//           )}
-//           <Link className="quiet update-link" href={`/tips/${update.id}`}>
-//             Read full update →
-//           </Link>
-//         </article>
-//       );
-//     });
+  const cards = (updates: ContributionDetailDTO["updates"]) =>
+    updates.map((update) => {
+      const originalPrice = detail.updateOriginalPrices[update.id];
+      return (
+        <article className="update-card" key={update.id}>
+          <div className="row between update-byline">
+            <Link className="update-author" href={`/users/${update.author.id}`}>
+              <ProfileAvatar
+                name={update.author.displayName}
+                avatar={update.author.avatar}
+                className="update-author-avatar"
+                sizes="32px"
+              />
+              <span>
+                <strong>{update.author.displayName}</strong>
+                <small className="profile-handle">
+                  @{update.author.username}
+                </small>
+              </span>
+            </Link>
+            <span>
+              {update.visitedMonth
+                ? `Visited ${formatMonth(update.visitedMonth)}`
+                : formatMonth(null)}
+            </span>
+          </div>
+          <p>{update.body}</p>
+          {(originalPrice || update.price) && (
+            <div className="update-prices">
+              {originalPrice && (
+                <div>
+                  <span>Original report</span>
+                  <strong>
+                    {formatMoney(originalPrice.paise, originalPrice.unit)}{" "}
+                    <small>
+                      {priceSuffix(originalPrice.unit, originalPrice.unitLabel)}
+                    </small>
+                  </strong>
+                </div>
+              )}
+              {update.price && (
+                <div>
+                  <span>Update reported</span>
+                  <strong>
+                    {formatMoney(update.price.paise, update.price.unit)}{" "}
+                    <small>
+                      {priceSuffix(update.price.unit, update.price.unitLabel)}
+                    </small>
+                  </strong>
+                </div>
+              )}
+            </div>
+          )}
+          <Link className="quiet update-link" href={`/tips/${update.id}`}>
+            Read full update →
+          </Link>
+        </article>
+      );
+    });
 
-//   return (
-//     <section className="updates" id="updates" aria-labelledby="updates-title">
-//       <h2 id="updates-title">
-//         Traveller updates <small>{detail.updates.length}</small>
-//       </h2>
-//       <div className="timeline">{cards(detail.updates)}</div>
-//       {detail.earlierUpdates.length > 0 && (
-//         <details className="revision-disclosure">
-//           <summary>
-//             Updates on an earlier version ({detail.earlierUpdates.length})
-//           </summary>
-//           <p className="muted">
-//             Edited since these updates. They remain visible for context.
-//           </p>
-//           <div className="timeline">{cards(detail.earlierUpdates)}</div>
-//         </details>
-//       )}
-//     </section>
-//   );
-// }
+  return (
+    <section className="updates" id="updates" aria-labelledby="updates-title">
+      <h2 id="updates-title">
+        Traveller updates <small>{detail.updates.length}</small>
+      </h2>
+      <div className="timeline">{cards(detail.updates)}</div>
+      {detail.earlierUpdates.length > 0 && (
+        <details className="revision-disclosure">
+          <summary>
+            Updates on an earlier version ({detail.earlierUpdates.length})
+          </summary>
+          <p className="muted">
+            Edited since these updates. They remain visible for context.
+          </p>
+          <div className="timeline">{cards(detail.earlierUpdates)}</div>
+        </details>
+      )}
+    </section>
+  );
+}
 
 export default async function TipDetailPage({
   params,
@@ -425,7 +425,7 @@ export default async function TipDetailPage({
       <div className="two-col detail-grid">
         <DetailCard detail={detail} reaction={reaction} intent={query.intent} />
         <FreshnessPanel detail={detail} />
-        {/* <Updates detail={detail} /> */}
+        <Updates detail={detail} />
       </div>
     </main>
   );
