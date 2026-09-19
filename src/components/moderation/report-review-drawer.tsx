@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ExternalLink } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  CircleX,
+  EyeOff,
+  ExternalLink,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type {
@@ -77,75 +83,116 @@ function humanize(value: string) {
 
 function TipVersion({
   version,
-  destination,
-  currentRevision,
+  tip,
 }: {
   version: ModerationTipVersion;
-  destination: string;
-  currentRevision: number;
+  tip: ModerationReportDetail["tip"];
 }) {
   const facts = factsFor(version);
+  const initial = tip.author.displayName.trim().charAt(0).toUpperCase() || "?";
   return (
-    <section className="moderation-review-content" aria-live="polite">
-      <p className="eyebrow">
-        {categoryLabels[version.category]} · Revision {version.revision}
-      </p>
-      <h3>{titleFor(version, destination)}</h3>
-      {version.pricePaise !== null && version.priceUnit && (
-        <p className="moderation-review-price">
-          {formatMoney(version.pricePaise, version.priceUnit)}
-          <span>{priceSuffix(version.priceUnit, version.priceUnitLabel)}</span>
-        </p>
-      )}
-      {version.visitedMonth && (
-        <p className="moderation-review-meta">
-          Trip date: {formatMonth(version.visitedMonth)}
-        </p>
-      )}
-      <p className="moderation-review-body">{version.body}</p>
-      {facts.length > 0 && (
-        <dl className="moderation-review-facts">
-          {facts.map(([label, value, href]) => (
-            <div key={label}>
-              <dt>{label}</dt>
-              <dd>
-                {href ? (
-                  <a href={href} target="_blank" rel="noreferrer">
-                    {value} <ExternalLink size={14} aria-hidden="true" />
-                  </a>
-                ) : (
-                  value
-                )}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      )}
-      {version.photos.length > 0 && (
-        <div className="moderation-review-photos">
-          <PhotoGallery
-            key={version.revision}
-            photos={version.photos}
-            title={`Photos for Revision ${version.revision}`}
-            unavailableLabel={
-              version.revision < currentRevision
-                ? "Historical photo unavailable"
-                : "Photo unavailable"
-            }
-          />
+    <article className="moderation-tip-review-card" aria-live="polite">
+      <div className="moderation-tip-review-top">
+        <div className="moderation-tip-review-tags">
+          <span className="moderation-tip-category">
+            {categoryLabels[version.category]}
+          </span>
+          <span className="moderation-revision-badge">
+            Revision {version.revision}
+          </span>
         </div>
-      )}
-      {version.unavailablePhotoCount > 0 && (
-        <p className="moderation-photo-unavailable" role="status">
-          {version.revision < currentRevision
-            ? "Historical photo unavailable"
-            : "Photo unavailable"}
-          {version.unavailablePhotoCount > 1
-            ? ` (${version.unavailablePhotoCount} photos)`
-            : ""}
-        </p>
-      )}
-    </section>
+        <span
+          className={`moderation-badge moderation-badge-${tip.status} moderation-tip-status`}
+        >
+          Tip {humanize(tip.status)}
+        </span>
+      </div>
+      <div className="moderation-tip-review-content">
+        <h3>{titleFor(version, tip.destination.name)}</h3>
+        {((version.pricePaise !== null && version.priceUnit) ||
+          version.visitedMonth) && (
+          <div className="moderation-review-overview">
+            {version.pricePaise !== null && version.priceUnit && (
+              <p className="moderation-review-price">
+                {formatMoney(version.pricePaise, version.priceUnit)}
+                <span>
+                  {priceSuffix(version.priceUnit, version.priceUnitLabel)}
+                </span>
+              </p>
+            )}
+            {version.visitedMonth && (
+              <p className="moderation-review-meta">
+                Trip date: {formatMonth(version.visitedMonth)}
+              </p>
+            )}
+          </div>
+        )}
+        <p className="moderation-review-body">{version.body}</p>
+        {facts.length > 0 && (
+          <dl className="moderation-review-facts">
+            {facts.map(([label, value, href]) => (
+              <div key={label}>
+                <dt>{label}</dt>
+                <dd>
+                  {href ? (
+                    <a href={href} target="_blank" rel="noreferrer">
+                      {value} <ExternalLink size={14} aria-hidden="true" />
+                    </a>
+                  ) : (
+                    value
+                  )}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {version.photos.length > 0 && (
+          <div className="moderation-review-photos">
+            <PhotoGallery
+              key={version.revision}
+              photos={version.photos}
+              title={`Photos for Revision ${version.revision}`}
+              unavailableLabel={
+                version.revision < tip.currentRevision
+                  ? "Historical photo unavailable"
+                  : "Photo unavailable"
+              }
+            />
+          </div>
+        )}
+        {version.unavailablePhotoCount > 0 && (
+          <p className="moderation-photo-unavailable" role="status">
+            {version.revision < tip.currentRevision
+              ? "Historical photo unavailable"
+              : "Photo unavailable"}
+            {version.unavailablePhotoCount > 1
+              ? ` (${version.unavailablePhotoCount} photos)`
+              : ""}
+          </p>
+        )}
+        <div className="moderation-author-row">
+          <div className="moderation-author-person">
+            <span className="moderation-author-avatar" aria-hidden="true">
+              {initial}
+            </span>
+            <div className="moderation-author-copy">
+              <strong>
+                {tip.author.displayName} <span>@{tip.author.username}</span>
+              </strong>
+              <span>{humanize(tip.author.status)} account</span>
+            </div>
+          </div>
+          <Link
+            href={`/users/${tip.author.id}`}
+            target="_blank"
+            rel="noreferrer"
+            className="moderation-author-link"
+          >
+            View public profile <ExternalLink size={14} aria-hidden="true" />
+          </Link>
+        </div>
+      </div>
+    </article>
   );
 }
 
@@ -208,95 +255,179 @@ export function ReportReviewDrawer({
       onOpenChange={(open) => !open && close()}
       title="Tip report"
       description={`Reported ${date(report.createdAt)} · ${tip.destination.name}, ${tip.destination.state}`}
+      closeLabel="Close report review"
+      titleAddon={
+        <div className="moderation-review-title-badges">
+          <span
+            className={`moderation-badge moderation-badge-${report.status}`}
+          >
+            {humanize(report.status)}
+          </span>
+          <span
+            className={`moderation-badge moderation-badge-${tip.status} moderation-tip-status`}
+          >
+            Tip {humanize(tip.status)}
+          </span>
+        </div>
+      }
       className="moderation-review-drawer"
     >
-      <div className="moderation-review-header">
-        <span className={`moderation-badge moderation-badge-${report.status}`}>
-          {humanize(report.status)}
-        </span>
-        <span>Current tip: {humanize(tip.status)}</span>
-      </div>
-      <section className="moderation-review-section">
-        <h3>Report context</h3>
-        <dl className="moderation-review-meta-list">
-          <div>
-            <dt>Reason</dt>
-            <dd>{reportReasonLabels[report.reason]}</dd>
-          </div>
-          {report.details && (
+      <div className="moderation-review-scroll">
+        <section className="moderation-review-section moderation-report-section">
+          <div className="moderation-section-heading">
             <div>
-              <dt>Traveller&apos;s report</dt>
-              <dd>{report.details}</dd>
+              <span className="moderation-section-kicker">Report</span>
+              <h3>Why this was reported</h3>
             </div>
-          )}
-        </dl>
-      </section>
-      {tip.editedAfterReport && (
-        <aside className="moderation-revision-warning">
-          <AlertTriangle size={20} aria-hidden="true" />
-          <p>
-            <strong>This tip was edited after it was reported.</strong>
-            <br />
-            The report applies to Revision {report.reportedRevision}. Travellers
-            currently see Revision {tip.currentRevision}. Review both versions
-            before taking action.
-          </p>
-        </aside>
-      )}
-      {tip.editedAfterReport && (
-        <div
-          className="moderation-version-tabs"
-          role="group"
-          aria-label="Tip version"
-        >
-          <button
-            type="button"
-            aria-pressed={!showCurrent}
-            className={!showCurrent ? "selected" : ""}
-            onClick={() => setShowCurrent(false)}
-          >
-            Reported version · Rev {report.reportedRevision}
-          </button>
-          <button
-            type="button"
-            aria-pressed={showCurrent}
-            className={showCurrent ? "selected" : ""}
-            onClick={() => setShowCurrent(true)}
-          >
-            Current version · Rev {tip.currentRevision}
-          </button>
-        </div>
-      )}
-      <TipVersion
-        version={version}
-        destination={tip.destination.name}
-        currentRevision={tip.currentRevision}
-      />
-      <section className="moderation-review-section moderation-review-author">
-        <h3>Shared by</h3>
-        <p>
-          {tip.author.displayName} <span>@{tip.author.username}</span>
-        </p>
-        <p className="muted">Account: {tip.author.status}</p>
-        <Link href={`/users/${tip.author.id}`} target="_blank">
-          View public profile
-        </Link>
-      </section>
-      {detail.history.length > 0 && (
-        <section className="moderation-review-section">
-          <h3>Moderation history</h3>
-          <ul className="moderation-history">
-            {detail.history.map((event, index) => (
-              <li key={`${event.createdAt}-${event.action}-${index}`}>
-                <strong>
-                  {historyActionLabels[event.action] ?? event.action}
-                </strong>{" "}
-                · {event.reason} · {date(event.createdAt)}
-              </li>
-            ))}
-          </ul>
+          </div>
+          <div className="moderation-report-card">
+            <div className="moderation-report-reason">
+              <span
+                className="moderation-report-reason-icon"
+                aria-hidden="true"
+              >
+                <AlertTriangle size={16} />
+              </span>
+              <div>
+                <span className="moderation-report-label">Reason</span>
+                <strong>{reportReasonLabels[report.reason]}</strong>
+              </div>
+            </div>
+            {report.details && (
+              <div className="moderation-report-message">
+                <span className="moderation-report-label">
+                  Traveller&apos;s report
+                </span>
+                <p>{report.details}</p>
+              </div>
+            )}
+          </div>
         </section>
-      )}
+        {tip.editedAfterReport && (
+          <aside className="moderation-revision-warning">
+            <AlertTriangle size={20} aria-hidden="true" />
+            <p>
+              <strong>This tip was edited after it was reported.</strong>
+              <br />
+              The report applies to Revision {report.reportedRevision}.
+              Travellers currently see Revision {tip.currentRevision}. Review
+              both versions before taking action.
+            </p>
+          </aside>
+        )}
+        {tip.editedAfterReport && (
+          <div
+            className="moderation-version-tabs"
+            role="group"
+            aria-label="Tip version"
+          >
+            <button
+              type="button"
+              aria-pressed={!showCurrent}
+              className={!showCurrent ? "selected" : ""}
+              onClick={() => setShowCurrent(false)}
+            >
+              Reported version · Rev {report.reportedRevision}
+            </button>
+            <button
+              type="button"
+              aria-pressed={showCurrent}
+              className={showCurrent ? "selected" : ""}
+              onClick={() => setShowCurrent(true)}
+            >
+              Current version · Rev {tip.currentRevision}
+            </button>
+          </div>
+        )}
+        <section className="moderation-review-section moderation-tip-section">
+          <div className="moderation-section-heading">
+            <div>
+              <span className="moderation-section-kicker">
+                Reported content
+              </span>
+              <h3>Tip at the time of report</h3>
+            </div>
+          </div>
+          <TipVersion version={version} tip={tip} />
+        </section>
+        {detail.history.length > 0 && (
+          <section className="moderation-review-section moderation-history-section">
+            <div className="moderation-section-heading">
+              <div>
+                <span className="moderation-section-kicker">History</span>
+                <h3>Moderation activity</h3>
+              </div>
+            </div>
+            <ul className="moderation-timeline">
+              {detail.history.map((event, index) => (
+                <li key={`${event.createdAt}-${event.action}-${index}`}>
+                  <span className="moderation-timeline-icon" aria-hidden="true">
+                    {event.action === "hide" ? (
+                      <EyeOff size={15} />
+                    ) : event.action === "dismiss" ? (
+                      <CircleX size={15} />
+                    ) : (
+                      <Check size={15} />
+                    )}
+                  </span>
+                  <div className="moderation-timeline-copy">
+                    <strong>
+                      {historyActionLabels[event.action] ?? event.action}
+                    </strong>
+                    <p>{event.reason}</p>
+                    <time dateTime={new Date(event.createdAt).toISOString()}>
+                      {date(event.createdAt)}
+                    </time>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        {report.status !== "open" && (
+          <section className="moderation-review-section moderation-review-closed">
+            <div className="moderation-section-heading">
+              <div>
+                <span className="moderation-section-kicker">Outcome</span>
+                <h3>Review outcome</h3>
+              </div>
+            </div>
+            <div
+              className={`moderation-outcome-card${report.status === "dismissed" ? " is-dismissed" : ""}`}
+            >
+              <span className="moderation-outcome-icon" aria-hidden="true">
+                {report.status === "dismissed" ? (
+                  <CircleX size={17} />
+                ) : (
+                  <Check size={17} />
+                )}
+              </span>
+              <div>
+                <div className="moderation-outcome-title">
+                  <strong>{humanize(report.status)}</strong>
+                  {report.resolutionAction && (
+                    <span>
+                      {report.resolutionAction === "issue_fixed"
+                        ? "Issue fixed in a later revision"
+                        : report.resolutionAction === "hide"
+                          ? "Tip hidden"
+                          : "Tip left unchanged"}
+                    </span>
+                  )}
+                </div>
+                <p className="moderation-outcome-note">
+                  {report.resolutionNote ?? "No resolution note was recorded."}
+                </p>
+                {report.resolvedAt && (
+                  <p className="moderation-outcome-date">
+                    Reviewed {date(report.resolvedAt)}
+                  </p>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+      </div>
       {report.status === "open" ? (
         <footer className="moderation-review-footer">
           <label className="label" htmlFor={`review-reason-${report.id}`}>
@@ -373,38 +504,7 @@ export function ReportReviewDrawer({
             </div>
           </Dialog>
         </footer>
-      ) : (
-        <section className="moderation-review-section moderation-review-closed">
-          <h3>Review outcome</h3>
-          <dl className="moderation-review-meta-list">
-            <div>
-              <dt>Status</dt>
-              <dd>{humanize(report.status)}</dd>
-            </div>
-            {report.resolutionAction && (
-              <div>
-                <dt>Resolution</dt>
-                <dd>
-                  {report.resolutionAction === "issue_fixed"
-                    ? "Issue fixed in a later revision"
-                    : report.resolutionAction === "hide"
-                      ? "Tip hidden"
-                      : "Report dismissed; tip left unchanged"}
-                </dd>
-              </div>
-            )}
-            <div>
-              <dt>Moderator note</dt>
-              <dd>
-                {report.resolutionNote ?? "No resolution note was recorded."}
-              </dd>
-            </div>
-          </dl>
-          {report.resolvedAt && (
-            <p className="muted">Reviewed {date(report.resolvedAt)}</p>
-          )}
-        </section>
-      )}
+      ) : null}
     </Dialog>
   );
 }

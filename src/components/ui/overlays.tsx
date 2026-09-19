@@ -10,6 +10,8 @@ export function Dialog({
   title,
   description,
   icon,
+  titleAddon,
+  closeLabel = "Close dialog",
   children,
   open,
   onOpenChange,
@@ -19,6 +21,8 @@ export function Dialog({
   title: string;
   description?: string;
   icon?: ReactNode;
+  titleAddon?: ReactNode;
+  closeLabel?: string;
   children: ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -35,19 +39,44 @@ export function Dialog({
           className={`dialog${className ? ` ${className}` : ""}`}
           aria-describedby={description ? undefined : undefined}
         >
-          {icon}
-          <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
-          {description && (
-            <DialogPrimitive.Description className="muted">
-              {description}
-            </DialogPrimitive.Description>
+          {titleAddon ? (
+            <header className="dialog-header">
+              <div className="dialog-header-copy">
+                {icon}
+                <div className="dialog-title-row">
+                  <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
+                  {titleAddon}
+                </div>
+                {description && (
+                  <DialogPrimitive.Description className="muted">
+                    {description}
+                  </DialogPrimitive.Description>
+                )}
+              </div>
+              <DialogPrimitive.Close
+                className="quiet dialog-close"
+                aria-label={closeLabel}
+              >
+                <X size={20} aria-hidden />
+              </DialogPrimitive.Close>
+            </header>
+          ) : (
+            <>
+              {icon}
+              <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
+              {description && (
+                <DialogPrimitive.Description className="muted">
+                  {description}
+                </DialogPrimitive.Description>
+              )}
+              <DialogPrimitive.Close
+                className="quiet dialog-close"
+                aria-label={closeLabel}
+              >
+                <X size={20} aria-hidden />
+              </DialogPrimitive.Close>
+            </>
           )}
-          <DialogPrimitive.Close
-            className="quiet dialog-close"
-            aria-label="Close dialog"
-          >
-            <X size={20} aria-hidden />
-          </DialogPrimitive.Close>
           {children}
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
