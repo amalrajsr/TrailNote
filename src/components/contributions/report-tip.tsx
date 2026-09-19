@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { reportTip } from "../../../app/tips/[id]/actions";
+import { CustomSelect } from "../ui/custom-select";
 import { Dialog } from "../ui/overlays";
-import { Button, Select, Textarea } from "../ui/primitives";
+import { Button, Textarea } from "../ui/primitives";
 import { toast } from "../ui/toaster";
 
 export function ReportTip({ id, revision }: { id: string; revision: number }) {
@@ -27,17 +28,22 @@ export function ReportTip({ id, revision }: { id: string; revision: number }) {
         <label className="label" htmlFor="report-reason">
           Reason
         </label>
-        <Select
+        <CustomSelect
           id="report-reason"
+          ariaLabel="Reason"
           value={reason}
-          onChange={(event) => setReason(event.target.value)}
-        >
-          <option value="inaccurate">Inaccurate</option>
-          <option value="spam">Spam</option>
-          <option value="unsafe">Unsafe</option>
-          <option value="private_information">Private information</option>
-          <option value="other">Other</option>
-        </Select>
+          onValueChange={setReason}
+          options={[
+            { value: "inaccurate", label: "Inaccurate" },
+            { value: "spam", label: "Spam" },
+            { value: "unsafe", label: "Unsafe" },
+            {
+              value: "private_information",
+              label: "Private information",
+            },
+            { value: "other", label: "Other" },
+          ]}
+        />
         <label className="label" htmlFor="report-details">
           Context (optional)
         </label>

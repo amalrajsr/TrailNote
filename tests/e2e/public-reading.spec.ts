@@ -396,7 +396,15 @@ test("composer only offers price units relevant to the selected category", async
     const unit = page.getByRole("combobox", {
       name: "What the price covers",
     });
-    await expect(unit.locator("option")).toHaveText(options);
+    await unit.click();
+    const listbox = page.getByRole("listbox");
+    await expect(listbox.getByRole("option")).toHaveText(options);
+
+    const hoveredOption = listbox.getByRole("option").nth(2);
+    await hoveredOption.hover();
+    await expect(hoveredOption).toHaveCSS("outline-style", "none");
+    await expect(hoveredOption).toHaveCSS("box-shadow", "none");
+    await page.keyboard.press("Escape");
   }
 });
 

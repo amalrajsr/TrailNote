@@ -31,7 +31,8 @@ import {
   textLength,
 } from "../../lib/validation/contribution";
 import { CategoryIcon } from "../ui/category-icon";
-import { Button, Field, Input, Select, Textarea } from "../ui/primitives";
+import { CustomSelect } from "../ui/custom-select";
+import { Button, Field, Input, Textarea } from "../ui/primitives";
 import { toast } from "../ui/toaster";
 import { PhotoUploader, type UploadedPhoto } from "./photo-uploader";
 import {
@@ -598,19 +599,20 @@ export function ContributionComposer({
             onChange={(event) => setValue("price", event.target.value)}
             aria-invalid={!!error("price")}
           />
-          <Select
-            aria-label="What the price covers"
+          <CustomSelect
+            id="priceUnit"
+            ariaLabel="What the price covers"
             name="priceUnit"
             value={draft.priceUnit}
-            onChange={(event) => setValue("priceUnit", event.target.value)}
-          >
-            <option value="">Choose a unit</option>
-            {priceUnitsByCategory[category].map((value) => (
-              <option value={value} key={value}>
-                {unitLabels[value].replace(/^\/ /, "")}
-              </option>
-            ))}
-          </Select>
+            onValueChange={(nextValue) => setValue("priceUnit", nextValue)}
+            options={[
+              { value: "", label: "Choose a unit" },
+              ...priceUnitsByCategory[category].map((value) => ({
+                value,
+                label: unitLabels[value].replace(/^\/ /, ""),
+              })),
+            ]}
+          />
         </div>
       </Field>
       {draft.priceUnit === "other" && (
@@ -794,44 +796,39 @@ export function ContributionComposer({
               <label htmlFor="visitedChoice">When were you there?</label>
               <small>Freshness helps the next traveller judge the tip.</small>
             </div>
-            <Select
+            <CustomSelect
               id="visitedChoice"
+              ariaLabel="When were you there?"
               value={draft.visitedChoice}
-              onChange={(event) =>
-                setValue("visitedChoice", event.target.value)
-              }
-            >
-              <option value={month}>{formatMonth(month)}</option>
-              <option value={lastMonth}>{formatMonth(lastMonth)}</option>
-              <option value="custom">Choose a month…</option>
-              <option value="">Not sure</option>
-            </Select>
+              onValueChange={(nextValue) => setValue("visitedChoice", nextValue)}
+              options={[
+                { value: month, label: formatMonth(month) },
+                { value: lastMonth, label: formatMonth(lastMonth) },
+                { value: "custom", label: "Choose a month…" },
+                { value: "", label: "Not sure" },
+              ]}
+            />
           </div>
           {draft.visitedChoice === "custom" && (
             <Field id="visitedMonthCustom" label="Visit month">
               <div className="input-grid month-picker">
-                <Select
+                <CustomSelect
                   id="visitedMonthCustom"
-                  aria-label="Visit month"
+                  ariaLabel="Visit month"
                   value={visitedMonthValue}
-                  onChange={(event) =>
-                    setValue(
-                      "visitedMonth",
-                      `${visitedYear}-${event.target.value}`,
-                    )
+                  onValueChange={(nextValue) =>
+                    setValue("visitedMonth", `${visitedYear}-${nextValue}`)
                   }
-                >
-                  {selectableMonths.map((option) => (
-                    <option value={option.value} key={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Select>
-                <Select
-                  aria-label="Visit year"
+                  options={selectableMonths.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                  }))}
+                />
+                <CustomSelect
+                  ariaLabel="Visit year"
                   value={visitedYear}
-                  onChange={(event) => {
-                    const nextYear = event.target.value;
+                  onValueChange={(nextValue) => {
+                    const nextYear = nextValue;
                     const nextMonth =
                       nextYear === currentYear &&
                       visitedMonthValue > currentMonthValue
@@ -839,13 +836,11 @@ export function ContributionComposer({
                         : visitedMonthValue;
                     setValue("visitedMonth", `${nextYear}-${nextMonth}`);
                   }}
-                >
-                  {visitedYears.map((year) => (
-                    <option value={year} key={year}>
-                      {year}
-                    </option>
-                  ))}
-                </Select>
+                  options={visitedYears.map((year) => ({
+                    value: year,
+                    label: year,
+                  }))}
+                />
               </div>
             </Field>
           )}
@@ -947,66 +942,69 @@ export function ContributionComposer({
               {category === "stay" && detailEnabled("booking") && (
                 <div className="input-grid">
                   <Field id="roomType" label="Room type" optional>
-                    <Select
+                    <CustomSelect
                       id="roomType"
                       name="roomType"
+                      ariaLabel="Room type"
                       value={draft.roomType}
-                      onChange={(event) =>
-                        setValue("roomType", event.target.value)
-                      }
-                    >
-                      <option value="">Not provided</option>
-                      <option value="private">Private room</option>
-                      <option value="dorm">Dorm bed</option>
-                      <option value="shared">Shared room</option>
-                      <option value="other">Other</option>
-                    </Select>
+                      onValueChange={(nextValue) => setValue("roomType", nextValue)}
+                      options={[
+                        { value: "", label: "Not provided" },
+                        { value: "private", label: "Private room" },
+                        { value: "dorm", label: "Dorm bed" },
+                        { value: "shared", label: "Shared room" },
+                        { value: "other", label: "Other" },
+                      ]}
+                    />
                   </Field>
                   <Field id="bookingMethod" label="Booking method" optional>
-                    <Select
+                    <CustomSelect
                       id="bookingMethod"
                       name="bookingMethod"
+                      ariaLabel="Booking method"
                       value={draft.bookingMethod}
-                      onChange={(event) =>
-                        setValue("bookingMethod", event.target.value)
+                      onValueChange={(nextValue) =>
+                        setValue("bookingMethod", nextValue)
                       }
-                    >
-                      <option value="">Not provided</option>
-                      <option value="direct_call">Direct call</option>
-                      <option value="walk_in">Walk in</option>
-                      <option value="online">Online</option>
-                      <option value="other">Other</option>
-                    </Select>
+                      options={[
+                        { value: "", label: "Not provided" },
+                        { value: "direct_call", label: "Direct call" },
+                        { value: "walk_in", label: "Walk in" },
+                        { value: "online", label: "Online" },
+                        { value: "other", label: "Other" },
+                      ]}
+                    />
                   </Field>
                 </div>
               )}
               {category === "transport" && detailEnabled("duration") && (
                 <div className="input-grid">
                   <Field id="transportMode" label="Mode" optional>
-                    <Select
+                    <CustomSelect
                       id="transportMode"
                       name="transportMode"
+                      ariaLabel="Mode"
                       value={draft.transportMode}
-                      onChange={(event) =>
-                        setValue("transportMode", event.target.value)
+                      onValueChange={(nextValue) =>
+                        setValue("transportMode", nextValue)
                       }
-                    >
-                      <option value="">Not provided</option>
-                      {[
-                        "bus",
-                        "train",
-                        "shared_jeep",
-                        "auto",
-                        "taxi",
-                        "ferry",
-                        "rental",
-                        "other",
-                      ].map((value) => (
-                        <option value={value} key={value}>
-                          {value.replace("_", " ")}
-                        </option>
-                      ))}
-                    </Select>
+                      options={[
+                        { value: "", label: "Not provided" },
+                        ...[
+                          "bus",
+                          "train",
+                          "shared_jeep",
+                          "auto",
+                          "taxi",
+                          "ferry",
+                          "rental",
+                          "other",
+                        ].map((value) => ({
+                          value,
+                          label: value.replace("_", " "),
+                        })),
+                      ]}
+                    />
                   </Field>
                   <Field
                     id="durationMinutes"

@@ -1,24 +1,29 @@
 "use client";
+
 import { useRouter, useSearchParams } from "next/navigation";
+import { CustomSelect } from "../ui/custom-select";
+
 export function SortSelect({ sort }: { sort: string }) {
-  const router = useRouter(),
-    search = useSearchParams();
+  const router = useRouter();
+  const search = useSearchParams();
+
   return (
     <label className="sort">
       <span>Sort by</span>
-      <select
-        className="field-input"
+      <CustomSelect
+        ariaLabel="Sort tips"
         value={sort}
-        onChange={(e) => {
+        onValueChange={(nextSort) => {
           const params = new URLSearchParams(search);
-          params.set("sort", e.target.value);
+          params.set("sort", nextSort);
           params.delete("cursor");
           router.push(`?${params}#tips`);
         }}
-      >
-        <option value="recent">Recent visits</option>
-        <option value="newest">Newest shared</option>
-      </select>
+        options={[
+          { value: "recent", label: "Recent visits" },
+          { value: "newest", label: "Newest shared" },
+        ]}
+      />
     </label>
   );
 }
