@@ -380,6 +380,7 @@ export function AccountProfileEditor({
   bio,
   instagramUrl,
   youtubeUrl,
+  joinedYear,
   tipsSharedCount,
   placesCount,
 }: {
@@ -390,6 +391,7 @@ export function AccountProfileEditor({
   bio: string | null;
   instagramUrl: string | null;
   youtubeUrl: string | null;
+  joinedYear: number;
   tipsSharedCount: number;
   placesCount: number;
 }) {
@@ -450,7 +452,7 @@ export function AccountProfileEditor({
             <span>
               <strong>{placesCount}</strong> places
             </span>
-            <span>Joined TrailNote in 2026</span>
+            <span>Joined TrailNote in {joinedYear}</span>
           </div>
         </div>
 

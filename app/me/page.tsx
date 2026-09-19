@@ -36,6 +36,7 @@ export default async function MePage({
         bio={user.bio}
         instagramUrl={user.instagramUrl}
         youtubeUrl={user.youtubeUrl}
+        joinedYear={new Date(user.createdAt).getUTCFullYear()}
         tipsSharedCount={counts.all}
         placesCount={new Set(allTips.map((tip) => tip.destination.slug)).size}
       />

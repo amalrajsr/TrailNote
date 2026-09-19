@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TrailNote — Public profile redesign</title>
+  <style>
+    :root {
+      --canvas: #f7faf7;
+      --surface: #ffffff;
+      --surface-soft: #f0f4f0;
+      --ink: #17251d;
+      --ink-muted: #5c6c62;
+      --ink-subtle: #7a887f;
+      --brand: #245c43;
+      --brand-hover: #1b4c36;
+      --brand-soft: #e6f1e9;
+      --brand-faint: #f0f7f2;
+      --brand-border: #c9ddcf;
+      --on-brand: #ffffff;
+      --border: #dce4dd;
+      --warning: #866313;
+      --warning-soft: #fbf3d8;
+      --success: #245c43;
+      --success-soft: #e6f1e9;
+      --radius-control: 12px;
+      --radius-card: 18px;
+      --radius-feature: 26px;
+      --radius-pill: 999px;
+      --shadow-card: 0 4px 16px rgb(23 37 29 / 5%);
+      --shadow-card-hover: 0 10px 28px rgb(23 37 29 / 8%);
+      --font: "Commissioner", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font: 400 16px/1.625 var(--font);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    h1, h2, h3, p { margin: 0; }
+    button { font: inherit; }
+
+    .site-header {
+      height: 72px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid var(--border);
+      background: rgb(247 250 247 / 94%);
+      backdrop-filter: blur(10px);
+    }
+
+    .header-inner {
+      width: min(1200px, calc(100% - 48px));
+      height: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .wordmark {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 27px;
+      line-height: 32px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    .wordmark svg { color: var(--brand); }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .nav a { min-height: 44px; display: inline-flex; align-items: center; }
+
+    .avatar-small {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--brand);
+      color: white;
+      font-weight: 700;
+    }
+
+    main {
+      width: min(1040px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 48px 0 64px;
+    }
+
+    .public-profile-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+      padding: 32px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-feature);
+      background: var(--surface);
+      box-shadow: var(--shadow-card);
+    }
+
+    .public-profile-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand), #5f8a70 55%, #b8cdbd);
+    }
+
+    .public-profile-avatar {
+      width: 88px;
+      height: 88px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 6px solid var(--brand-faint);
+      border-radius: 50%;
+      background: var(--brand);
+      color: var(--on-brand);
+      font-size: 30px;
+      font-weight: 700;
+      box-shadow: 0 0 0 1px var(--brand-border);
+    }
+
+    .public-profile-copy { min-width: 0; }
+
+    .public-profile-identity {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 8px 10px;
+    }
+
+    .public-profile-name {
+      font-size: 31px;
+      line-height: 1.2;
+      font-weight: 650;
+      letter-spacing: -0.8px;
+    }
+
+    .profile-handle {
+      color: var(--ink-muted);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .public-profile-bio {
+      max-width: 680px;
+      margin-top: 13px;
+      color: #33443a;
+      font-size: 15px;
+      line-height: 1.7;
+      white-space: pre-line;
+    }
+
+    .public-profile-socials {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 17px;
+    }
+
+    .social-link {
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 11px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      background: #fbfdfb;
+      color: #345344;
+      font-size: 13px;
+      font-weight: 600;
+      transition: border-color 150ms ease, background 150ms ease;
+    }
+
+    .social-link:hover {
+      border-color: var(--brand-border);
+      background: var(--brand-faint);
+    }
+
+    .public-profile-meta {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 21px;
+      color: var(--ink-muted);
+      font-size: 13px;
+    }
+
+    .public-profile-meta > span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .public-profile-meta > span + span::before {
+      content: "";
+      width: 3px;
+      height: 3px;
+      margin: 0 12px;
+      border-radius: 50%;
+      background: #a8b4ac;
+    }
+
+    .public-profile-meta strong {
+      color: var(--ink);
+      font-weight: 650;
+    }
+
+    .tips-section { margin-top: 42px; }
+
+    .section-kicker {
+      color: var(--brand);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .tips-section-head h2 {
+      margin-top: 4px;
+      font-size: 27px;
+      line-height: 1.25;
+      font-weight: 650;
+      letter-spacing: -0.5px;
+    }
+
+    .tips-section-head p {
+      max-width: 620px;
+      margin-top: 5px;
+      color: var(--ink-muted);
+      font-size: 14px;
+    }
+
+    .section-divider {
+      height: 1px;
+      margin: 20px 0 18px;
+      background: var(--border);
+    }
+
+    .public-tip-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .public-tip-card {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      background: var(--surface);
+      box-shadow: var(--shadow-card);
+      transition:
+        border-color 150ms ease,
+        box-shadow 150ms ease,
+        transform 150ms ease;
+    }
+
+    .public-tip-card:hover {
+      border-color: var(--brand-border);
+      box-shadow: var(--shadow-card-hover);
+      transform: translateY(-1px);
+    }
+
+    .tip-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .category {
+      color: #697a70;
+      font-size: 11px;
+      line-height: 18px;
+      font-weight: 700;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+    }
+
+    .place {
+      min-width: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 650;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .public-tip-card h3 {
+      margin-top: 11px;
+      font-size: 20px;
+      line-height: 1.38;
+      font-weight: 650;
+      letter-spacing: -0.3px;
+    }
+
+    .tip-price {
+      margin-top: 8px;
+      color: var(--ink);
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .tip-price span {
+      margin-left: 4px;
+      color: var(--ink-muted);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .tip-facts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      margin-top: 8px;
+      color: #425349;
+      font-size: 12px;
+      font-weight: 550;
+    }
+
+    .tip-facts span + span::before {
+      content: "·";
+      margin: 0 7px;
+      color: #a8b4ac;
+    }
+
+    .tip-copy {
+      display: -webkit-box;
+      margin-top: 9px;
+      overflow: hidden;
+      color: var(--ink-muted);
+      font-size: 13px;
+      line-height: 1.65;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+    }
+
+    .tip-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: auto;
+      padding-top: 18px;
+      color: var(--ink-subtle);
+      font-size: 11px;
+    }
+
+    .freshness {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--success-soft);
+      color: var(--success);
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .freshness.warning {
+      background: var(--warning-soft);
+      color: var(--warning);
+    }
+
+    .older-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 24px;
+    }
+
+    .older {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-control);
+      background: var(--surface);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .older:hover {
+      border-color: var(--brand-border);
+      background: var(--brand-faint);
+    }
+
+    .mobile-menu { display: none; }
+
+    @media (max-width: 860px) {
+      main {
+        width: min(calc(100% - 32px), 760px);
+        padding-top: 28px;
+      }
+
+      .public-profile-card {
+        grid-template-columns: 80px minmax(0, 1fr);
+        gap: 20px;
+        padding: 26px;
+      }
+
+      .public-profile-avatar {
+        width: 72px;
+        height: 72px;
+        font-size: 24px;
+      }
+
+      .tips-section { margin-top: 34px; }
+    }
+
+    @media (max-width: 720px) {
+      .public-tip-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      .site-header { height: 64px; }
+
+      .header-inner { width: calc(100% - 28px); }
+
+      .wordmark {
+        font-size: 25px;
+        line-height: 30px;
+      }
+
+      .nav { display: none; }
+      .mobile-menu { display: block; color: var(--brand); }
+
+      main {
+        width: calc(100% - 28px);
+        padding: 20px 0 40px;
+      }
+
+      .public-profile-card {
+        grid-template-columns: 58px minmax(0, 1fr);
+        gap: 15px;
+        padding: 22px 18px 20px;
+        border-radius: 20px;
+      }
+
+      .public-profile-avatar {
+        width: 56px;
+        height: 56px;
+        border-width: 4px;
+        font-size: 20px;
+      }
+
+      .public-profile-copy { display: contents; }
+
+      .public-profile-identity { align-self: center; }
+
+      .public-profile-name { font-size: 24px; }
+
+      .public-profile-identity .profile-handle {
+        width: 100%;
+        margin-top: 1px;
+      }
+
+      .public-profile-bio,
+      .public-profile-socials,
+      .public-profile-meta {
+        grid-column: 1 / -1;
+      }
+
+      .public-profile-bio {
+        margin-top: 14px;
+        font-size: 14px;
+      }
+
+      .tips-section { margin-top: 30px; }
+
+      .tips-section-head h2 { font-size: 24px; }
+
+      .section-divider { margin-top: 17px; }
+
+      .public-tip-card { padding: 19px 17px; }
+
+      .public-tip-card h3 { font-size: 19px; }
+
+      .tip-top { align-items: flex-start; }
+
+      .tip-footer {
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="wordmark" href="#">
+        <svg width="29" height="29" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/>
+          <path d="m14.7 9.3-1.8 3.6-3.6 1.8 1.8-3.6 3.6-1.8Z" fill="currentColor"/>
+        </svg>
+        TrailNote
+      </a>
+      <nav class="nav">
+        <a href="#">Explore tips</a>
+        <a href="#">Places</a>
+        <a href="#">Share a tip</a>
+        <span class="avatar-small">A</span>
+      </nav>
+      <span class="mobile-menu">☰</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="public-profile-card" aria-labelledby="profile-name">
+      <div class="public-profile-avatar" aria-hidden="true">A</div>
+
+      <div class="public-profile-copy">
+        <div class="public-profile-identity">
+          <h1 class="public-profile-name" id="profile-name">Amal</h1>
+          <span class="profile-handle">@wanderlust</span>
+        </div>
+
+        <p class="public-profile-bio">Budget traveller who mostly gets around by public transport. I share the small practical details I wish someone had told me before I arrived.</p>
+
+        <div class="public-profile-socials" aria-label="Social profiles">
+          <a class="social-link" href="#">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" stroke-width="1.8"/>
+              <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/>
+              <circle cx="17.5" cy="6.6" r="1" fill="currentColor"/>
+            </svg>
+            Instagram
+            <span aria-hidden="true">↗</span>
+          </a>
+          <a class="social-link" href="#">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="14" rx="4" fill="currentColor"/>
+              <path d="m10 8.5 6 3.5-6 3.5v-7Z" fill="white"/>
+            </svg>
+            YouTube
+            <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+
+        <div class="public-profile-meta" aria-label="Contributor summary">
+          <span><strong>12</strong> published tips</span>
+          <span><strong>8</strong> places</span>
+          <span>Joined TrailNote in 2026</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="tips-section" aria-labelledby="shared-tips">
+      <div class="tips-section-head">
+        <div class="section-kicker">Shared TrailNotes</div>
+        <h2 id="shared-tips">Tips from Amal</h2>
+        <p>First-hand practical notes from places Amal has visited.</p>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="public-tip-grid">
+        <a class="public-tip-card" href="#">
+          <div class="tip-top">
+            <span class="category">Transport</span>
+            <span class="place">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.7"/>
+                <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.7"/>
+              </svg>
+              Ooty · Tamil Nadu
+            </span>
+          </div>
+          <h3>Take the local bus instead of an auto from the railway station</h3>
+          <p class="tip-facts"><span>Local bus</span><span>About 25 min</span></p>
+          <p class="tip-copy">Walk a little towards the main road and catch the town bus. Autos quote much more to tourists, while the bus is frequent during the day.</p>
+          <div class="tip-footer">
+            <span>Visited Aug 2026</span>
+            <span class="freshness">Recently verified</span>
+          </div>
+        </a>
+
+        <a class="public-tip-card" href="#">
+          <div class="tip-top">
+            <span class="category">Stay</span>
+            <span class="place">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.7"/>
+                <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.7"/>
+              </svg>
+              Hampi · Karnataka
+            </span>
+          </div>
+          <h3>Guest houses across the river can be much cheaper on weekdays</h3>
+          <div class="tip-price">₹700 <span>/ night</span></div>
+          <p class="tip-facts"><span>Private room</span><span>Walk-in</span></p>
+          <p class="tip-copy">If you are flexible about the exact location, ask two or three guest houses before booking. Prices varied a lot for similar rooms.</p>
+          <div class="tip-footer">
+            <span>Visited Jul 2026</span>
+            <span class="freshness">Recently verified</span>
+          </div>
+        </a>
+
+        <a class="public-tip-card" href="#">
+          <div class="tip-top">
+            <span class="category">Food</span>
+            <span class="place">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.7"/>
+                <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.7"/>
+              </svg>
+              Manali · Himachal Pradesh
+            </span>
+          </div>
+          <h3>Eat a little away from Mall Road for simpler, cheaper meals</h3>
+          <p class="tip-facts"><span>Local cafés</span><span>10 min walk</span></p>
+          <p class="tip-copy">The lanes towards Old Manali have several small places where a normal meal costs noticeably less than the restaurants right on Mall Road.</p>
+          <div class="tip-footer">
+            <span>Visited Jun 2026</span>
+            <span class="freshness warning">Check before going</span>
+          </div>
+        </a>
+
+        <a class="public-tip-card" href="#">
+          <div class="tip-top">
+            <span class="category">Quick tip</span>
+            <span class="place">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.7"/>
+                <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.7"/>
+              </svg>
+              Badami · Karnataka
+            </span>
+          </div>
+          <h3>Start the cave temples early if you want time for the fort too</h3>
+          <p class="tip-facts"><span>Morning</span><span>3–4 hours</span></p>
+          <p class="tip-copy">The caves themselves do not take the entire day, but the heat builds quickly. Starting early makes it much easier to include the fort and lake.</p>
+          <div class="tip-footer">
+            <span>Visited May 2026</span>
+            <span class="freshness">Recently verified</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="older-wrap">
+        <button class="older" type="button">
+          Older tips <span aria-hidden="true">→</span>
+        </button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -103,6 +103,7 @@ export async function viewerState() {
       bio: profile.bio,
       instagramUrl: profile.instagramUrl,
       youtubeUrl: profile.youtubeUrl,
+      createdAt: profile.createdAt,
       role: profile.role,
       avatar:
         row.avatarPath && row.avatarWidth && row.avatarHeight

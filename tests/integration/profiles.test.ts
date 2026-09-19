@@ -200,4 +200,99 @@ describe("public profiles", () => {
         .from(s.mediaCleanupJobs),
     ).toHaveLength(2);
   });
+
+  it("returns public contribution stats and the join year while respecting visibility rules", async () => {
+    const userId = fixtureId(777);
+    await connection.db.insert(s.user).values({
+      id: userId,
+      name: "Public Profile User",
+      email: "public-profile-user@example.invalid",
+      createdAt: fixtureClock,
+      updatedAt: fixtureClock,
+    });
+    await createProfile(
+      connection.db,
+      userId,
+      "Public Profile User",
+      +fixtureClock,
+    );
+
+    const [visibleDestination, disabledDestination] = await connection.db
+      .select({ id: s.destinations.id, slug: s.destinations.slug })
+      .from(s.destinations)
+      .orderBy(s.destinations.name)
+      .limit(2);
+
+    await connection.db
+      .update(s.destinations)
+      .set({ enabled: false })
+      .where(eq(s.destinations.id, disabledDestination.id));
+
+    await connection.db.insert(s.contributions).values([
+      {
+        id: fixtureId(900),
+        destinationId: visibleDestination.id,
+        authorId: userId,
+        category: "transport",
+        body: "Visible published tip.",
+        status: "published",
+        revision: 1,
+        clientMutationId: fixtureId(1000),
+        initialPayloadDigest: "fixture-900",
+        createdAt: +fixtureClock - 60_000,
+        updatedAt: +fixtureClock - 60_000,
+      },
+      {
+        id: fixtureId(901),
+        destinationId: visibleDestination.id,
+        authorId: userId,
+        category: "stay",
+        body: "Visible published tip 2.",
+        status: "published",
+        revision: 1,
+        clientMutationId: fixtureId(1001),
+        initialPayloadDigest: "fixture-901",
+        createdAt: +fixtureClock - 30_000,
+        updatedAt: +fixtureClock - 30_000,
+      },
+      {
+        id: fixtureId(902),
+        destinationId: visibleDestination.id,
+        authorId: userId,
+        category: "food",
+        body: "Should not count.",
+        status: "hidden",
+        revision: 1,
+        clientMutationId: fixtureId(1002),
+        initialPayloadDigest: "fixture-902",
+        createdAt: +fixtureClock - 10_000,
+        updatedAt: +fixtureClock - 10_000,
+      },
+      {
+        id: fixtureId(903),
+        destinationId: disabledDestination.id,
+        authorId: userId,
+        category: "explore",
+        body: "Should not count.",
+        status: "published",
+        revision: 1,
+        clientMutationId: fixtureId(1003),
+        initialPayloadDigest: "fixture-903",
+        createdAt: +fixtureClock,
+        updatedAt: +fixtureClock,
+      },
+    ]);
+
+    const profile = await publicProfile(
+      connection.db,
+      userId,
+      undefined,
+      +fixtureClock,
+    );
+
+    expect(profile).toMatchObject({
+      stats: { publishedTips: 2, places: 1 },
+      joinedYear: 2026,
+    });
+  });
 });

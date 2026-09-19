@@ -30,6 +30,7 @@ export async function publicProfile(
         bio: s.profiles.bio,
         instagramUrl: s.profiles.instagramUrl,
         youtubeUrl: s.profiles.youtubeUrl,
+        createdAt: s.profiles.createdAt,
         avatarPath: s.uploadAssets.imagekitPath,
         avatarWidth: s.uploadAssets.width,
         avatarHeight: s.uploadAssets.height,
@@ -47,6 +48,34 @@ export async function publicProfile(
       )
   )[0];
   if (!profile) return null;
+
+  const [statsRow] = await db
+    .select({
+      publishedTips: sql<number>`count(${s.contributions.id})`,
+      places: sql<number>`count(distinct ${s.contributions.destinationId})`,
+    })
+    .from(s.contributions)
+    .innerJoin(
+      s.profiles,
+      and(
+        eq(s.profiles.userId, s.contributions.authorId),
+        eq(s.profiles.status, "active"),
+      ),
+    )
+    .innerJoin(
+      s.destinations,
+      and(
+        eq(s.destinations.id, s.contributions.destinationId),
+        eq(s.destinations.enabled, true),
+      ),
+    )
+    .where(
+      and(
+        eq(s.contributions.authorId, userId),
+        eq(s.contributions.status, "published"),
+        sql`${s.contributions.parentContributionId} is null`,
+      ),
+    );
 
   let snapshot = now;
   let after: SQL | undefined;
@@ -76,6 +105,13 @@ export async function publicProfile(
     .select({ tip: s.contributions })
     .from(s.contributions)
     .innerJoin(
+      s.profiles,
+      and(
+        eq(s.profiles.userId, s.contributions.authorId),
+        eq(s.profiles.status, "active"),
+      ),
+    )
+    .innerJoin(
       s.destinations,
       and(
         eq(s.destinations.id, s.contributions.destinationId),
@@ -86,6 +122,7 @@ export async function publicProfile(
       and(
         eq(s.contributions.authorId, userId),
         eq(s.contributions.status, "published"),
+        sql`${s.contributions.parentContributionId} is null`,
         sql`${s.contributions.createdAt} <= ${snapshot}`,
         after,
       ),
@@ -117,6 +154,12 @@ export async function publicProfile(
     bio: profile.bio,
     instagramUrl: profile.instagramUrl,
     youtubeUrl: profile.youtubeUrl,
+    createdAt: profile.createdAt,
+    stats: {
+      publishedTips: Number(statsRow?.publishedTips ?? 0),
+      places: Number(statsRow?.places ?? 0),
+    },
+    joinedYear: new Date(profile.createdAt).getUTCFullYear(),
     avatar:
       profile.avatarPath && profile.avatarWidth && profile.avatarHeight
         ? {
