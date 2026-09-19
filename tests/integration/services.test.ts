@@ -22,6 +22,7 @@ import { contributionDetail } from "../../src/server/queries/contributions";
 import { revealContact } from "../../src/server/services/contacts";
 import {
   moderationQueues,
+  moderationReportDetail,
   resolveContactRemoval,
   resolveReport,
   setAccountStatus,
@@ -469,6 +470,7 @@ describe("transactional contribution services", () => {
     await resolveReport(conn.db, fixtureId(1), {
       reportId: report!.id,
       expectedStatus: "open",
+      expectedContributionRevision: tip.revision,
       disposition: "hide",
       reason: "Needs correction before publication.",
     });
@@ -476,6 +478,7 @@ describe("transactional contribution services", () => {
       resolveReport(conn.db, fixtureId(1), {
         reportId: report!.id,
         expectedStatus: "open",
+        expectedContributionRevision: tip.revision,
         disposition: "dismiss",
         reason: "A stale moderator action.",
       }),
@@ -542,6 +545,118 @@ describe("transactional contribution services", () => {
         }),
       ]),
     );
+  });
+  it("reviews the reported version and rejects a stale moderation decision", async () => {
+    const raw = input();
+    const created = await createContribution(
+      conn.db,
+      fixtureId(1),
+      crypto.randomUUID(),
+      raw,
+    );
+    await reportContribution(conn.db, fixtureId(4), {
+      id: created.id,
+      revision: 1,
+      reason: "inaccurate",
+      details: "The fare shown when I travelled was different.",
+    });
+    await editContribution(
+      conn.db,
+      fixtureId(1),
+      created.id,
+      1,
+      crypto.randomUUID(),
+      {
+        ...raw,
+        body: "Updated first hand advice with the corrected fare.",
+      },
+    );
+    await conn.db
+      .update(s.profiles)
+      .set({ role: "moderator" })
+      .where(eq(s.profiles.userId, fixtureId(1)));
+    const report = (
+      await conn.db
+        .select()
+        .from(s.reports)
+        .where(eq(s.reports.contributionId, created.id))
+    )[0];
+    const detail = await moderationReportDetail(
+      conn.db,
+      fixtureId(1),
+      report.id,
+    );
+    expect(detail.tip.editedAfterReport).toBe(true);
+    expect(detail.tip.reportedVersion).toMatchObject({
+      revision: 1,
+      body: raw.body,
+    });
+    expect(detail.tip.currentVersion).toMatchObject({
+      revision: 2,
+      body: "Updated first hand advice with the corrected fare.",
+    });
+
+    await expect(
+      resolveReport(conn.db, fixtureId(1), {
+        reportId: report.id,
+        expectedStatus: "open",
+        expectedContributionRevision: 1,
+        disposition: "resolved",
+        reason: "A stale review should not resolve a newer tip.",
+      }),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+    expect(
+      (
+        await conn.db
+          .select()
+          .from(s.contributions)
+          .where(eq(s.contributions.id, created.id))
+      )[0],
+    ).toMatchObject({ revision: 2, status: "published" });
+    expect(
+      (
+        await conn.db
+          .select()
+          .from(s.reports)
+          .where(eq(s.reports.id, report.id))
+      )[0]?.status,
+    ).toBe("open");
+
+    await resolveReport(conn.db, fixtureId(1), {
+      reportId: report.id,
+      expectedStatus: "open",
+      expectedContributionRevision: 2,
+      disposition: "resolved",
+      reason: "Reviewed the corrected current tip.",
+    });
+    expect(
+      (
+        await conn.db
+          .select()
+          .from(s.contributions)
+          .where(eq(s.contributions.id, created.id))
+      )[0]?.status,
+    ).toBe("published");
+    expect(
+      (
+        await conn.db
+          .select()
+          .from(s.reports)
+          .where(eq(s.reports.id, report.id))
+      )[0]?.status,
+    ).toBe("resolved");
+    expect(
+      (await moderationReportDetail(conn.db, fixtureId(1), report.id)).report
+        .resolutionAction,
+    ).toBe("issue_fixed");
+    expect(
+      (
+        await conn.db
+          .select()
+          .from(s.moderationEvents)
+          .where(eq(s.moderationEvents.targetId, created.id))
+      ).some((event) => event.action === "issue_fixed"),
+    ).toBe(true);
   });
   it("erases an account graph without leaving a public update whose parent is gone", async () => {
     const root = await visibleContribution(conn.db, fixtureId(102));

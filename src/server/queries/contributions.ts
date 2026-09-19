@@ -3,12 +3,11 @@ import { and, eq, sql, desc, inArray, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import type { Database } from "../../db/client";
 import * as s from "../../db/schema";
+import { categories, categoryLabels, type Category } from "../../lib/constants";
 import {
-  categories,
-  categoryLabels,
-  type Category,
-  type PriceUnit,
-} from "../../lib/constants";
+  readPublicContributionSnapshot,
+  type PublicContributionSnapshot,
+} from "../contribution-snapshot";
 import { freshness } from "../../lib/visit-month";
 import { DomainError } from "../result";
 import { visibleContribution } from "../services/contributions";
@@ -408,21 +407,8 @@ export type ContributionCardDTO = Awaited<
   ReturnType<typeof cardsForRows>
 >[number];
 
-type Snapshot = Partial<{
-  body: string;
-  visitedMonth: string | null;
-  pricePaise: number | null;
-  priceUnit: PriceUnit | null;
-  priceUnitLabel: string | null;
-}>;
-
-function readSnapshot(value: string): Snapshot {
-  try {
-    const parsed: unknown = JSON.parse(value);
-    return parsed && typeof parsed === "object" ? (parsed as Snapshot) : {};
-  } catch {
-    return {};
-  }
+function readSnapshot(value: string): Partial<PublicContributionSnapshot> {
+  return readPublicContributionSnapshot(value) ?? {};
 }
 
 export async function contributionDetail(db: Database, id: string) {

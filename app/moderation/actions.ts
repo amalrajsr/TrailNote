@@ -44,13 +44,15 @@ async function action<T>(
 }
 export async function reviewReport(
   reportId: string,
-  disposition: "hide" | "dismiss",
+  expectedContributionRevision: number,
+  disposition: "hide" | "resolved" | "dismiss",
   reason: string,
 ) {
   return action((db, userId) =>
     resolveReport(db, userId, {
       reportId,
       expectedStatus: "open",
+      expectedContributionRevision,
       disposition,
       reason,
     }),

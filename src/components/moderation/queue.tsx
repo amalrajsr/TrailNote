@@ -91,7 +91,7 @@ function ContributionRow({
       run(
         () =>
           item.status === "open"
-            ? reviewReport(item.id, "hide", reason)
+            ? reviewReport(item.id, item.revision, "hide", reason)
             : changeTipVisibility(
                 item.contributionId,
                 item.contributionStatus === "hidden" ? "hidden" : "published",
@@ -158,7 +158,7 @@ function ContributionRow({
               disabled={!reason.trim()}
               onClick={() =>
                 run(
-                  () => reviewReport(item.id, "dismiss", reason),
+                  () => reviewReport(item.id, item.revision, "dismiss", reason),
                   "Report dismissed.",
                 )
               }
