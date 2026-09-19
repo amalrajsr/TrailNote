@@ -214,6 +214,10 @@ test("destination search supports aliases and keyboard selection", async ({
   await page.goto("/");
   const search = page.getByRole("combobox", { name: "Where are you going?" });
 
+  await search.click();
+  await expect(search).toHaveCSS("outline-style", "none");
+  await expect(page.locator(".search")).toHaveCSS("outline-style", "none");
+
   await search.fill("Mysore");
   await expect(page.getByRole("option", { name: /Mysuru/ })).toBeVisible();
   await search.press("ArrowDown");

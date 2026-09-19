@@ -386,6 +386,13 @@ main {
   font-size: 16px;
   color: var(--ink);
 }
+.search input:focus-visible {
+  outline: none;
+}
+.search[data-keyboard-focus="true"] {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
 .search .btn {
   width: 46px;
   min-width: 46px;

@@ -15,10 +15,12 @@ export function DestinationSearch({
   const router = useRouter();
   const id = useId();
   const request = useRef(0);
+  const pointerFocus = useRef(false);
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SearchDestination[]>([]);
   const [state, setState] = useState<SearchState>("idle");
   const [open, setOpen] = useState(false);
+  const [keyboardFocus, setKeyboardFocus] = useState(false);
   const [highlight, setHighlight] = useState(-1);
   const [retry, setRetry] = useState(0);
   const [saving, setSaving] = useState<string>();
@@ -113,6 +115,13 @@ export function DestinationSearch({
     <form
       action="/search"
       className="search-block"
+      onPointerDownCapture={() => {
+        pointerFocus.current = true;
+        setKeyboardFocus(false);
+      }}
+      onPointerUpCapture={() => {
+        pointerFocus.current = false;
+      }}
       onSubmit={(event) => {
         const selected = results[highlight];
         if (selected && showResults && state === "ready") {
@@ -124,7 +133,7 @@ export function DestinationSearch({
       <label htmlFor={id} className="label">
         Where are you going?
       </label>
-      <div className="search">
+      <div className="search" data-keyboard-focus={keyboardFocus || undefined}>
         <Search size={20} aria-hidden="true" />
         <input
           id={id}
@@ -140,8 +149,15 @@ export function DestinationSearch({
           maxLength={80}
           value={query}
           placeholder="Search Hampi, Ooty, Varkala…"
-          onFocus={() => setOpen(true)}
-          onBlur={() => window.setTimeout(() => setOpen(false), 120)}
+          onFocus={() => {
+            setKeyboardFocus(!pointerFocus.current);
+            pointerFocus.current = false;
+            setOpen(true);
+          }}
+          onBlur={() => {
+            setKeyboardFocus(false);
+            window.setTimeout(() => setOpen(false), 120);
+          }}
           onChange={(event) => {
             setQuery(event.target.value);
             setHighlight(-1);
