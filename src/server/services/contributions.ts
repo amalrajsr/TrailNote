@@ -268,7 +268,11 @@ export async function editContribution(
           "CONFLICT",
           "This submission key was already used.",
         );
-      return JSON.parse(receipt.resultRef) as { id: string; revision: number };
+      return JSON.parse(receipt.resultRef) as {
+        id: string;
+        revision: number;
+        unchanged?: boolean;
+      };
     }
     await consumeRateLimit(tx, userId, "contribution_write", 20, 3_600_000);
     const old = await visibleContribution(
@@ -293,8 +297,68 @@ export async function editContribution(
         "VALIDATION",
         "Destination, category, and original report cannot change when editing.",
       );
-    const revision = old.revision + 1,
-      fields = publicSnapshot(input);
+    const fields = publicSnapshot(input);
+    const currentFields = {
+      destinationId: old.destinationId,
+      category: old.category,
+      body: old.body,
+      visitedMonth: old.visitedMonth,
+      pricePaise: old.pricePaise,
+      priceUnit: old.priceUnit,
+      priceUnitLabel: old.priceUnitLabel,
+      placeName: old.placeName,
+      roomType: old.roomType,
+      bookingMethod: old.bookingMethod,
+      dish: old.dish,
+      fromName: old.fromName,
+      toName: old.toName,
+      transportMode: old.transportMode,
+      durationMinutes: old.durationMinutes,
+      walkMinutes: old.walkMinutes,
+      timingNote: old.timingNote,
+      boardingPoint: old.boardingPoint,
+      locationText: old.locationText,
+      mapsUrl: old.mapsUrl,
+      parentContributionId: old.parentContributionId,
+      parentRevision: old.parentRevision,
+    };
+    const [contact, currentPhotos] = await Promise.all([
+      tx
+        .select({ phone: s.contacts.phoneE164, status: s.contacts.status })
+        .from(s.contacts)
+        .where(eq(s.contacts.contributionId, id))
+        .limit(1),
+      tx
+        .select({
+          id: s.contributionPhotos.assetId,
+          alt: s.contributionPhotos.altText,
+        })
+        .from(s.contributionPhotos)
+        .where(
+          and(
+            eq(s.contributionPhotos.contributionId, id),
+            eq(s.contributionPhotos.revision, old.revision),
+          ),
+        )
+        .orderBy(s.contributionPhotos.position),
+    ]);
+    const currentPhone =
+      contact[0]?.status === "visible" ? contact[0].phone : null;
+    const photosMatch =
+      currentPhotos.length === input.photos.length &&
+      currentPhotos.every(
+        (photo, index) =>
+          photo.id === input.photos[index]?.id &&
+          photo.alt === input.photos[index]?.alt,
+      );
+    if (
+      payloadDigest(currentFields) === payloadDigest(fields) &&
+      currentPhone === input.phone &&
+      photosMatch
+    )
+      return { id, revision: old.revision, unchanged: true };
+
+    const revision = old.revision + 1;
     const changed = await tx
       .update(s.contributions)
       .set({ ...fields, revision, updatedAt: now })
@@ -318,6 +382,9 @@ export async function editContribution(
       createdAt: now,
     });
     await associations(tx, userId, id, revision, input, now);
+    await tx
+      .delete(s.helpfulVotes)
+      .where(eq(s.helpfulVotes.contributionId, id));
     const result = { id, revision };
     await tx
       .insert(s.mutationReceipts)

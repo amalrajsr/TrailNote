@@ -4129,6 +4129,27 @@ textarea.field-input {
   right: 8px;
   top: 8px;
 }
+.dialog.edit-feedback-dialog {
+  width: min(520px, calc(100% - 32px));
+  padding: 32px;
+}
+.edit-feedback-dialog > .muted {
+  max-width: 43ch;
+  margin: 0;
+  font-size: 16px;
+  line-height: 26px;
+}
+.edit-feedback-dialog .dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.edit-feedback-dialog .dialog-actions .btn {
+  min-width: 132px;
+}
 .popover {
   z-index: 70;
   max-width: calc(100vw - 32px);
@@ -5460,6 +5481,16 @@ summary {
   }
   .dialog {
     padding: 24px;
+  }
+  .dialog.edit-feedback-dialog {
+    padding: 24px;
+  }
+  .edit-feedback-dialog .dialog-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .edit-feedback-dialog .dialog-actions .btn {
+    width: 100%;
   }
   .tip-thumbnail {
     width: 72px;

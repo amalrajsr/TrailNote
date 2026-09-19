@@ -188,7 +188,7 @@ describe("transactional contribution services", () => {
       tip.id,
       1,
       crypto.randomUUID(),
-      input(),
+      { ...input(), body: "Updated first hand advice for this trip." },
     );
     await expect(
       setConfirmation(conn.db, fixtureId(4), tip.id, 1, "2026-09"),
@@ -205,6 +205,53 @@ describe("transactional contribution services", () => {
     const detail = await contributionDetail(conn.db, tip.id);
     expect(detail.confirmationCount).toBe(1);
     expect(detail.lastConfirmedAt).toBe(+confirmedAt);
+  });
+  it("leaves an unchanged edit untouched and clears helpful votes after a meaningful edit", async () => {
+    const raw = input();
+    const tip = await createContribution(
+      conn.db,
+      fixtureId(1),
+      crypto.randomUUID(),
+      raw,
+    );
+    await setHelpful(conn.db, fixtureId(4), tip.id, true);
+
+    await expect(
+      editContribution(conn.db, fixtureId(1), tip.id, 1, crypto.randomUUID(), {
+        ...raw,
+        body: `  ${raw.body}  `,
+      }),
+    ).resolves.toEqual({ id: tip.id, revision: 1, unchanged: true });
+    expect(
+      await conn.db
+        .select()
+        .from(s.contributionRevisions)
+        .where(eq(s.contributionRevisions.contributionId, tip.id)),
+    ).toHaveLength(1);
+    expect(
+      await conn.db
+        .select()
+        .from(s.helpfulVotes)
+        .where(eq(s.helpfulVotes.contributionId, tip.id)),
+    ).toHaveLength(1);
+
+    await editContribution(
+      conn.db,
+      fixtureId(1),
+      tip.id,
+      1,
+      crypto.randomUUID(),
+      {
+        ...raw,
+        body: "Updated first hand advice for a trip.",
+      },
+    );
+    expect(
+      await conn.db
+        .select()
+        .from(s.helpfulVotes)
+        .where(eq(s.helpfulVotes.contributionId, tip.id)),
+    ).toHaveLength(0);
   });
   it("rolls back an entire contribution when a photo cannot be attached", async () => {
     const before = await conn.db.select().from(s.contributions);

@@ -16,7 +16,10 @@ const goodContributions = [
     "Be specific",
     "A route, fare, room type, useful contact, or practical warning.",
   ],
-  ["Report changes", "Add an update instead of erasing useful history."],
+  [
+    "Keep information current",
+    "Update your own tip when something you shared needs correcting. If another traveller's information has changed, report what you observed.",
+  ],
 ] as const;
 
 const avoidContributions = [
@@ -77,8 +80,14 @@ export default function CommunityGuidelinesPage() {
       <section className="doc-section">
         <h2>When information changes</h2>
         <p>
-          Use the Changed action to add a new observation. TrailNote keeps the
-          earlier report visible so travellers can see what changed and when.
+          If it&apos;s your tip, edit it to correct or update what you originally
+          shared. Traveller confirmations given before the edit won&apos;t carry
+          over to the updated information.
+        </p>
+        <p>
+          If you notice that another traveller&apos;s tip has changed, use{" "}
+          <strong>Report a change</strong>. Your observation is added separately
+          without replacing the original traveller&apos;s tip.
         </p>
       </section>
       <section className="doc-section">

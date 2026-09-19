@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { ContributionComposer } from "../../../../src/components/contributions/composer";
+import { InfoTooltip } from "../../../../src/components/ui/info-tooltip";
 import { getDatabase } from "../../../../src/db";
 import * as s from "../../../../src/db/schema";
 import { viewer } from "../../../../src/server/auth";
@@ -19,37 +20,72 @@ export default async function EditTipPage({
   const { db } = await getDatabase();
   const tip = await ownedContribution(db, user.id, id);
   if (!tip || tip.status === "deleted") notFound();
-  const [[destination], [contact], photos] = await Promise.all([
-    db
-      .select()
-      .from(s.destinations)
-      .where(eq(s.destinations.id, tip.destinationId)),
-    db
-      .select({ phone: s.contacts.phoneE164 })
-      .from(s.contacts)
-      .where(eq(s.contacts.contributionId, tip.id)),
-    db
-      .select({
-        id: s.uploadAssets.id,
-        path: s.uploadAssets.imagekitPath,
-        width: s.uploadAssets.width,
-        height: s.uploadAssets.height,
-        bytes: s.uploadAssets.byteSize,
-        alt: s.contributionPhotos.altText,
-      })
-      .from(s.contributionPhotos)
-      .innerJoin(
-        s.uploadAssets,
-        eq(s.uploadAssets.id, s.contributionPhotos.assetId),
-      )
-      .where(
-        and(
-          eq(s.contributionPhotos.contributionId, tip.id),
-          eq(s.contributionPhotos.revision, tip.revision),
+  const [[destination], [contact], photos, [confirmation], [helpful]] =
+    await Promise.all([
+      db
+        .select()
+        .from(s.destinations)
+        .where(eq(s.destinations.id, tip.destinationId)),
+      db
+        .select({ phone: s.contacts.phoneE164 })
+        .from(s.contacts)
+        .where(
+          and(
+            eq(s.contacts.contributionId, tip.id),
+            eq(s.contacts.status, "visible"),
+          ),
         ),
-      )
-      .orderBy(s.contributionPhotos.position),
-  ]);
+      db
+        .select({
+          id: s.uploadAssets.id,
+          path: s.uploadAssets.imagekitPath,
+          width: s.uploadAssets.width,
+          height: s.uploadAssets.height,
+          bytes: s.uploadAssets.byteSize,
+          alt: s.contributionPhotos.altText,
+        })
+        .from(s.contributionPhotos)
+        .innerJoin(
+          s.uploadAssets,
+          eq(s.uploadAssets.id, s.contributionPhotos.assetId),
+        )
+        .where(
+          and(
+            eq(s.contributionPhotos.contributionId, tip.id),
+            eq(s.contributionPhotos.revision, tip.revision),
+          ),
+        )
+        .orderBy(s.contributionPhotos.position),
+      db
+        .select({ count: sql<number>`count(*)`.mapWith(Number) })
+        .from(s.confirmations)
+        .innerJoin(
+          s.profiles,
+          and(
+            eq(s.profiles.userId, s.confirmations.userId),
+            eq(s.profiles.status, "active"),
+          ),
+        )
+        .where(
+          and(
+            eq(s.confirmations.contributionId, tip.id),
+            eq(s.confirmations.revision, tip.revision),
+            sql`${s.confirmations.userId} <> ${tip.authorId}`,
+            sql`(${tip.visitedMonth} is null or ${s.confirmations.visitedMonth} >= ${tip.visitedMonth})`,
+          ),
+        ),
+      db
+        .select({ count: sql<number>`count(*)`.mapWith(Number) })
+        .from(s.helpfulVotes)
+        .innerJoin(
+          s.profiles,
+          and(
+            eq(s.profiles.userId, s.helpfulVotes.userId),
+            eq(s.profiles.status, "active"),
+          ),
+        )
+        .where(eq(s.helpfulVotes.contributionId, tip.id)),
+    ]);
   if (!destination) notFound();
   return (
     <main id="main" className="container">
@@ -58,9 +94,12 @@ export default async function EditTipPage({
           ← Back to tip
         </Link>
         <h1 className="page-title">Edit your tip</h1>
-        <p className="muted">
-          New edits start a new version. Earlier confirmations stay with the
-          previous version.
+        <p className="muted fresh-label">
+          Editing this tip may reset existing traveller feedback.
+          <InfoTooltip label="traveller feedback" position="right">
+            Confirmations and Helpful marks were given for the current
+            information, so they may be reset when the tip changes.
+          </InfoTooltip>
         </p>
         <ContributionComposer
           destination={destination}
@@ -71,6 +110,8 @@ export default async function EditTipPage({
           edit={{
             id: tip.id,
             revision: tip.revision,
+            confirmationCount: confirmation?.count ?? 0,
+            helpfulCount: helpful?.count ?? 0,
             parentContributionId: tip.parentContributionId,
             parentRevision: tip.parentRevision,
           }}
@@ -92,7 +133,7 @@ export default async function EditTipPage({
             durationMinutes:
               tip.durationMinutes?.toString() ??
               (tip.category === "explore"
-                ? tip.walkMinutes?.toString() ?? ""
+                ? (tip.walkMinutes?.toString() ?? "")
                 : ""),
             walkMinutes: tip.walkMinutes?.toString() ?? "",
             timingNote: tip.timingNote ?? "",

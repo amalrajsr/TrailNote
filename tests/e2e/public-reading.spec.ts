@@ -473,7 +473,7 @@ test("detail distinguishes when a tip was added from when it was edited", async 
   await confirmationTooltipTrigger.click();
   const confirmationTooltip = page.getByRole("tooltip");
   await expect(confirmationTooltip).toContainText(
-    "Confirmations apply only to the version they reviewed",
+    "When another traveller most recently confirmed that this information was still accurate.",
   );
   const [triggerBox, tooltipBox] = await Promise.all([
     confirmationTooltipTrigger.boundingBox(),
@@ -484,15 +484,14 @@ test("detail distinguishes when a tip was added from when it was edited", async 
   );
 
   await page.goto(`/tips/${unconfirmedTipId}`);
-  await expect(page.locator(".tip-activity .fresh-label")).toContainText(
-    "Added",
-  );
+  await expect(page.locator(".tip-activity small")).toContainText("Added");
   await expect(page.locator(".tip-activity time")).toHaveAttribute(
     "datetime",
     /.+/,
   );
   await page.goto(`/tips/${editedTipId}`);
-  await expect(page.locator(".tip-activity .fresh-label")).toContainText(
+  await expect(page.locator(".tip-activity small")).toContainText("Added");
+  await expect(page.locator(".last-updated .fresh-label")).toContainText(
     "Last updated",
   );
   await page.getByRole("button", { name: "About Last updated" }).click();

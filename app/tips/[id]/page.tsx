@@ -47,10 +47,7 @@ const tipDateFormatter = new Intl.DateTimeFormat("en-IN", {
   day: "numeric",
   month: "short",
   year: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
   timeZone: "Asia/Kolkata",
-  timeZoneName: "short",
 });
 
 function Price({ price }: { price: ContributionCardDTO["price"] }) {
@@ -114,6 +111,11 @@ function DetailCard({
     : detail.details.walkMinutes
       ? `${detail.details.walkMinutes} min walk`
       : null;
+  const statusExplanation = detail.changeReported
+    ? "A traveller reported that some of this information may have changed. Check the traveller updates below."
+    : detail.freshness.label === "Recently confirmed"
+      ? "Another traveller recently confirmed that this information was still accurate."
+      : null;
 
   return (
     <article className="detail-main">
@@ -129,6 +131,11 @@ function DetailCard({
             <Clock3 size={14} aria-hidden="true" />
           )}
           {detail.freshness.label}
+          {statusExplanation && (
+            <InfoTooltip label={detail.freshness.label} position="right">
+              {statusExplanation}
+            </InfoTooltip>
+          )}
         </span>
       </div>
       {detail.parent && (
@@ -231,7 +238,6 @@ function DetailCard({
 
 function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
   const wasEdited = detail.revision > 1;
-  const activityAt = wasEdited ? detail.updatedAt : detail.createdAt;
 
   return (
     <aside className="detail-aside">
@@ -240,10 +246,19 @@ function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
         {detail.changeReported && (
           <span className="badge warning">
             <Flag size={14} aria-hidden="true" /> Change reported
+            <InfoTooltip label="Change reported" position="right">
+              A traveller reported that some of this information may have
+              changed. Check the traveller updates below.
+            </InfoTooltip>
           </span>
         )}
         <p className="fresh-line">
-          <small>Trip date</small>
+          <small className="fresh-label">
+            Trip date
+            <InfoTooltip label="Trip date" position="right">
+              When the traveller experienced or verified this information.
+            </InfoTooltip>
+          </small>
           {detail.visitedMonth
             ? formatMonth(detail.visitedMonth)
             : "Not provided"}
@@ -252,7 +267,8 @@ function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
           <small className="fresh-label">
             Last confirmed
             <InfoTooltip label="Last confirmed" position="right">
-              When another traveller most recently confirmed this tip.
+              When another traveller most recently confirmed that this
+              information was still accurate.
             </InfoTooltip>
           </small>
           {detail.lastConfirmedAt ? (
@@ -264,23 +280,30 @@ function FreshnessPanel({ detail }: { detail: ContributionDetailDTO }) {
           )}
         </p>
         <p className="fresh-line tip-activity">
-          <small className="fresh-label">
-            {wasEdited ? "Last updated" : "Added"}
-            <InfoTooltip
-              label={wasEdited ? "Last updated" : "Added"}
-              position="right"
-            >
-              {wasEdited
-                ? "When the original author last edited this tip."
-                : "When the original author first shared this tip."}
-            </InfoTooltip>
-          </small>
-          <time dateTime={new Date(activityAt).toISOString()}>
-            {tipDateFormatter.format(activityAt)}
+          <small>Added</small>
+          <time dateTime={new Date(detail.createdAt).toISOString()}>
+            {tipDateFormatter.format(detail.createdAt)}
           </time>
         </p>
+        {wasEdited && (
+          <p className="fresh-line last-updated">
+            <small className="fresh-label">
+              Last updated
+              <InfoTooltip label="Last updated" position="right">
+                When the original author last edited this tip.
+              </InfoTooltip>
+            </small>
+            <time dateTime={new Date(detail.updatedAt).toISOString()}>
+              {tipDateFormatter.format(detail.updatedAt)}
+            </time>
+          </p>
+        )}
         {detail.confirmationCount > 0 && (
           <p className="fresh-count">
+            <InfoTooltip label="traveller confirmations" position="right">
+              Confirmations apply to the current information. If the author
+              edits the tip, it needs to be confirmed again.
+            </InfoTooltip>
             {detail.confirmationCount}{" "}
             {detail.confirmationCount === 1 ? "traveller" : "travellers"}{" "}
             confirmed this version

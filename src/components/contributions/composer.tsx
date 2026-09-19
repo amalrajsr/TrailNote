@@ -32,6 +32,7 @@ import {
 } from "../../lib/validation/contribution";
 import { CategoryIcon } from "../ui/category-icon";
 import { CustomSelect } from "../ui/custom-select";
+import { Dialog } from "../ui/overlays";
 import { Button, Field, Input, Textarea } from "../ui/primitives";
 import { toast } from "../ui/toaster";
 import { PhotoUploader, type UploadedPhoto } from "./photo-uploader";
@@ -279,6 +280,8 @@ export function ContributionComposer({
   edit?: {
     id: string;
     revision: number;
+    confirmationCount: number;
+    helpfulCount: number;
     parentContributionId: string | null;
     parentRevision: number | null;
   };
@@ -312,6 +315,7 @@ export function ContributionComposer({
   const [clientFieldErrors, setClientFieldErrors] = useState<
     Record<string, string[]>
   >({});
+  const [showEditConfirmation, setShowEditConfirmation] = useState(false);
   const submitAction =
     mode === "update"
       ? shareUpdate
@@ -325,6 +329,8 @@ export function ContributionComposer({
   const formRef = useRef<HTMLFormElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
   const draftSaved = useRef(false);
+  const initialDraftRef = useRef(draft);
+  const confirmedSubmitRef = useRef(false);
   const month = useMemo(() => currentMonth(), []);
   const lastMonth = useMemo(() => previousMonth(month), [month]);
 
@@ -352,10 +358,10 @@ export function ContributionComposer({
     [focusAndScrollTo],
   );
 
-  const validateDraft = () => {
+  const inputForDraft = (value: Draft) => {
     let pricePaise: number | null;
     try {
-      pricePaise = parseMoney(draft.price);
+      pricePaise = parseMoney(value.price);
     } catch (error) {
       return {
         success: false as const,
@@ -369,39 +375,39 @@ export function ContributionComposer({
 
     const result = contributionInput.safeParse({
       destinationId: destination.id,
-      category: draft.category,
-      body: draft.body,
+      category: value.category,
+      body: value.body,
       visitedMonth:
-        draft.visitedChoice === "custom"
-          ? draft.visitedMonth
-          : draft.visitedChoice,
+        value.visitedChoice === "custom"
+          ? value.visitedMonth
+          : value.visitedChoice,
       pricePaise,
-      priceUnit: draft.priceUnit,
-      priceUnitLabel: draft.priceUnitLabel,
-      placeName: draft.placeName,
-      roomType: draft.roomType,
-      bookingMethod: draft.bookingMethod,
-      dish: draft.dish,
-      fromName: draft.fromName,
-      toName: draft.toName,
-      transportMode: draft.transportMode,
-      durationMinutes: draft.durationMinutes
-        ? Number(draft.durationMinutes)
+      priceUnit: value.priceUnit,
+      priceUnitLabel: value.priceUnitLabel,
+      placeName: value.placeName,
+      roomType: value.roomType,
+      bookingMethod: value.bookingMethod,
+      dish: value.dish,
+      fromName: value.fromName,
+      toName: value.toName,
+      transportMode: value.transportMode,
+      durationMinutes: value.durationMinutes
+        ? Number(value.durationMinutes)
         : null,
-      walkMinutes: draft.walkMinutes ? Number(draft.walkMinutes) : null,
-      timingNote: draft.timingNote,
-      boardingPoint: draft.boardingPoint,
-      locationText: draft.locationText,
-      mapsUrl: draft.mapsUrl,
-      phone: draft.phone,
-      publicServiceContact: draft.publicServiceContact,
-      photos: draft.photos.map((photo) => ({ id: photo.id, alt: photo.alt })),
+      walkMinutes: value.walkMinutes ? Number(value.walkMinutes) : null,
+      timingNote: value.timingNote,
+      boardingPoint: value.boardingPoint,
+      locationText: value.locationText,
+      mapsUrl: value.mapsUrl,
+      phone: value.phone,
+      publicServiceContact: value.publicServiceContact,
+      photos: value.photos.map((photo) => ({ id: photo.id, alt: photo.alt })),
       parentContributionId: original?.id ?? edit?.parentContributionId ?? null,
       parentRevision: original?.revision ?? edit?.parentRevision ?? null,
     });
 
     return result.success
-      ? { success: true as const }
+      ? { success: true as const, data: result.data }
       : {
           success: false as const,
           fieldErrors: result.error.flatten().fieldErrors as Record<
@@ -409,6 +415,18 @@ export function ContributionComposer({
             string[]
           >,
         };
+  };
+
+  const validateDraft = () => inputForDraft(draft);
+
+  const hasMeaningfulEdit = () => {
+    const current = validateDraft();
+    const initial = inputForDraft(initialDraftRef.current);
+    return (
+      current.success &&
+      initial.success &&
+      JSON.stringify(current.data) !== JSON.stringify(initial.data)
+    );
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -433,7 +451,23 @@ export function ContributionComposer({
       setClientFieldErrors(result.fieldErrors);
       setShowValidation(true);
       revealInvalidField(Object.keys(result.fieldErrors)[0]);
+      return;
     }
+    if (mode === "edit" && !hasMeaningfulEdit()) {
+      event.preventDefault();
+      toast("No changes to save.");
+      return;
+    }
+    if (
+      mode === "edit" &&
+      ((edit?.confirmationCount ?? 0) > 0 || (edit?.helpfulCount ?? 0) > 0) &&
+      !confirmedSubmitRef.current
+    ) {
+      event.preventDefault();
+      setShowEditConfirmation(true);
+      return;
+    }
+    confirmedSubmitRef.current = false;
   };
 
   useEffect(() => {
@@ -483,6 +517,10 @@ export function ContributionComposer({
             : "Tip added.",
       );
       if (state.tipId) router.push(`/tips/${state.tipId}`);
+      return;
+    }
+    if (state.status === "unchanged") {
+      toast("No changes to save.");
       return;
     }
     const timer = window.setTimeout(() => {
@@ -564,6 +602,16 @@ export function ContributionComposer({
         : [...current, key],
     );
   const detailEnabled = (key: string) => enabledDetails.includes(key);
+  const feedbackResetMessage = (() => {
+    if (!edit) return "";
+    const confirmationCount = edit.confirmationCount;
+    const helpfulCount = edit.helpfulCount;
+    if (confirmationCount > 0 && helpfulCount > 0)
+      return `${confirmationCount} ${confirmationCount === 1 ? "traveller confirmed" : "travellers confirmed"} the current information and ${helpfulCount} marked it as helpful. Saving your changes will reset this feedback because it was given before the tip was edited.`;
+    if (confirmationCount > 0)
+      return `${confirmationCount} ${confirmationCount === 1 ? "traveller confirmed" : "travellers confirmed"} the current information. Saving your changes will reset these confirmations because they were given before the tip was edited.`;
+    return `${helpfulCount} ${helpfulCount === 1 ? "traveller marked" : "travellers marked"} the current tip as helpful. Saving your changes will reset ${helpfulCount === 1 ? "this Helpful mark" : "these Helpful marks"} because ${helpfulCount === 1 ? "it was" : "they were"} given for the information before your edit.`;
+  })();
   const category = draft.category;
   const currentYear = month.slice(0, 4);
   const currentMonthValue = month.slice(5, 7);
@@ -800,7 +848,9 @@ export function ContributionComposer({
               id="visitedChoice"
               ariaLabel="When were you there?"
               value={draft.visitedChoice}
-              onValueChange={(nextValue) => setValue("visitedChoice", nextValue)}
+              onValueChange={(nextValue) =>
+                setValue("visitedChoice", nextValue)
+              }
               options={[
                 { value: month, label: formatMonth(month) },
                 { value: lastMonth, label: formatMonth(lastMonth) },
@@ -947,7 +997,9 @@ export function ContributionComposer({
                       name="roomType"
                       ariaLabel="Room type"
                       value={draft.roomType}
-                      onValueChange={(nextValue) => setValue("roomType", nextValue)}
+                      onValueChange={(nextValue) =>
+                        setValue("roomType", nextValue)
+                      }
                       options={[
                         { value: "", label: "Not provided" },
                         { value: "private", label: "Private room" },
@@ -1223,6 +1275,36 @@ export function ContributionComposer({
           </Button>
         </div>
       </form>
+      {mode === "edit" && edit && (
+        <Dialog
+          open={showEditConfirmation}
+          onOpenChange={setShowEditConfirmation}
+          title="Save changes?"
+          description={feedbackResetMessage}
+          className="edit-feedback-dialog"
+        >
+          <div className="dialog-actions">
+            <button
+              type="button"
+              className="btn secondary"
+              onClick={() => setShowEditConfirmation(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => {
+                confirmedSubmitRef.current = true;
+                setShowEditConfirmation(false);
+                formRef.current?.requestSubmit();
+              }}
+            >
+              Save changes
+            </button>
+          </div>
+        </Dialog>
+      )}
     </>
   );
 }

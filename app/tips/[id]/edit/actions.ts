@@ -33,7 +33,9 @@ export async function shareEdit(
       formText(data, "mutationId"),
       input,
     );
-    return { status: "success", tipId: result.id };
+    return "unchanged" in result && result.unchanged
+      ? { status: "unchanged" }
+      : { status: "success", tipId: result.id };
   } catch (error) {
     if (error instanceof ZodError)
       return {

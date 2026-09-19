@@ -11,7 +11,7 @@ import { DomainError } from "../../../../src/server/result";
 import { createContribution } from "../../../../src/server/services/contributions";
 
 export type ComposerActionState = {
-  status: "idle" | "error" | "auth" | "success";
+  status: "idle" | "error" | "auth" | "success" | "unchanged";
   message?: string;
   fieldErrors?: Record<string, string[]>;
   tipId?: string;
