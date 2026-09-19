@@ -1,22 +1,24 @@
 "use client";
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Expand,
-  Images,
-  Info,
-  X,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Expand, Images, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import type { ContributionDetailDTO } from "../../server/queries/contributions";
 
 type Photo = ContributionDetailDTO["photos"][number];
 
-export function PhotoGallery({ photos }: { photos: Photo[] }) {
+export function PhotoGallery({
+  photos,
+  title = "Photos",
+  unavailableLabel = "Photo unavailable",
+}: {
+  photos: Photo[];
+  title?: string;
+  unavailableLabel?: string;
+}) {
   const [active, setActive] = useState<number | null>(null);
+  const [unavailable, setUnavailable] = useState<number[]>([]);
 
   if (photos.length === 0) {
     return null;
@@ -32,6 +34,12 @@ export function PhotoGallery({ photos }: { photos: Photo[] }) {
     });
   }
 
+  function markUnavailable(index: number) {
+    setUnavailable((current) =>
+      current.includes(index) ? current : [...current, index],
+    );
+  }
+
   return (
     <>
       <section
@@ -40,11 +48,11 @@ export function PhotoGallery({ photos }: { photos: Photo[] }) {
       >
         <div className="detail-photo-head">
           <div className="detail-photo-title">
-            <h2 id="detail-photos-title">Photos</h2>
+            <h2 id="detail-photos-title">{title}</h2>
             <span className="detail-photo-count">{photos.length}</span>
           </div>
           <span className="detail-photo-hint">
-            Open a photo to view it in full
+            Preview images are cropped. Open a photo to view it in full.
           </span>
         </div>
 
@@ -62,7 +70,13 @@ export function PhotoGallery({ photos }: { photos: Photo[] }) {
                 height={photos[0].height}
                 sizes="(max-width: 620px) calc(100vw - 64px), 760px"
                 alt={photos[0].alt}
+                onError={() => markUnavailable(0)}
               />
+              {unavailable.includes(0) && (
+                <span className="detail-photo-unavailable" role="status">
+                  {unavailableLabel}
+                </span>
+              )}
             </button>
             <button
               type="button"
@@ -95,7 +109,13 @@ export function PhotoGallery({ photos }: { photos: Photo[] }) {
                         : "(max-width: 620px) calc(100vw - 64px), (max-width: 1023px) 38vw, 285px"
                   }
                   alt={item.alt}
+                  onError={() => markUnavailable(index)}
                 />
+                {unavailable.includes(index) && (
+                  <span className="detail-photo-unavailable" role="status">
+                    {unavailableLabel}
+                  </span>
+                )}
               </button>
             ))}
             <button
@@ -109,8 +129,6 @@ export function PhotoGallery({ photos }: { photos: Photo[] }) {
             </button>
           </div>
         )}
-
-       
       </section>
 
       <DialogPrimitive.Root
@@ -162,14 +180,24 @@ export function PhotoGallery({ photos }: { photos: Photo[] }) {
                     <ChevronLeft size={24} aria-hidden="true" />
                   </button>
                 )}
-                <Image
-                  className="detail-photo-lightbox-image"
-                  src={photo.path}
-                  width={photo.width}
-                  height={photo.height}
-                  sizes="100vw"
-                  alt={photo.alt}
-                />
+                {unavailable.includes(active!) ? (
+                  <p
+                    className="detail-photo-unavailable is-lightbox"
+                    role="status"
+                  >
+                    {unavailableLabel}
+                  </p>
+                ) : (
+                  <Image
+                    className="detail-photo-lightbox-image"
+                    src={photo.path}
+                    width={photo.width}
+                    height={photo.height}
+                    sizes="100vw"
+                    alt={photo.alt}
+                    onError={() => markUnavailable(active!)}
+                  />
+                )}
                 {photos.length > 1 && (
                   <button
                     type="button"
@@ -203,7 +231,11 @@ export function PhotoGallery({ photos }: { photos: Photo[] }) {
                         height={item.height}
                         sizes="54px"
                         alt=""
+                        onError={() => markUnavailable(index)}
                       />
+                      {unavailable.includes(index) && (
+                        <span className="sr-only">{unavailableLabel}</span>
+                      )}
                     </button>
                   ))}
                 </div>

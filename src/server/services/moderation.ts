@@ -26,6 +26,7 @@ export type ModerationTipVersion = PublicContributionSnapshot & {
   revision: number;
   createdAt: number;
   photos: ModerationPhoto[];
+  unavailablePhotoCount: number;
 };
 
 export type ModerationReportDetail = {
@@ -597,10 +598,11 @@ export async function moderationReportDetail(
           path: s.uploadAssets.imagekitPath,
           width: s.uploadAssets.width,
           height: s.uploadAssets.height,
+          status: s.uploadAssets.status,
           alt: s.contributionPhotos.altText,
         })
         .from(s.contributionPhotos)
-        .innerJoin(
+        .leftJoin(
           s.uploadAssets,
           eq(s.uploadAssets.id, s.contributionPhotos.assetId),
         )
@@ -611,7 +613,6 @@ export async function moderationReportDetail(
               row.report.contributionRevision,
               row.tip.revision,
             ]),
-            eq(s.uploadAssets.status, "attached"),
           ),
         )
         .orderBy(s.contributionPhotos.position),
@@ -637,7 +638,11 @@ export async function moderationReportDetail(
     );
   const versionPhotos = (revision: number) =>
     photos.flatMap((photo) =>
-      photo.revision === revision && photo.path && photo.width && photo.height
+      photo.revision === revision &&
+      photo.status === "attached" &&
+      photo.path &&
+      photo.width &&
+      photo.height
         ? [
             {
               path: photo.path,
@@ -648,6 +653,9 @@ export async function moderationReportDetail(
           ]
         : [],
     );
+  const unavailablePhotoCount = (revision: number) =>
+    photos.filter((photo) => photo.revision === revision).length -
+    versionPhotos(revision).length;
   const resolutionEvent = history.find(
     (event) =>
       event.createdAt === row.report.resolvedAt &&
@@ -685,12 +693,16 @@ export async function moderationReportDetail(
         revision: row.report.contributionRevision,
         createdAt: reportedRevision[0]!.createdAt,
         photos: versionPhotos(row.report.contributionRevision),
+        unavailablePhotoCount: unavailablePhotoCount(
+          row.report.contributionRevision,
+        ),
       },
       currentVersion: {
         ...currentSnapshot(row.tip),
         revision: row.tip.revision,
         createdAt: currentRevision[0]?.createdAt ?? row.tip.updatedAt,
         photos: versionPhotos(row.tip.revision),
+        unavailablePhotoCount: unavailablePhotoCount(row.tip.revision),
       },
       editedAfterReport: row.report.contributionRevision < row.tip.revision,
     },

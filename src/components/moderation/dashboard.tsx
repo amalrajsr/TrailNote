@@ -13,6 +13,7 @@ import { Button, Input, Select, Textarea } from "../ui/primitives";
 import { toast } from "../ui/toaster";
 import { ReportReviewDrawer } from "./report-review-drawer";
 import type { ModerationReportDetail } from "../../server/services/moderation";
+import { reportReasonLabels } from "../../lib/report-reasons";
 
 type Event = {
   targetType: string;
@@ -227,7 +228,11 @@ function Reports({
             return (
               <tr key={item.id}>
                 <td data-label="Reason">
-                  {report ? report.reason : "Contact removal"}
+                  {report
+                    ? (reportReasonLabels[
+                        report.reason as keyof typeof reportReasonLabels
+                      ] ?? "Other")
+                    : "Contact removal"}
                 </td>
                 <td data-label="Tip excerpt" className="moderation-excerpt">
                   {report
@@ -247,6 +252,9 @@ function Reports({
                     <Link
                       className="btn secondary"
                       href={reviewHref(report.id)}
+                      prefetch={false}
+                      scroll={false}
+                      aria-label={`Review ${reportReasonLabels[report.reason as keyof typeof reportReasonLabels] ?? "Other"} report for ${report.destination}`}
                     >
                       Review
                     </Link>
@@ -617,6 +625,7 @@ export function ModerationDashboard({
         </p>
       )}
       <ReportReviewDrawer
+        key={data.selectedReport?.report.id ?? "no-selected-report"}
         detail={data.selectedReport}
         closeHref={closeReviewHref}
       />

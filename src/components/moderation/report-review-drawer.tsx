@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { AlertTriangle, ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -13,17 +12,11 @@ import { reviewReport } from "../../../app/moderation/actions";
 import { categoryLabels } from "../../lib/constants";
 import { formatMoney, priceSuffix } from "../../lib/money";
 import { formatMonth } from "../../lib/visit-month";
+import { reportReasonLabels } from "../../lib/report-reasons";
 import { Dialog } from "../ui/overlays";
 import { Button, Textarea } from "../ui/primitives";
 import { toast } from "../ui/toaster";
-
-const reasonLabels = {
-  spam: "Spam",
-  inaccurate: "Inaccurate information",
-  unsafe: "Unsafe information",
-  private_information: "Private information",
-  other: "Other",
-};
+import { PhotoGallery } from "../contributions/photo-gallery";
 
 const historyActionLabels: Record<string, string> = {
   hide: "Tip hidden",
@@ -52,13 +45,7 @@ function factsFor(version: ModerationTipVersion) {
   if (version.fromName) facts.push(["From", version.fromName]);
   if (version.toName) facts.push(["To", version.toName]);
   if (version.transportMode)
-    facts.push([
-      "Transport",
-      version.transportMode
-        .split("_")
-        .map((part) => part[0].toUpperCase() + part.slice(1))
-        .join(" "),
-    ]);
+    facts.push(["Transport mode", humanize(version.transportMode)]);
   if (version.durationMinutes)
     facts.push(["Approximate duration", `${version.durationMinutes} min`]);
   if (version.walkMinutes)
@@ -66,9 +53,9 @@ function factsFor(version: ModerationTipVersion) {
   if (version.boardingPoint)
     facts.push(["Boarding point", version.boardingPoint]);
   if (version.timingNote) facts.push(["Timing", version.timingNote]);
-  if (version.roomType) facts.push(["Room type", version.roomType]);
+  if (version.roomType) facts.push(["Room type", humanize(version.roomType)]);
   if (version.bookingMethod)
-    facts.push(["Booking method", version.bookingMethod]);
+    facts.push(["Booking method", humanize(version.bookingMethod)]);
   if (version.dish) facts.push(["Dish", version.dish]);
   if (version.locationText)
     facts.push([
@@ -81,12 +68,21 @@ function factsFor(version: ModerationTipVersion) {
   return facts;
 }
 
+function humanize(value: string) {
+  return value
+    .split("_")
+    .map((part) => part[0]?.toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 function TipVersion({
   version,
   destination,
+  currentRevision,
 }: {
   version: ModerationTipVersion;
   destination: string;
+  currentRevision: number;
 }) {
   const facts = factsFor(version);
   return (
@@ -127,26 +123,27 @@ function TipVersion({
       )}
       {version.photos.length > 0 && (
         <div className="moderation-review-photos">
-          <h4>Photos for this version</h4>
-          <div>
-            {version.photos.map((photo, index) => (
-              <a
-                href={photo.path}
-                target="_blank"
-                rel="noreferrer"
-                key={`${photo.path}-${index}`}
-              >
-                <Image
-                  src={photo.path}
-                  width={photo.width}
-                  height={photo.height}
-                  sizes="(max-width: 767px) calc(50vw - 30px), 270px"
-                  alt={photo.alt || `Photo ${index + 1}`}
-                />
-              </a>
-            ))}
-          </div>
+          <PhotoGallery
+            key={version.revision}
+            photos={version.photos}
+            title={`Photos for Revision ${version.revision}`}
+            unavailableLabel={
+              version.revision < currentRevision
+                ? "Historical photo unavailable"
+                : "Photo unavailable"
+            }
+          />
         </div>
+      )}
+      {version.unavailablePhotoCount > 0 && (
+        <p className="moderation-photo-unavailable" role="status">
+          {version.revision < currentRevision
+            ? "Historical photo unavailable"
+            : "Photo unavailable"}
+          {version.unavailablePhotoCount > 1
+            ? ` (${version.unavailablePhotoCount} photos)`
+            : ""}
+        </p>
       )}
     </section>
   );
@@ -174,7 +171,13 @@ export function ReportReviewDrawer({
       : tip.editedAfterReport
         ? "Hide current tip"
         : "Hide tip";
-  const close = () => router.push(closeHref);
+  const hideConfirmationDescription =
+    tip.status === "hidden"
+      ? `Revision ${tip.currentRevision} is already hidden. It will stay hidden while this report is resolved.`
+      : tip.editedAfterReport
+        ? `This report was submitted against Revision ${report.reportedRevision}. You are about to hide the currently published Revision ${tip.currentRevision}.`
+        : "Travellers will no longer be able to see this tip.";
+  const close = () => router.replace(closeHref, { scroll: false });
   const submit = (disposition: "hide" | "resolved" | "dismiss") =>
     startTransition(async () => {
       const result = await reviewReport(
@@ -186,13 +189,14 @@ export function ReportReviewDrawer({
       if (result.ok) {
         toast(
           disposition === "hide"
-            ? "Tip report resolved."
+            ? tip.status === "hidden"
+              ? "Report resolved. Tip remains hidden."
+              : "Report resolved. Tip hidden."
             : disposition === "resolved"
-              ? "Report resolved — issue fixed."
-              : "Report dismissed.",
+              ? "Report resolved. Tip visibility unchanged."
+              : "Report dismissed. Tip unchanged.",
         );
         close();
-        router.refresh();
       } else {
         toast(result.message ?? "Could not save this review.", "error");
         if (result.code === "CONFLICT") router.refresh();
@@ -208,10 +212,25 @@ export function ReportReviewDrawer({
     >
       <div className="moderation-review-header">
         <span className={`moderation-badge moderation-badge-${report.status}`}>
-          {report.status}
+          {humanize(report.status)}
         </span>
-        <span>Current tip: {tip.status}</span>
+        <span>Current tip: {humanize(tip.status)}</span>
       </div>
+      <section className="moderation-review-section">
+        <h3>Report context</h3>
+        <dl className="moderation-review-meta-list">
+          <div>
+            <dt>Reason</dt>
+            <dd>{reportReasonLabels[report.reason]}</dd>
+          </div>
+          {report.details && (
+            <div>
+              <dt>Traveller&apos;s report</dt>
+              <dd>{report.details}</dd>
+            </div>
+          )}
+        </dl>
+      </section>
       {tip.editedAfterReport && (
         <aside className="moderation-revision-warning">
           <AlertTriangle size={20} aria-hidden="true" />
@@ -224,31 +243,15 @@ export function ReportReviewDrawer({
           </p>
         </aside>
       )}
-      <section className="moderation-review-section">
-        <h3>Report context</h3>
-        <dl className="moderation-review-meta-list">
-          <div>
-            <dt>Reason</dt>
-            <dd>{reasonLabels[report.reason]}</dd>
-          </div>
-          {report.details && (
-            <div>
-              <dt>Traveller&apos;s details</dt>
-              <dd>{report.details}</dd>
-            </div>
-          )}
-        </dl>
-      </section>
       {tip.editedAfterReport && (
         <div
           className="moderation-version-tabs"
-          role="tablist"
+          role="group"
           aria-label="Tip version"
         >
           <button
             type="button"
-            role="tab"
-            aria-selected={!showCurrent}
+            aria-pressed={!showCurrent}
             className={!showCurrent ? "selected" : ""}
             onClick={() => setShowCurrent(false)}
           >
@@ -256,8 +259,7 @@ export function ReportReviewDrawer({
           </button>
           <button
             type="button"
-            role="tab"
-            aria-selected={showCurrent}
+            aria-pressed={showCurrent}
             className={showCurrent ? "selected" : ""}
             onClick={() => setShowCurrent(true)}
           >
@@ -265,7 +267,11 @@ export function ReportReviewDrawer({
           </button>
         </div>
       )}
-      <TipVersion version={version} destination={tip.destination.name} />
+      <TipVersion
+        version={version}
+        destination={tip.destination.name}
+        currentRevision={tip.currentRevision}
+      />
       <section className="moderation-review-section moderation-review-author">
         <h3>Shared by</h3>
         <p>
@@ -297,79 +303,103 @@ export function ReportReviewDrawer({
             Resolution note <span className="optional">(required)</span>
           </label>
           <p className="small muted">
-            Briefly describe what changed or why the current version resolves
-            this report.
+            Briefly explain the moderation decision.
           </p>
           <Textarea
             id={`review-reason-${report.id}`}
             value={reason}
             maxLength={1000}
+            disabled={pending}
             onChange={(event) => setReason(event.target.value)}
           />
-          {confirmHide ? (
-            <div className="moderation-hide-confirmation">
-              <p>
-                {tip.editedAfterReport
-                  ? `This report was submitted against Revision ${report.reportedRevision}. You are about to hide the currently ${tip.status === "published" ? "published" : "hidden"} Revision ${tip.currentRevision}.`
-                  : "Travellers will no longer be able to see this tip."}
-              </p>
-              <div className="dialog-actions">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setConfirmHide(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  className="danger"
-                  busy={pending}
-                  onClick={() => submit("hide")}
-                >
-                  {hideLabel}
-                </Button>
-              </div>
-            </div>
-          ) : (
+          <div className="dialog-actions">
+            {tip.editedAfterReport && (
+              <Button
+                type="button"
+                busy={pending}
+                disabled={!reason.trim()}
+                onClick={() => submit("resolved")}
+              >
+                Issue fixed
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="secondary"
+              busy={pending}
+              disabled={!reason.trim()}
+              onClick={() => submit("dismiss")}
+            >
+              Dismiss report
+            </Button>
+            <Button
+              type="button"
+              className="danger"
+              disabled={!reason.trim() || tip.status === "deleted" || pending}
+              onClick={() => setConfirmHide(true)}
+            >
+              {hideLabel}
+            </Button>
+          </div>
+          <Dialog
+            open={confirmHide}
+            onOpenChange={setConfirmHide}
+            title={
+              tip.status === "hidden"
+                ? "Keep this tip hidden?"
+                : tip.editedAfterReport
+                  ? "Hide the current version?"
+                  : "Hide this tip?"
+            }
+            description={hideConfirmationDescription}
+          >
             <div className="dialog-actions">
-              {tip.editedAfterReport && (
-                <Button
-                  type="button"
-                  busy={pending}
-                  disabled={!reason.trim()}
-                  onClick={() => submit("resolved")}
-                >
-                  Issue fixed
-                </Button>
-              )}
               <Button
                 type="button"
                 variant="secondary"
-                busy={pending}
-                disabled={!reason.trim()}
-                onClick={() => submit("dismiss")}
+                disabled={pending}
+                onClick={() => setConfirmHide(false)}
               >
-                Dismiss report
+                Cancel
               </Button>
               <Button
                 type="button"
                 className="danger"
-                disabled={!reason.trim() || tip.status === "deleted"}
-                onClick={() => setConfirmHide(true)}
+                busy={pending}
+                onClick={() => submit("hide")}
               >
                 {hideLabel}
               </Button>
             </div>
-          )}
+          </Dialog>
         </footer>
       ) : (
         <section className="moderation-review-section moderation-review-closed">
-          <h3>Resolution</h3>
-          {report.resolutionAction === "issue_fixed" && (
-            <p>Issue fixed in a later revision.</p>
-          )}
-          <p>{report.resolutionNote ?? "No resolution note was recorded."}</p>
+          <h3>Review outcome</h3>
+          <dl className="moderation-review-meta-list">
+            <div>
+              <dt>Status</dt>
+              <dd>{humanize(report.status)}</dd>
+            </div>
+            {report.resolutionAction && (
+              <div>
+                <dt>Resolution</dt>
+                <dd>
+                  {report.resolutionAction === "issue_fixed"
+                    ? "Issue fixed in a later revision"
+                    : report.resolutionAction === "hide"
+                      ? "Tip hidden"
+                      : "Report dismissed; tip left unchanged"}
+                </dd>
+              </div>
+            )}
+            <div>
+              <dt>Moderator note</dt>
+              <dd>
+                {report.resolutionNote ?? "No resolution note was recorded."}
+              </dd>
+            </div>
+          </dl>
           {report.resolvedAt && (
             <p className="muted">Reviewed {date(report.resolvedAt)}</p>
           )}
