@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type ReactNode,
 } from "react";
 import {
   updateOwnProfile,
@@ -16,7 +17,8 @@ import {
 } from "../../../app/me/actions";
 import { ProfileAvatar, type ProfileAvatarData } from "../profiles/avatar";
 import { Dialog } from "../ui/overlays";
-import { Button, Field, Input } from "../ui/primitives";
+import { Button, Field, Input, Textarea } from "../ui/primitives";
+import { toast } from "../ui/toaster";
 
 type UploadedAvatar = NonNullable<ProfileAvatarData> & {
   id: string;
@@ -32,12 +34,18 @@ function ProfileForm({
   name,
   username,
   avatar,
+  bio,
+  instagramUrl,
+  youtubeUrl,
   onCancel,
   onSuccess,
 }: {
   name: string;
   username: string;
   avatar: ProfileAvatarData;
+  bio: string | null;
+  instagramUrl: string | null;
+  youtubeUrl: string | null;
   onCancel: () => void;
   onSuccess: () => void;
 }) {
@@ -48,6 +56,9 @@ function ProfileForm({
   const [uploaded, setUploaded] = useState<UploadedAvatar | null>(null);
   const [displayName, setDisplayName] = useState(name);
   const [handle, setHandle] = useState(username);
+  const [profileBio, setProfileBio] = useState(bio ?? "");
+  const [instagram, setInstagram] = useState(instagramUrl ?? "");
+  const [youtube, setYoutube] = useState(youtubeUrl ?? "");
   const [avatarIntent, setAvatarIntent] = useState<
     "keep" | "replace" | "remove"
   >("keep");
@@ -56,7 +67,6 @@ function ProfileForm({
   >("idle");
   const [uploadError, setUploadError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
-  const errorRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const preview = uploaded ?? (avatarIntent === "remove" ? null : avatar);
   const busy =
@@ -67,9 +77,33 @@ function ProfileForm({
       onSuccess();
       router.refresh();
     } else if (state.status === "error") {
-      errorRef.current?.focus();
+      toast(state.message, "error");
+      const firstField = Object.keys(state.fieldErrors ?? {})[0];
+      if (firstField) {
+        window.requestAnimationFrame(() => {
+          const fieldIds: Record<string, string> = {
+            displayName: "profile-display-name",
+            username: "profile-username",
+            bio: "profile-bio",
+            instagramUrl: "profile-instagram",
+            youtubeUrl: "profile-youtube",
+          };
+          const target = document.getElementById(
+            fieldIds[firstField] ?? firstField,
+          );
+          if (!target) return;
+          target.focus({ preventScroll: true });
+          target.scrollIntoView({
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+              .matches
+              ? "auto"
+              : "smooth",
+            block: "center",
+          });
+        });
+      }
     }
-  }, [onSuccess, router, state.status]);
+  }, [onSuccess, router, state]);
 
   async function chooseAvatar(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -123,18 +157,6 @@ function ProfileForm({
 
   return (
     <form action={action} className="profile-form">
-      {state.status === "error" && (
-        <div
-          ref={errorRef}
-          className="profile-form-error"
-          role="alert"
-          tabIndex={-1}
-        >
-          <strong>Could not save your profile</strong>
-          <p>{state.message}</p>
-        </div>
-      )}
-
       <div className="profile-photo-field">
         <ProfileAvatar
           name={displayName || name}
@@ -240,6 +262,86 @@ function ProfileForm({
         </p>
       </Field>
 
+      <div className="profile-form-section">
+        <h3>About you</h3>
+        <Field
+          id="profile-bio"
+          label="Bio"
+          optional
+          error={state.fieldErrors?.bio?.[0]}
+        >
+          <Textarea
+            id="profile-bio"
+            name="bio"
+            value={profileBio}
+            onChange={(event) => setProfileBio(event.target.value)}
+            maxLength={160}
+            rows={3}
+            placeholder="A little about how you travel"
+            aria-invalid={!!state.fieldErrors?.bio}
+            aria-describedby={
+              state.fieldErrors?.bio ? "profile-bio-error" : undefined
+            }
+          />
+          <p className="profile-character-count small muted">
+            {Array.from(profileBio).length} / 160
+          </p>
+        </Field>
+      </div>
+
+      <div className="profile-form-section">
+        <h3>Social profiles</h3>
+        <p className="small muted profile-section-helper">
+          Optional links other travellers can use to find you.
+        </p>
+        <Field
+          id="profile-instagram"
+          label="Instagram"
+          optional
+          error={state.fieldErrors?.instagramUrl?.[0]}
+        >
+          <Input
+            id="profile-instagram"
+            name="instagramUrl"
+            value={instagram}
+            onChange={(event) => setInstagram(event.target.value)}
+            placeholder="@username or Instagram URL"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            aria-invalid={!!state.fieldErrors?.instagramUrl}
+            aria-describedby={
+              state.fieldErrors?.instagramUrl
+                ? "profile-instagram-error"
+                : undefined
+            }
+          />
+        </Field>
+        <Field
+          id="profile-youtube"
+          label="YouTube"
+          optional
+          error={state.fieldErrors?.youtubeUrl?.[0]}
+        >
+          <Input
+            id="profile-youtube"
+            name="youtubeUrl"
+            value={youtube}
+            onChange={(event) => setYoutube(event.target.value)}
+            placeholder="@handle or YouTube URL"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            aria-invalid={!!state.fieldErrors?.youtubeUrl}
+            aria-describedby={
+              state.fieldErrors?.youtubeUrl
+                ? "profile-youtube-error"
+                : undefined
+            }
+          />
+        </Field>
+      </div>
+
       <div className="profile-form-actions">
         <Button
           type="button"
@@ -262,14 +364,21 @@ export function AccountProfileEditor({
   name,
   username,
   avatar,
+  bio,
+  instagramUrl,
+  youtubeUrl,
+  children,
 }: {
   id: string;
   name: string;
   username: string;
   avatar: ProfileAvatarData;
+  bio: string | null;
+  instagramUrl: string | null;
+  youtubeUrl: string | null;
+  children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const [notice, setNotice] = useState("");
   return (
     <>
       <div className="account-profile">
@@ -291,27 +400,26 @@ export function AccountProfileEditor({
             View public profile
           </Link>
         </div>
+        <div className="account-profile-session">{children}</div>
       </div>
-      {notice && (
-        <p className="account-notice profile-updated-notice" role="status">
-          {notice}
-        </p>
-      )}
       <Dialog
         open={open}
         onOpenChange={setOpen}
         className="profile-dialog"
         title="Edit profile"
-        description="Your display name, username, and profile image appear publicly with your tips."
+        description="Your profile details and image appear publicly with your tips."
       >
         {open && (
           <ProfileForm
             name={name}
             username={username}
             avatar={avatar}
+            bio={bio}
+            instagramUrl={instagramUrl}
+            youtubeUrl={youtubeUrl}
             onCancel={() => setOpen(false)}
             onSuccess={() => {
-              setNotice("Profile updated.");
+              toast("Profile updated.");
               setOpen(false);
             }}
           />

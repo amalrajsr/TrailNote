@@ -269,8 +269,8 @@ export function ReactionControls({
       </div>
       <p className="reaction-count small muted">
         {confirmationCount === 0
-          ? "No confirmations yet"
-          : `${confirmationCount} ${confirmationCount === 1 ? "traveller" : "travellers"} confirmed this version`}
+          ? ""
+          : `${confirmationCount} ${confirmationCount === 1 ? "traveller" : "travellers"} confirmed this tip.`}
       </p>
       <p
         className={error ? "field-error" : "sr-only"}

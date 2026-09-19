@@ -34,6 +34,8 @@ export function AccountMenu({
         {
           label: "Sign out",
           onSelect: signOut,
+          separator: true,
+          tone: "danger",
         },
       ]}
     />

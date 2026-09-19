@@ -45,9 +45,11 @@ export default async function HomePage() {
             <nav className="suggestions" aria-label="Suggested destinations">
               <span className="hidden md:inline">A few places to start:</span>
               <Link href="/destinations/badami">Badami</Link>
-              <Link href="/destinations/hampi">Hampi</Link>
+              <Link href="/destinations/matheran">Matheran</Link>
               <Link href="/destinations/varkala">Varkala</Link>
+              <Link href="/destinations/munnar">Munnar</Link>
               <Link href="/destinations/goa">Goa</Link>
+
             </nav>
           </div>
           <Notebook />

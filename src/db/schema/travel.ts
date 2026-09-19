@@ -44,6 +44,9 @@ export const profiles = sqliteTable(
       .references(() => user.id),
     displayName: text("display_name").notNull(),
     username: text("username").notNull(),
+    bio: text("bio"),
+    instagramUrl: text("instagram_url"),
+    youtubeUrl: text("youtube_url"),
     role: text("role", { enum: ["traveler", "moderator"] })
       .notNull()
       .default("traveler"),

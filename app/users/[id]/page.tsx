@@ -46,6 +46,35 @@ export default async function UserProfilePage({
           <p className="eyebrow">TrailNote contributor</p>
           <h1 className="page-title">{profile.displayName}</h1>
           <p className="profile-handle">@{profile.username}</p>
+          {(profile.bio || profile.instagramUrl || profile.youtubeUrl) && (
+            <div className="public-profile-details">
+              {profile.bio && (
+                <p className="public-profile-bio">{profile.bio}</p>
+              )}
+              {(profile.instagramUrl || profile.youtubeUrl) && (
+                <div className="public-profile-links">
+                  {profile.instagramUrl && (
+                    <a
+                      href={profile.instagramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow ugc"
+                    >
+                      Instagram <span aria-hidden="true">↗</span>
+                    </a>
+                  )}
+                  {profile.youtubeUrl && (
+                    <a
+                      href={profile.youtubeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow ugc"
+                    >
+                      YouTube <span aria-hidden="true">↗</span>
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </header>
 

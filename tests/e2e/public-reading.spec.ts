@@ -144,7 +144,9 @@ test("signed-in mobile menu exposes account destinations", async ({ page }) => {
 
   await page.getByRole("button", { name: "Open navigation menu" }).click();
   const menu = page.getByRole("menu");
-  await expect(menu.getByRole("menuitem", { name: "My tips" })).toBeVisible();
+  await expect(
+    menu.getByRole("menuitem", { name: "Profile", exact: true }),
+  ).toBeVisible();
   await expect(
     menu.getByRole("menuitem", { name: "Public profile" }),
   ).toBeVisible();
@@ -153,6 +155,45 @@ test("signed-in mobile menu exposes account destinations", async ({ page }) => {
   ).toBeVisible();
   await expect(menu.getByRole("menuitem", { name: "Sign out" })).toBeVisible();
   await expect(menu.getByRole("menuitem", { name: "Sign in" })).toHaveCount(0);
+});
+
+test("profile keeps sign out inside the account card at every breakpoint", async ({
+  page,
+}) => {
+  await signInAsObserver(page);
+
+  for (const viewport of [
+    { width: 1280, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/me");
+
+    const card = page.locator(".account-profile");
+    const signOut = card.getByRole("button", { name: "Sign out" });
+    await expect(signOut).toBeVisible();
+
+    const [cardBox, signOutBox] = await Promise.all([
+      card.boundingBox(),
+      signOut.boundingBox(),
+    ]);
+    expect(cardBox).not.toBeNull();
+    expect(signOutBox).not.toBeNull();
+    expect(signOutBox!.x).toBeGreaterThanOrEqual(cardBox!.x);
+    expect(signOutBox!.x + signOutBox!.width).toBeLessThanOrEqual(
+      cardBox!.x + cardBox!.width,
+    );
+    expect(signOutBox!.y + signOutBox!.height).toBeLessThanOrEqual(
+      cardBox!.y + cardBox!.height,
+    );
+
+    if (viewport.width < 768) {
+      expect(signOutBox!.width).toBeLessThan(cardBox!.width / 2);
+      expect(
+        cardBox!.x + cardBox!.width - (signOutBox!.x + signOutBox!.width),
+      ).toBeLessThanOrEqual(24);
+    }
+  }
 });
 
 test("destination feed explains what tips contain", async ({ page }) => {

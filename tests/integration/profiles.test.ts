@@ -33,6 +33,39 @@ afterEach(async () => {
 });
 
 describe("public profiles", () => {
+  it("persists, returns, and clears profile context fields", async () => {
+    const userId = fixtureId(1);
+    await updateProfile(connection.db, userId, {
+      displayName: "Ananya",
+      username: "ananya-context",
+      bio: "Backpacker exploring India by train.",
+      instagramUrl: "@ananya.travels",
+      youtubeUrl: "@ananyatravels",
+      avatarIntent: "keep",
+      avatarId: null,
+    });
+    expect(
+      await publicProfile(connection.db, userId, undefined, +fixtureClock),
+    ).toMatchObject({
+      bio: "Backpacker exploring India by train.",
+      instagramUrl: "https://www.instagram.com/ananya.travels/",
+      youtubeUrl: "https://www.youtube.com/@ananyatravels",
+    });
+
+    await updateProfile(connection.db, userId, {
+      displayName: "Ananya",
+      username: "ananya-context",
+      bio: "",
+      instagramUrl: "",
+      youtubeUrl: "",
+      avatarIntent: "keep",
+      avatarId: null,
+    });
+    expect(
+      await publicProfile(connection.db, userId, undefined, +fixtureClock),
+    ).toMatchObject({ bio: null, instagramUrl: null, youtubeUrl: null });
+  });
+
   it("allocates distinct defaults and releases renamed usernames", async () => {
     const firstId = "10000000-0000-4000-8000-000000000001";
     const secondId = "10000000-0000-4000-8000-000000000002";

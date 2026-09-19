@@ -100,6 +100,9 @@ export async function viewerState() {
       id: session.user.id,
       name: profile.displayName,
       username: profile.username,
+      bio: profile.bio,
+      instagramUrl: profile.instagramUrl,
+      youtubeUrl: profile.youtubeUrl,
       role: profile.role,
       avatar:
         row.avatarPath && row.avatarWidth && row.avatarHeight

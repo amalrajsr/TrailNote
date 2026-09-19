@@ -29,6 +29,9 @@ export async function updateOwnProfile(
   const parsed = profileInput.safeParse({
     displayName: formData.get("displayName"),
     username: formData.get("username"),
+    bio: formData.get("bio"),
+    instagramUrl: formData.get("instagramUrl"),
+    youtubeUrl: formData.get("youtubeUrl"),
     avatarIntent: formData.get("avatarIntent"),
     avatarId: formData.get("avatarId"),
   });

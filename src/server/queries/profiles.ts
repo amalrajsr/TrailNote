@@ -27,6 +27,9 @@ export async function publicProfile(
         id: s.profiles.userId,
         displayName: s.profiles.displayName,
         username: s.profiles.username,
+        bio: s.profiles.bio,
+        instagramUrl: s.profiles.instagramUrl,
+        youtubeUrl: s.profiles.youtubeUrl,
         avatarPath: s.uploadAssets.imagekitPath,
         avatarWidth: s.uploadAssets.width,
         avatarHeight: s.uploadAssets.height,
@@ -111,6 +114,9 @@ export async function publicProfile(
     id: profile.id,
     displayName: profile.displayName,
     username: profile.username,
+    bio: profile.bio,
+    instagramUrl: profile.instagramUrl,
+    youtubeUrl: profile.youtubeUrl,
     avatar:
       profile.avatarPath && profile.avatarWidth && profile.avatarHeight
         ? {

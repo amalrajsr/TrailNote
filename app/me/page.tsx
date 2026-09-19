@@ -34,7 +34,7 @@ export default async function MePage({
       <header className="account-hero">
         <div className="account-heading">
           <p className="eyebrow">Your TrailNote</p>
-          <h1 className="page-title">My tips</h1>
+          <h1 className="page-title">Profile</h1>
           <p>Everything you&apos;ve shared to help another traveller.</p>
         </div>
         <div className="account-profile-column">
@@ -43,8 +43,12 @@ export default async function MePage({
             name={user.name}
             username={user.username}
             avatar={user.avatar}
-          />
-          <AccountSignOut />
+            bio={user.bio}
+            instagramUrl={user.instagramUrl}
+            youtubeUrl={user.youtubeUrl}
+          >
+            <AccountSignOut />
+          </AccountProfileEditor>
         </div>
       </header>
 

@@ -172,6 +172,9 @@ export async function updateProfile(
       .set({
         displayName: input.displayName,
         username: input.username,
+        bio: input.bio,
+        instagramUrl: input.instagramUrl,
+        youtubeUrl: input.youtubeUrl,
         updatedAt: now,
       })
       .where(eq(s.profiles.userId, userId))

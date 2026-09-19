@@ -41,7 +41,12 @@ export function MobileHeaderMenu({ user }: { user: Viewer | null }) {
                   label: "Community guidelines",
                   href: "/community-guidelines",
                 },
-                { label: "Sign out", onSelect: signOut },
+                {
+                  label: "Sign out",
+                  onSelect: signOut,
+                  separator: true,
+                  tone: "danger" as const,
+                },
               ]
             : [{ label: "Sign in", href: "/sign-in", separator: true }]),
         ]}
