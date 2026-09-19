@@ -547,7 +547,7 @@ test("guest reaction returns to a focused intent without voting", async ({
   await page.goto(`/tips/${changedTipId}?intent=confirm`);
   await expect(page.getByRole("button", { name: "Confirmed" })).toBeFocused();
   await expect(page.locator(".reaction-count")).toContainText(
-    "7 travellers confirmed this version",
+    "7 travellers confirmed this tip.",
   );
 });
 
@@ -558,9 +558,15 @@ test("signed-in traveller can confirm, correct the month, undo, and mark helpful
   await page.goto(`/tips/${changedTipId}`);
 
   await page.getByRole("button", { name: "Still accurate" }).click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Confirm this tip is still accurate?",
+    }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Confirm" }).click();
   await expect(page.getByText(/Confirmed for September 2026/)).toBeVisible();
   await expect(page.locator(".reaction-count")).toContainText(
-    "8 travellers confirmed this version",
+    "8 travellers confirmed this tip.",
   );
   await expect(page.locator(".detail-main .badge")).toContainText(
     "Change reported",
@@ -573,22 +579,30 @@ test("signed-in traveller can confirm, correct the month, undo, and mark helpful
     page.getByRole("button", { name: "Still accurate" }),
   ).toBeVisible();
   await expect(page.locator(".reaction-count")).toContainText(
-    "7 travellers confirmed this version",
+    "7 travellers confirmed this tip.",
   );
 
   const helpful = page.getByRole("button", { name: "Helpful 0" });
   await helpful.click();
+  await expect(
+    page.getByRole("heading", { name: "Mark as helpful?" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Mark helpful" }).click();
   await expect(page.getByRole("button", { name: "Helpful 1" })).toHaveAttribute(
     "aria-pressed",
     "true",
   );
+  await page.getByRole("button", { name: "Helpful 1" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Remove Helpful mark?" }),
+  ).toBeVisible();
   await Promise.all([
     page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
         response.url().includes(`/tips/${changedTipId}`),
     ),
-    page.getByRole("button", { name: "Helpful 1" }).click(),
+    page.getByRole("button", { name: "Remove mark" }).click(),
   ]);
   await expect(page.getByRole("button", { name: "Helpful 0" })).toHaveAttribute(
     "aria-pressed",
@@ -609,7 +623,8 @@ test("optimistic reaction state rolls back after a transport failure", async ({
     else await route.continue();
   });
   await page.getByRole("button", { name: "Helpful 0" }).click();
-  await expect(page.locator(".reaction-region .field-error")).toContainText(
+  await page.getByRole("button", { name: "Mark helpful" }).click();
+  await expect(page.locator('.toast[data-tone="error"]')).toContainText(
     "Helpful could not be updated. Your previous choice is unchanged.",
   );
   await expect(page.getByRole("button", { name: "Helpful 0" })).toHaveAttribute(

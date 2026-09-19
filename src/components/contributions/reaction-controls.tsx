@@ -11,7 +11,7 @@ import {
 } from "../../../app/tips/[id]/actions";
 import { currentMonth, formatMonth } from "../../lib/visit-month";
 import { Button, Input } from "../ui/primitives";
-import { Popover } from "../ui/overlays";
+import { Dialog, Popover } from "../ui/overlays";
 import { toast } from "../ui/toaster";
 
 type State = {
@@ -51,6 +51,9 @@ export function ReactionControls({
   const [helpfulCount, setHelpfulCount] = useState(initialHelpfulCount);
   const [pending, setPending] = useState<"confirm" | "helpful" | null>(null);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [feedbackPrompt, setFeedbackPrompt] = useState<
+    "confirm" | "helpful" | null
+  >(null);
   const [monthDraft, setMonthDraft] = useState(
     initialState.confirmationMonth ?? currentMonth(),
   );
@@ -66,6 +69,16 @@ export function ReactionControls({
     router.push(
       `/sign-in?returnTo=${encodeURIComponent(`/tips/${id}?intent=${nextIntent}`)}`,
     );
+  }
+
+  function requestConfirmation() {
+    if (!initialState.authenticated) return requestSignIn("confirm");
+    setFeedbackPrompt("confirm");
+  }
+
+  function requestHelpful() {
+    if (!initialState.authenticated) return requestSignIn("helpful");
+    setFeedbackPrompt("helpful");
   }
 
   async function saveConfirmation(month: string) {
@@ -241,7 +254,7 @@ export function ReactionControls({
             ref={confirmRef}
             variant="secondary"
             busy={pending === "confirm"}
-            onClick={() => saveConfirmation(currentMonth())}
+            onClick={requestConfirmation}
           >
             <Check size={18} aria-hidden="true" /> Still accurate
           </Button>
@@ -254,7 +267,7 @@ export function ReactionControls({
           variant="quiet"
           busy={pending === "helpful"}
           aria-pressed={helpful}
-          onClick={changeHelpful}
+          onClick={requestHelpful}
         >
           <ThumbsUp size={18} aria-hidden="true" /> Helpful {helpfulCount}
         </Button>
@@ -264,6 +277,53 @@ export function ReactionControls({
           ? ""
           : `${confirmationCount} ${confirmationCount === 1 ? "traveller" : "travellers"} confirmed this tip.`}
       </p>
+      <Dialog
+        open={feedbackPrompt !== null}
+        onOpenChange={(open) => {
+          if (!open) setFeedbackPrompt(null);
+        }}
+        title={
+          feedbackPrompt === "confirm"
+            ? "Confirm this tip is still accurate?"
+            : helpful
+              ? "Remove Helpful mark?"
+              : "Mark as helpful?"
+        }
+        description={
+          feedbackPrompt === "confirm"
+            ? "Only confirm this tip if you recently experienced the same information and it is still correct."
+            : helpful
+              ? "This will remove your Helpful mark from this tip."
+              : "Mark this tip as helpful if you found the information useful."
+        }
+        className="feedback-confirmation-dialog"
+      >
+        <div className="dialog-actions">
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() => setFeedbackPrompt(null)}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              const action = feedbackPrompt;
+              setFeedbackPrompt(null);
+              if (action === "confirm") void saveConfirmation(currentMonth());
+              if (action === "helpful") void changeHelpful();
+            }}
+          >
+            {feedbackPrompt === "confirm"
+              ? "Confirm"
+              : helpful
+                ? "Remove mark"
+                : "Mark helpful"}
+          </button>
+        </div>
+      </Dialog>
     </div>
   );
 }

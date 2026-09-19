@@ -64,7 +64,7 @@ export function Menu({
     href?: string;
     onSelect?: () => void | Promise<void>;
     separator?: boolean;
-    tone?: "default" | "danger";
+    tone?: "default" | "danger" | "primary";
   }>;
 }) {
   return (
@@ -78,7 +78,7 @@ export function Menu({
                 <MenuPrimitive.Separator className="menu-separator" />
               )}
               <MenuPrimitive.Item
-                className={`menu-item${item.tone === "danger" ? " danger" : ""}`}
+                className={`menu-item${item.tone ? ` ${item.tone}` : ""}`}
                 onSelect={item.onSelect}
                 asChild={!!item.href}
               >

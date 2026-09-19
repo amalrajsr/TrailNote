@@ -4129,17 +4129,20 @@ textarea.field-input {
   right: 8px;
   top: 8px;
 }
-.dialog.edit-feedback-dialog {
+.dialog.edit-feedback-dialog,
+.dialog.feedback-confirmation-dialog {
   width: min(520px, calc(100% - 32px));
   padding: 32px;
 }
-.edit-feedback-dialog > .muted {
+.edit-feedback-dialog > .muted,
+.feedback-confirmation-dialog > .muted {
   max-width: 43ch;
   margin: 0;
   font-size: 16px;
   line-height: 26px;
 }
-.edit-feedback-dialog .dialog-actions {
+.edit-feedback-dialog .dialog-actions,
+.feedback-confirmation-dialog .dialog-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -4147,7 +4150,8 @@ textarea.field-input {
   padding-top: 20px;
   border-top: 1px solid var(--border);
 }
-.edit-feedback-dialog .dialog-actions .btn {
+.edit-feedback-dialog .dialog-actions .btn,
+.feedback-confirmation-dialog .dialog-actions .btn {
   min-width: 132px;
 }
 .popover {
@@ -4177,6 +4181,13 @@ textarea.field-input {
 }
 .menu-item.danger[data-highlighted] {
   background: var(--danger-soft);
+}
+.menu-item.primary {
+  color: var(--brand);
+}
+.menu-item.primary[data-highlighted] {
+  background: var(--brand-faint);
+  color: var(--brand-hover);
 }
 .menu-separator {
   height: 1px;
@@ -5482,14 +5493,17 @@ summary {
   .dialog {
     padding: 24px;
   }
-  .dialog.edit-feedback-dialog {
+  .dialog.edit-feedback-dialog,
+  .dialog.feedback-confirmation-dialog {
     padding: 24px;
   }
-  .edit-feedback-dialog .dialog-actions {
+  .edit-feedback-dialog .dialog-actions,
+  .feedback-confirmation-dialog .dialog-actions {
     display: grid;
     grid-template-columns: 1fr;
   }
-  .edit-feedback-dialog .dialog-actions .btn {
+  .edit-feedback-dialog .dialog-actions .btn,
+  .feedback-confirmation-dialog .dialog-actions .btn {
     width: 100%;
   }
   .tip-thumbnail {

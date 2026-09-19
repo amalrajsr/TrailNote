@@ -48,7 +48,14 @@ export function MobileHeaderMenu({ user }: { user: Viewer | null }) {
                   tone: "danger" as const,
                 },
               ]
-            : [{ label: "Sign in", href: "/sign-in", separator: true }]),
+            : [
+                {
+                  label: "Sign in",
+                  href: "/sign-in",
+                  separator: true,
+                  tone: "primary" as const,
+                },
+              ]),
         ]}
       />
     </div>
