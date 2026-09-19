@@ -43,7 +43,7 @@ export default async function HomePage() {
             </p>
             <DestinationSearch />
             <nav className="suggestions" aria-label="Suggested destinations">
-              <span>A few places to start:</span>
+              <span className="hidden md:inline">A few places to start:</span>
               <Link href="/destinations/badami">Badami</Link>
               <Link href="/destinations/hampi">Hampi</Link>
               <Link href="/destinations/varkala">Varkala</Link>
