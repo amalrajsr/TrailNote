@@ -220,10 +220,10 @@ export function ReportReviewDrawer({
         : "Hide tip";
   const hideConfirmationDescription =
     tip.status === "hidden"
-      ? `Revision ${tip.currentRevision} is already hidden. It will stay hidden while this report is resolved.`
+      ? `Revision ${tip.currentRevision} is already hidden. It will stay hidden while this report is resolved. This reason may be shown to the tip author.`
       : tip.editedAfterReport
-        ? `This report was submitted against Revision ${report.reportedRevision}. You are about to hide the currently published Revision ${tip.currentRevision}.`
-        : "Travellers will no longer be able to see this tip.";
+        ? `This report was submitted against Revision ${report.reportedRevision}. You are about to hide the currently published Revision ${tip.currentRevision}. This reason may be shown to the tip author.`
+        : "Travellers will no longer be able to see this tip. This reason may be shown to the tip author.";
   const close = () => router.replace(closeHref, { scroll: false });
   const submit = (disposition: "hide" | "resolved" | "dismiss") =>
     startTransition(async () => {
@@ -431,10 +431,13 @@ export function ReportReviewDrawer({
       {report.status === "open" ? (
         <footer className="moderation-review-footer">
           <label className="label" htmlFor={`review-reason-${report.id}`}>
-            Resolution note <span className="optional">(required)</span>
+            {confirmHide ? "Reason for hiding" : "Resolution note"}{" "}
+            <span className="optional">(required)</span>
           </label>
           <p className="small muted">
-            Briefly explain the moderation decision.
+            {confirmHide
+              ? "This reason may be shown to the tip author. Write an author-safe explanation."
+              : "Briefly explain the moderation decision. If you hide this tip, this reason may be shown to its author."}
           </p>
           <Textarea
             id={`review-reason-${report.id}`}

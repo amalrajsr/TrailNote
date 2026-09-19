@@ -3745,9 +3745,69 @@ textarea.field-input {
   font-size: 14px;
   font-weight: 650;
 }
+.account-hidden-reason-trigger {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.account-hidden-reason-trigger:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .account-read-link:hover {
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+.account-deleted-date {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ink-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.hidden-reason-dialog h2 {
+  margin-bottom: 7px;
+}
+.hidden-reason-dialog > .muted {
+  line-height: 24px;
+}
+.hidden-reason-content {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+.hidden-reason-content > span {
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+.hidden-reason-content p {
+  margin-top: 5px;
+  line-height: 1.65;
+  white-space: pre-line;
+}
+.hidden-reason-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 22px;
+}
+.hidden-reason-actions > a {
+  color: var(--brand);
+  font-size: 14px;
+  font-weight: 650;
+  text-underline-offset: 3px;
+}
+.moderation-author-visible-note {
+  margin-top: -2px;
+  margin-bottom: 8px;
 }
 .account-delete-trigger {
   border-color: transparent;

@@ -96,11 +96,13 @@ function ActionDialog({
   description,
   onConfirm,
   danger = false,
+  authorVisibleReason = false,
 }: {
   label: string;
   description: string;
   onConfirm: (reason: string) => Promise<ActionResult>;
   danger?: boolean;
+  authorVisibleReason?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -139,8 +141,15 @@ function ActionDialog({
         description={description}
       >
         <label className="label" htmlFor={`moderation-reason-${label}`}>
-          Reason <span className="optional">(required)</span>
+          {authorVisibleReason ? "Reason for hiding" : "Reason"}{" "}
+          <span className="optional">(required)</span>
         </label>
+        {authorVisibleReason && (
+          <p className="small muted moderation-author-visible-note">
+            Explain briefly why this tip is being hidden. This reason may be
+            shown to the tip author.
+          </p>
+        )}
         <Textarea
           id={`moderation-reason-${label}`}
           value={reason}
@@ -406,6 +415,7 @@ function Tips({ tips, events }: { tips: Tip[]; events: Event[] }) {
                     label="Unpublish"
                     description="This tip will be hidden from travellers."
                     danger
+                    authorVisibleReason
                     onConfirm={(reason) =>
                       changeTipVisibility(tip.id, "published", "hidden", reason)
                     }

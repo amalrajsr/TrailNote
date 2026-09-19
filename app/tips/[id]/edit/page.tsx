@@ -19,7 +19,7 @@ export default async function EditTipPage({
     redirect(`/sign-in?returnTo=${encodeURIComponent(`/tips/${id}/edit`)}`);
   const { db } = await getDatabase();
   const tip = await ownedContribution(db, user.id, id);
-  if (!tip || tip.status === "deleted") notFound();
+  if (!tip || tip.status !== "published") notFound();
   const [[destination], [contact], photos, [confirmation], [helpful]] =
     await Promise.all([
       db

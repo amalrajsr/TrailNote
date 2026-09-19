@@ -24,6 +24,8 @@ type Tip = {
   body: string;
   revision: number;
   status: string;
+  deletedAt: number | null;
+  hiddenReason: string | null;
   category: Category;
   destination: { name: string; slug: string };
 };
@@ -31,6 +33,7 @@ type Tip = {
 function ContributionRow({ tip }: { tip: Tip }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [reasonOpen, setReasonOpen] = useState(false);
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
   const isPublished = tip.status === "published";
@@ -40,6 +43,16 @@ function ContributionRow({ tip }: { tip: Tip }) {
     : tip.status === "hidden"
       ? "Hidden"
       : "Deleted";
+  const deletedDate = tip.deletedAt
+    ? new Intl.DateTimeFormat("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }).format(tip.deletedAt)
+    : null;
+  const hiddenReason =
+    tip.hiddenReason ??
+    "This tip was hidden because it didn't meet TrailNote's community guidelines.";
 
   return (
     <article className="account-tip-card">
@@ -74,82 +87,129 @@ function ContributionRow({ tip }: { tip: Tip }) {
       </h2>
       <p className="account-tip-copy">{tip.body}</p>
 
-      {!isDeleted && (
-        <footer className="account-tip-actions">
-          {isPublished && (
-            <Link className="account-read-link" href={`/tips/${tip.id}`}>
-              Read tip <ArrowUpRight size={16} aria-hidden="true" />
-            </Link>
-          )}
-          <div className="account-tip-row-actions">
-            <Link className="account-tip-small-action" href={`/tips/${tip.id}/edit`}>
-              <Pencil size={14} aria-hidden="true" />
-              <span>Edit</span>
-            </Link>
-            <Dialog
-              open={open}
-              onOpenChange={(nextOpen) => {
-                setOpen(nextOpen);
-                if (!nextOpen) setError("");
-              }}
-              className="delete-tip-dialog"
-              title="Delete this tip?"
-              description="It will no longer be visible to travellers. This action cannot be undone."
-              icon={
-                <span className="delete-tip-icon" aria-hidden="true">
-                  <TriangleAlert size={23} />
-                </span>
-              }
-              trigger={
-                <button type="button" className="account-tip-small-action delete">
-                  <Trash2 size={14} aria-hidden="true" />
-                  <span>Delete</span>
-                </button>
-              }
-            >
-              <div className="delete-tip-context">
-                <span>{tip.destination.name}</span>
-                <strong>{tip.title}</strong>
-              </div>
-              {error && (
-                <p className="delete-tip-error" role="alert">
-                  {error}
-                </p>
+      <footer className="account-tip-actions">
+        {isDeleted ? (
+          <span className="account-deleted-date">
+            Deleted{deletedDate ? ` ${deletedDate}` : ""}
+          </span>
+        ) : (
+          <>
+            {isPublished ? (
+              <Link className="account-read-link" href={`/tips/${tip.id}`}>
+                Read tip <ArrowUpRight size={16} aria-hidden="true" />
+              </Link>
+            ) : (
+              <Dialog
+                open={reasonOpen}
+                onOpenChange={setReasonOpen}
+                className="hidden-reason-dialog"
+                title="Why was this tip hidden?"
+                description="This tip is no longer visible to other travellers because it didn't meet TrailNote's community guidelines."
+                trigger={
+                  <button
+                    type="button"
+                    className="account-read-link account-hidden-reason-trigger"
+                  >
+                    Why was this hidden?
+                  </button>
+                }
+              >
+                <div className="hidden-reason-content">
+                  <span>Reason</span>
+                  <p>{hiddenReason}</p>
+                </div>
+                <div className="hidden-reason-actions">
+                  <Link href="/community-guidelines">
+                    View community guidelines
+                  </Link>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setReasonOpen(false)}
+                  >
+                    Got it
+                  </Button>
+                </div>
+              </Dialog>
+            )}
+            <div className="account-tip-row-actions">
+              {isPublished && (
+                <Link
+                  className="account-tip-small-action"
+                  href={`/tips/${tip.id}/edit`}
+                >
+                  <Pencil size={14} aria-hidden="true" />
+                  <span>Edit</span>
+                </Link>
               )}
-              <div className="delete-tip-actions">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  busy={pending}
-                  type="button"
-                  className="danger"
-                  onClick={() =>
-                    startTransition(async () => {
-                      setError("");
-                      const result = await deleteOwnTip(tip.id, tip.revision);
-                      if (result.ok) {
-                        setOpen(false);
-                        toast("Tip deleted.");
-                        router.refresh();
-                      } else {
-                        setError(result.message);
-                        toast(result.message, "error");
-                      }
-                    })
-                  }
-                >
-                  {pending ? "Deleting…" : "Delete tip"}
-                </Button>
-              </div>
-            </Dialog>
-          </div>
-        </footer>
-      )}
+              <Dialog
+                open={open}
+                onOpenChange={(nextOpen) => {
+                  setOpen(nextOpen);
+                  if (!nextOpen) setError("");
+                }}
+                className="delete-tip-dialog"
+                title="Delete this tip?"
+                description="It will no longer be visible to travellers. This action cannot be undone."
+                icon={
+                  <span className="delete-tip-icon" aria-hidden="true">
+                    <TriangleAlert size={23} />
+                  </span>
+                }
+                trigger={
+                  <button
+                    type="button"
+                    className="account-tip-small-action delete"
+                  >
+                    <Trash2 size={14} aria-hidden="true" />
+                    <span>Delete</span>
+                  </button>
+                }
+              >
+                <div className="delete-tip-context">
+                  <span>{tip.destination.name}</span>
+                  <strong>{tip.title}</strong>
+                </div>
+                {error && (
+                  <p className="delete-tip-error" role="alert">
+                    {error}
+                  </p>
+                )}
+                <div className="delete-tip-actions">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    busy={pending}
+                    type="button"
+                    className="danger"
+                    onClick={() =>
+                      startTransition(async () => {
+                        setError("");
+                        const result = await deleteOwnTip(tip.id, tip.revision);
+                        if (result.ok) {
+                          setOpen(false);
+                          toast("Tip deleted.");
+                          router.refresh();
+                        } else {
+                          setError(result.message);
+                          toast(result.message, "error");
+                        }
+                      })
+                    }
+                  >
+                    {pending ? "Deleting…" : "Delete tip"}
+                  </Button>
+                </div>
+              </Dialog>
+            </div>
+          </>
+        )}
+      </footer>
     </article>
   );
 }

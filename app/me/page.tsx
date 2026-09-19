@@ -16,15 +16,22 @@ export default async function MePage({
   const user = await viewer();
   if (!user) redirect("/sign-in?returnTo=/me");
   const { status } = await searchParams;
-  const filter = status === "published" || status === "hidden" ? status : "all";
+  const filter =
+    status === "published" || status === "hidden" || status === "deleted"
+      ? status
+      : "all";
   const { db } = await getDatabase();
   const allTips = await accountContributions(db, user.id);
+  const activeTips = allTips.filter((tip) => tip.status !== "deleted");
   const tips =
-    filter === "all" ? allTips : allTips.filter((tip) => tip.status === filter);
+    filter === "all"
+      ? activeTips
+      : allTips.filter((tip) => tip.status === filter);
   const counts = {
-    all: allTips.length,
+    all: activeTips.length,
     published: allTips.filter((tip) => tip.status === "published").length,
     hidden: allTips.filter((tip) => tip.status === "hidden").length,
+    deleted: allTips.filter((tip) => tip.status === "deleted").length,
   };
   return (
     <main id="main" className="container page-top account-page">
@@ -38,7 +45,9 @@ export default async function MePage({
         youtubeUrl={user.youtubeUrl}
         joinedYear={new Date(user.createdAt).getUTCFullYear()}
         tipsSharedCount={counts.all}
-        placesCount={new Set(allTips.map((tip) => tip.destination.slug)).size}
+        placesCount={
+          new Set(activeTips.map((tip) => tip.destination.slug)).size
+        }
       />
 
       <section id="contributions" aria-labelledby="your-contributions">
@@ -46,7 +55,9 @@ export default async function MePage({
           <div>
             <div className="section-kicker">Your TrailNotes</div>
             <h2 id="your-contributions">Your contributions</h2>
-            <p>Manage the practical tips you have shared with other travellers.</p>
+            <p>
+              Manage the practical tips you have shared with other travellers.
+            </p>
           </div>
           <Link className="btn account-share-tip" href="/search">
             <Plus size={17} aria-hidden="true" /> Share a tip
@@ -75,6 +86,13 @@ export default async function MePage({
               href="/me?status=hidden"
             >
               Hidden <span className="count">{counts.hidden}</span>
+            </Link>
+            <Link
+              className={filter === "deleted" ? "tab selected" : "tab"}
+              aria-current={filter === "deleted" ? "page" : undefined}
+              href="/me?status=deleted"
+            >
+              Deleted <span className="count">{counts.deleted}</span>
             </Link>
           </nav>
         </div>
