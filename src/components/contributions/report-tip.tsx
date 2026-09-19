@@ -49,6 +49,7 @@ export function ReportTip({ id, revision }: { id: string; revision: number }) {
         />
         <Button
           busy={pending}
+          className="report-tip-submit"
           type="button"
           onClick={() =>
             startTransition(async () => {

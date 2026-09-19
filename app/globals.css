@@ -173,12 +173,17 @@ small,
   transform: translateY(1px);
 }
 .btn.secondary {
+  min-height: 44px;
+  padding: 10px 15px;
   background: var(--surface);
-  border-color: var(--control-border);
+  border-color: var(--border);
   color: var(--ink);
+  font-size: 13px;
+  font-weight: 650;
 }
 .btn.secondary:hover {
-  background: var(--surface-soft);
+  border-color: var(--brand-border);
+  background: var(--brand-faint);
 }
 .quiet {
   display: inline-flex;
@@ -2229,26 +2234,6 @@ textarea.field-input {
   flex-direction: column;
   align-items: stretch;
   gap: 6px;
-}
-
-.profile-actions .btn.account-profile-edit {
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 15px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-control);
-  background: var(--surface);
-  color: var(--ink);
-  font-size: 13px;
-  font-weight: 650;
-}
-
-.profile-actions .btn.account-profile-edit:hover {
-  border-color: var(--brand-border);
-  background: var(--brand-faint);
 }
 
 .public-link {
@@ -5623,4 +5608,8 @@ body:has(.composer-page) .site-footer .footer-grid::after {
   .btn:active {
     transform: none;
   }
+}
+
+.report-tip-submit{
+  width: 100%;
 }
