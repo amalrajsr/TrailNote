@@ -11,7 +11,7 @@ export function Footer() {
           <strong>Explore</strong>
           <Link href="/search">Search destinations</Link>
           <Link href="/#tips">Recent tips</Link>
-          <Link href="/search">Share a tip</Link>
+          <Link href="/search?intent=share">Share a tip</Link>
         </nav>
         <nav className="footer-col" aria-label="Community">
           <strong>Community</strong>

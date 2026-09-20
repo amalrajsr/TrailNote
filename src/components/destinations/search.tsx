@@ -9,8 +9,10 @@ type SearchState = "idle" | "loading" | "ready" | "error";
 
 export function DestinationSearch({
   initialQuery = "",
+  intent,
 }: {
   initialQuery?: string;
+  intent?: "share";
 }) {
   const router = useRouter();
   const id = useId();
@@ -27,6 +29,17 @@ export function DestinationSearch({
   const [errorMessage, setErrorMessage] = useState(
     "Couldn't load destinations right now. Please try again.",
   );
+  const isShareIntent = intent === "share";
+
+  function destinationHref(slug: string) {
+    return `/destinations/${slug}${isShareIntent ? "/add" : ""}`;
+  }
+
+  function searchHref(query: string) {
+    const searchParams = new URLSearchParams({ q: query });
+    if (isShareIntent) searchParams.set("intent", "share");
+    return `/search?${searchParams}`;
+  }
 
   useEffect(() => {
     const version = ++request.current;
@@ -75,7 +88,7 @@ export function DestinationSearch({
   async function choose(destination: SearchDestination) {
     if (destination.trailnoteSlug) {
       setOpen(false);
-      router.push(`/destinations/${destination.trailnoteSlug}`);
+      router.push(destinationHref(destination.trailnoteSlug));
       return;
     }
     if (!destination.providerPlaceId || saving) return;
@@ -92,7 +105,7 @@ export function DestinationSearch({
       });
       if (response.status === 401) {
         router.push(
-          `/sign-in?returnTo=${encodeURIComponent(`/search?q=${encodeURIComponent(query.trim())}`)}`,
+          `/sign-in?returnTo=${encodeURIComponent(searchHref(query.trim()))}`,
         );
         return;
       }
@@ -100,7 +113,7 @@ export function DestinationSearch({
       const data = (await response.json()) as {
         destination: { slug: string };
       };
-      router.push(`/destinations/${data.destination.slug}`);
+      router.push(destinationHref(data.destination.slug));
     } catch {
       setSaving(undefined);
       setErrorMessage("Couldn't add that destination. Please try again.");
@@ -130,8 +143,9 @@ export function DestinationSearch({
         }
       }}
     >
+      {isShareIntent && <input type="hidden" name="intent" value="share" />}
       <label htmlFor={id} className="label">
-        Where are you going?
+        {isShareIntent ? "Where did you travel?" : "Where are you going?"}
       </label>
       <div className="search" data-keyboard-focus={keyboardFocus || undefined}>
         <Search size={20} aria-hidden="true" />

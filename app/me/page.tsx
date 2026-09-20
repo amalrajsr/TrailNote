@@ -59,7 +59,7 @@ export default async function MePage({
               Manage the practical tips you have shared with other travellers.
             </p>
           </div>
-          <Link className="btn account-share-tip" href="/search">
+          <Link className="btn account-share-tip" href="/search?intent=share">
             <Plus size={17} aria-hidden="true" /> Share a tip
           </Link>
         </div>

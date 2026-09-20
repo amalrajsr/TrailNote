@@ -4,16 +4,18 @@ import { categoryLabels, type Category } from "../../lib/constants";
 export function DestinationTiles({
   destinations,
   categoryCounts,
+  intent,
 }: {
   destinations: DestinationSummary[];
   categoryCounts?: Record<string, Array<{ category: Category; count: number }>>;
+  intent?: "share";
 }) {
   return (
     <div className="dest-grid">
       {destinations.map((d) => (
         <Link
           className="destination-tile"
-          href={`/destinations/${d.slug}`}
+          href={`/destinations/${d.slug}${intent === "share" ? "/add" : ""}`}
           key={d.id}
         >
           <div className="tile-copy">

@@ -16,10 +16,11 @@ export const metadata = {
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; intent?: string }>;
 }) {
-  const { q = "" } = await searchParams,
+  const { q = "", intent } = await searchParams,
     { db } = await getDatabase();
+  const isShareIntent = intent === "share";
   const results = q ? await searchDestinations(db, q) : null;
   const [page, total] = q
     ? [null, 0]
@@ -32,18 +33,32 @@ export default async function SearchPage({
     : {};
   return (
     <main id="main" className="container page-top stack">
-      <h1 className="page-title">Find a place. See what travellers know.</h1>
-      <DestinationSearch initialQuery={q} />
+      <h1 className="page-title">
+        {isShareIntent ? "Where did you travel?" : "Explore places"}
+      </h1>
+      <p className="muted">
+        {isShareIntent
+          ? "Choose the place you want to share a tip about."
+          : "Find practical tips from travellers who've been there."}
+      </p>
+      <DestinationSearch
+        initialQuery={q}
+        intent={isShareIntent ? "share" : undefined}
+      />
       <section className="stack">
         <h2>{q ? `Results for “${q}”` : "Places on TrailNote"}</h2>
         {results?.length ? (
-          <DestinationTiles destinations={results} />
+          <DestinationTiles
+            destinations={results}
+            intent={isShareIntent ? "share" : undefined}
+          />
         ) : page?.destinations.length ? (
           <LazyDestinationTiles
             initialDestinations={page.destinations}
             initialCategoryCounts={categoryCounts}
             initialNextCursor={page.nextCursor}
             total={total}
+            intent={isShareIntent ? "share" : undefined}
           />
         ) : (
           <EmptyState title="No places found">

@@ -22,11 +22,13 @@ export function LazyDestinationTiles({
   initialCategoryCounts = {},
   initialNextCursor,
   total,
+  intent,
 }: {
   initialDestinations: DestinationSummary[];
   initialCategoryCounts?: CountsByDestination;
   initialNextCursor: string | null;
   total: number;
+  intent?: "share";
 }) {
   const [destinations, setDestinations] = useState(initialDestinations);
   const [categoryCounts, setCategoryCounts] = useState(initialCategoryCounts);
@@ -105,6 +107,7 @@ export function LazyDestinationTiles({
         <DestinationTiles
           destinations={destinations}
           categoryCounts={categoryCounts}
+          intent={intent}
         />
         <div
           ref={sentinel}

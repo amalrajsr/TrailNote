@@ -28,8 +28,8 @@ export function MobileHeaderMenu({ user }: { user: Viewer | null }) {
         }
         items={[
           { label: "Explore tips", href: "/#tips" },
-          { label: "Places", href: "/#places" },
-          { label: "Share a tip", href: "/search" },
+          { label: "Places", href: "/search" },
+          { label: "Share a tip", href: "/search?intent=share" },
           ...(user
             ? [
                 { label: "Profile", href: "/me", separator: true },

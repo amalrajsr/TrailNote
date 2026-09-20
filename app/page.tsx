@@ -49,7 +49,6 @@ export default async function HomePage() {
               <Link href="/destinations/varkala">Varkala</Link>
               <Link href="/destinations/munnar">Munnar</Link>
               <Link href="/destinations/goa">Goa</Link>
-
             </nav>
           </div>
           <Notebook />
@@ -125,7 +124,7 @@ export default async function HomePage() {
                 enough.
               </p>
             </div>
-            <Link className="btn" href="/search">
+            <Link className="btn" href="/search?intent=share">
               <Plus size={19} aria-hidden="true" />
               Share a tip
             </Link>

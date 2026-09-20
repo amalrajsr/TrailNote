@@ -112,6 +112,43 @@ test("homepage leads with tips and pairs four places with the map", async ({
   );
 });
 
+test("place exploration and tip sharing use distinct search intents", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  await expect(
+    page.getByRole("link", { name: "Places", exact: true }),
+  ).toHaveAttribute("href", "/search");
+  await expect(
+    page.getByRole("link", { name: "Share a tip" }).first(),
+  ).toHaveAttribute("href", "/search?intent=share");
+
+  await page.goto("/search");
+  await expect(
+    page.getByRole("heading", { name: "Explore places" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Find practical tips from travellers who've been there."),
+  ).toBeVisible();
+  await expect(page.locator(".destination-tile").first()).toHaveAttribute(
+    "href",
+    /\/destinations\/[^/]+$/,
+  );
+
+  await page.goto("/search?intent=share");
+  await expect(
+    page.getByRole("heading", { name: "Where did you travel?" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Choose the place you want to share a tip about."),
+  ).toBeVisible();
+  await expect(page.locator(".destination-tile").first()).toHaveAttribute(
+    "href",
+    /\/destinations\/[^/]+\/add$/,
+  );
+});
+
 test("guest mobile menu supports keyboard dismissal and focus restoration", async ({
   page,
 }) => {
@@ -226,6 +263,25 @@ test("destination search supports aliases and keyboard selection", async ({
   await expect(page).toHaveURL(/\/destinations\/mysuru$/);
   await expect(
     page.getByRole("heading", { level: 1, name: "Mysuru" }),
+  ).toBeVisible();
+});
+
+test("share-intent destination search opens the contribution composer", async ({
+  page,
+}) => {
+  await page.goto("/search?intent=share");
+  const search = page.getByRole("combobox", {
+    name: "Where did you travel?",
+  });
+
+  await search.fill("Mysore");
+  await expect(page.getByRole("option", { name: /Mysuru/ })).toBeVisible();
+  await search.press("ArrowDown");
+  await search.press("Enter");
+
+  await expect(page).toHaveURL(/\/destinations\/mysuru\/add$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Help the next traveller." }),
   ).toBeVisible();
 });
 

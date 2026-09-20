@@ -20,10 +20,10 @@ export async function Header() {
           <Link className="desktop-link" href="/#tips">
             Explore tips
           </Link>
-          <Link className="desktop-link" href="/#places">
+          <Link className="desktop-link" href="/search">
             Places
           </Link>
-          <Link className="desktop-link" href="/search">
+          <Link className="desktop-link" href="/search?intent=share">
             Share a tip
           </Link>
           {user ? (
