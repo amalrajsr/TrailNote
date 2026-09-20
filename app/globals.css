@@ -4340,6 +4340,12 @@ textarea.field-input {
   left: calc(100% + 7px);
   transform: translateY(-50%);
 }
+@media (max-width: 767px) {
+  .info-tooltip-content[data-position="right"][data-mobile-position="left"] {
+    right: calc(100% + 7px);
+    left: auto;
+  }
+}
 .tip-activity time,
 .last-confirmed time {
   font-variant-numeric: tabular-nums;
@@ -6368,17 +6374,20 @@ summary {
     padding: 20px;
   }
   .account-tip-actions {
-    align-items: stretch;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
   }
-  .account-tip-actions > .row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-  .account-tip-actions .btn,
   .account-read-link {
-    width: 100%;
-    justify-content: center;
+    width: auto;
+    justify-content: flex-start;
+    min-width: 0;
+    flex-shrink: 1;
+  }
+  .account-tip-row-actions {
+    margin-left: auto;
+    flex-shrink: 0;
   }
   .composer-success {
     margin-top: 20px;

@@ -96,7 +96,11 @@ export default async function EditTipPage({
         <h1 className="page-title">Edit your tip</h1>
         <p className="muted fresh-label">
           Editing this tip may reset existing traveller feedback.
-          <InfoTooltip label="traveller feedback" position="right">
+          <InfoTooltip
+            label="traveller feedback"
+            position="right"
+            mobilePosition="left"
+          >
             Confirmations and Helpful marks were given for the current
             information, so they may be reset when the tip changes.
           </InfoTooltip>

@@ -533,6 +533,38 @@ test("an author can open an edit form with the tip details populated", async ({
   ).toHaveValue("ABC Lodge");
 });
 
+test("edit feedback tooltip moves left on mobile", async ({ page }) => {
+  await signInAsObserver(page, newObserverSessionToken);
+
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(`/tips/${unconfirmedTipId}/edit`);
+
+    const trigger = page.getByRole("button", {
+      name: "About traveller feedback",
+    });
+    await trigger.click();
+    const tooltip = page.getByRole("tooltip");
+    await expect(tooltip).toBeVisible();
+
+    const [triggerBox, tooltipBox] = await Promise.all([
+      trigger.boundingBox(),
+      tooltip.boundingBox(),
+    ]);
+    expect(triggerBox).not.toBeNull();
+    expect(tooltipBox).not.toBeNull();
+    if (width < 768) {
+      expect(tooltipBox!.x + tooltipBox!.width).toBeLessThanOrEqual(
+        triggerBox!.x,
+      );
+    } else {
+      expect(tooltipBox!.x).toBeGreaterThanOrEqual(
+        triggerBox!.x + triggerBox!.width,
+      );
+    }
+  }
+});
+
 test("guest reaction returns to a focused intent without voting", async ({
   page,
 }) => {

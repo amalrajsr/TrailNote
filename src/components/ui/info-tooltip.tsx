@@ -7,10 +7,12 @@ export function InfoTooltip({
   label,
   children,
   position = "top",
+  mobilePosition,
 }: {
   label: string;
   children: ReactNode;
   position?: "top" | "right";
+  mobilePosition?: "left";
 }) {
   const [open, setOpen] = useState(false);
   const id = useId();
@@ -59,6 +61,7 @@ export function InfoTooltip({
         role="tooltip"
         className="info-tooltip-content"
         data-position={position}
+        data-mobile-position={mobilePosition}
         hidden={!open}
       >
         {children}
