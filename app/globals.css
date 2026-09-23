@@ -690,10 +690,58 @@ main {
   font-size: 14px;
   line-height: 23px;
 }
-.home-tips-grid {
+.home-tip-carousel-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+.home-tip-carousel-controls {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+.home-tip-carousel-controls button {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  transition:
+    border-color var(--motion-fast) var(--ease),
+    background var(--motion-fast) var(--ease);
+}
+.home-tip-carousel-controls button:not(:disabled):hover {
+  border-color: var(--brand-border);
+  background: var(--surface-soft);
+}
+.home-tip-carousel-viewport {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+}
+.home-tip-carousel-viewport::-webkit-scrollbar {
+  display: none;
+}
+.home-tip-carousel-track {
+  display: grid;
+  grid-auto-columns: calc((100% - 32px) / 3);
+  grid-auto-flow: column;
+  grid-template-rows: 1fr;
   gap: 16px;
+}
+.home-tip-carousel-track > * {
+  height: 100%;
+  scroll-snap-align: start;
+}
+.home-tip-carousel-mobile-controls {
+  display: none;
 }
 .home-tip-card {
   display: flex;
@@ -5424,8 +5472,8 @@ summary {
   .hero-note-example {
     padding: 15px 16px;
   }
-  .home-tips-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .home-tip-carousel-track {
+    grid-auto-columns: calc((100% - 16px) / 2);
   }
   .home-explore-grid {
     grid-template-columns: 1fr;
@@ -5811,8 +5859,48 @@ summary {
     font-size: 30px;
     line-height: 37px;
   }
-  .home-tips-grid {
-    grid-template-columns: 1fr;
+  .home-tip-carousel-head {
+    align-items: flex-start;
+  }
+  .home-tip-carousel-controls {
+    display: none;
+  }
+  .home-tip-carousel-track {
+    grid-auto-columns: 100%;
+  }
+  .home-tip-carousel .home-tip-card {
+    min-height: 300px;
+  }
+  .home-tip-carousel-mobile-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 12px;
+  }
+  .home-tip-carousel-indicator {
+    display: flex;
+    align-items: center;
+  }
+  .home-tip-carousel-indicator button {
+    display: grid;
+    width: 24px;
+    min-height: 44px;
+    padding: 0;
+    place-items: center;
+    border: 0;
+    background: transparent;
+  }
+  .home-tip-carousel-indicator button::before {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--border);
+    content: "";
+  }
+  .home-tip-carousel-indicator button.active::before {
+    width: 18px;
+    background: var(--brand);
   }
   .home-tip-card {
     min-height: auto;

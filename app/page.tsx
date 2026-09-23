@@ -3,7 +3,7 @@ import { DestinationSearch } from "../src/components/destinations/search";
 import { DestinationTiles } from "../src/components/destinations/tiles";
 import { MapIllustration } from "../src/components/destinations/map-illustration";
 import { Notebook } from "../src/components/destinations/notebook";
-import { HomepageTipCard } from "../src/components/contributions/homepage-card";
+import { HomepageTipCarousel } from "../src/components/contributions/homepage-tip-carousel";
 import { getDatabase } from "../src/db";
 import {
   categoryCountsForDestinations,
@@ -62,18 +62,7 @@ export default async function HomePage() {
           aria-labelledby="tips-title"
         >
           <div className="container">
-            <div className="section-head">
-              <div>
-                <p className="eyebrow">Useful right now</p>
-                <h2 id="tips-title">From travellers who’ve been there</h2>
-                <p>Real, practical tips from people who were actually there.</p>
-              </div>
-            </div>
-            <div className="home-tips-grid">
-              {featuredTips.map((tip) => (
-                <HomepageTipCard tip={tip} key={tip.id} />
-              ))}
-            </div>
+            <HomepageTipCarousel tips={featuredTips} />
           </div>
         </section>
       )}

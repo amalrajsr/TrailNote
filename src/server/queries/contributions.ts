@@ -131,10 +131,11 @@ export async function listContributions(
   return { cards, nextCursor };
 }
 
-export async function homepageContributions(db: Database, limit = 3) {
-  const requestedLimit = Math.min(Math.max(Math.trunc(limit), 1), 6);
+export async function homepageContributions(db: Database, limit = 9) {
+  const requestedLimit = Math.min(Math.max(Math.trunc(limit), 1), 9);
   const helpfulCount = sql<number>`(select count(*) from helpful_votes h join profiles p on p.user_id=h.user_id and p.status='active' where h.contribution_id=${c.id})`;
   const confirmationCount = sql<number>`(select count(*) from confirmations f join profiles p on p.user_id=f.user_id and p.status='active' where f.contribution_id=${c.id} and f.revision=${c.revision} and f.user_id<>${c.authorId})`;
+  const categoryPriority = sql<number>`case ${c.category} when 'transport' then 3 when 'stay' then 3 when 'food' then 3 when 'explore' then 2 else 1 end`;
   const candidates = await db
     .select({ tip: c })
     .from(c)
@@ -147,6 +148,7 @@ export async function homepageContributions(db: Database, limit = 3) {
     )
     .orderBy(
       desc(effective),
+      desc(categoryPriority),
       desc(confirmationCount),
       desc(helpfulCount),
       desc(c.createdAt),
