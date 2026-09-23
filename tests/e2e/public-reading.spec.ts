@@ -589,6 +589,48 @@ test("an author can open an edit form with the tip details populated", async ({
   ).toHaveValue("ABC Lodge");
 });
 
+test("restoring an edit draft uses a new submission key", async ({ page }) => {
+  await signInAsObserver(page, newObserverSessionToken);
+  await page.goto(`/tips/${unconfirmedTipId}/edit`);
+
+  const destinationId = await page
+    .locator('input[name="destinationId"]')
+    .inputValue();
+  const staleMutationId = "00000000-0000-4000-8000-000000000999";
+  await page.addInitScript(
+    ({ storageKey, mutationId }) => {
+      sessionStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          body: "The room was quiet and the owner shared a helpful map pin.",
+          category: "stay",
+          mapsUrl: "https://maps.google.com/?q=ABC+Lodge",
+          mutationId,
+        }),
+      );
+    },
+    {
+      storageKey: `fieldnotes:draft:v1:${destinationId}:edit-${unconfirmedTipId}`,
+      mutationId: staleMutationId,
+    },
+  );
+
+  await page.reload();
+
+  await expect(page.getByText("Your saved draft was restored.")).toBeVisible();
+  await expect(
+    page.getByRole("textbox", {
+      name: "What should someone know before staying here?",
+    }),
+  ).toHaveValue("The room was quiet and the owner shared a helpful map pin.");
+  await expect(page.locator('input[name="mapsUrl"]')).toHaveValue(
+    "https://maps.google.com/?q=ABC+Lodge",
+  );
+  await expect(page.locator('input[name="mutationId"]')).not.toHaveValue(
+    staleMutationId,
+  );
+});
+
 test("edit feedback tooltip moves left on mobile", async ({ page }) => {
   await signInAsObserver(page, newObserverSessionToken);
 

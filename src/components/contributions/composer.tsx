@@ -477,12 +477,17 @@ export function ContributionComposer({
       if (saved) {
         const parsed = JSON.parse(saved) as Partial<Draft>;
         if (parsed.body || parsed.category) {
+          // A saved draft may have been submitted before its response reached
+          // the browser. Restore its content, but never reuse that attempt's
+          // idempotency key for a new submission.
+          const savedDraft = { ...parsed };
+          delete savedDraft.mutationId;
           queueMicrotask(() => {
             if (cancelled) return;
             setDraft((current) => {
               const restoredDraft = {
                 ...current,
-                ...parsed,
+                ...savedDraft,
                 phone: "",
                 photos: Array.isArray(parsed.photos) ? parsed.photos : [],
               };
