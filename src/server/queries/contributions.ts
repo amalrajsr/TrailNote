@@ -407,6 +407,82 @@ export type ContributionCardDTO = Awaited<
   ReturnType<typeof cardsForRows>
 >[number];
 
+export type ViewerReactionState = {
+  authenticated: boolean;
+  isAuthor: boolean;
+  confirmationMonth: string | null;
+  helpful: boolean;
+};
+
+export async function viewerReactionStates(
+  db: Database,
+  cards: ContributionCardDTO[],
+  userId?: string,
+): Promise<Record<string, ViewerReactionState>> {
+  if (!userId)
+    return Object.fromEntries(
+      cards.map((card) => [
+        card.id,
+        {
+          authenticated: false,
+          isAuthor: false,
+          confirmationMonth: null,
+          helpful: false,
+        },
+      ]),
+    );
+
+  const ids = cards.map((card) => card.id);
+  if (!ids.length) return {};
+
+  const [confirmations, helpfulVotes] = await Promise.all([
+    db
+      .select({
+        id: s.confirmations.contributionId,
+        month: s.confirmations.visitedMonth,
+      })
+      .from(s.confirmations)
+      .innerJoin(
+        c,
+        and(
+          eq(c.id, s.confirmations.contributionId),
+          eq(c.revision, s.confirmations.revision),
+        ),
+      )
+      .where(
+        and(
+          inArray(s.confirmations.contributionId, ids),
+          eq(s.confirmations.userId, userId),
+        ),
+      ),
+    db
+      .select({ id: s.helpfulVotes.contributionId })
+      .from(s.helpfulVotes)
+      .where(
+        and(
+          inArray(s.helpfulVotes.contributionId, ids),
+          eq(s.helpfulVotes.userId, userId),
+        ),
+      ),
+  ]);
+  const confirmationById = new Map(
+    confirmations.map((confirmation) => [confirmation.id, confirmation.month]),
+  );
+  const helpfulIds = new Set(helpfulVotes.map((vote) => vote.id));
+
+  return Object.fromEntries(
+    cards.map((card) => [
+      card.id,
+      {
+        authenticated: true,
+        isAuthor: card.author.id === userId,
+        confirmationMonth: confirmationById.get(card.id) ?? null,
+        helpful: helpfulIds.has(card.id),
+      },
+    ]),
+  );
+}
+
 function readSnapshot(value: string): Partial<PublicContributionSnapshot> {
   return readPublicContributionSnapshot(value) ?? {};
 }
@@ -545,7 +621,7 @@ export async function viewerReactionState(
   db: Database,
   id: string,
   userId?: string,
-) {
+): Promise<ViewerReactionState> {
   const tip = await visibleContribution(db, id);
   if (!userId)
     return {

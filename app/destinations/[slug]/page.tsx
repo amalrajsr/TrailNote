@@ -6,7 +6,11 @@ import {
   destinationBySlug,
   categoryCounts,
 } from "../../../src/server/queries/destinations";
-import { listContributions } from "../../../src/server/queries/contributions";
+import {
+  listContributions,
+  viewerReactionStates,
+} from "../../../src/server/queries/contributions";
+import { viewer } from "../../../src/server/auth";
 import {
   categories,
   categoryLabels,
@@ -43,14 +47,20 @@ export default async function DestinationPage({
       ? (query.category as Category)
       : undefined,
     sort = query.sort === "newest" ? "newest" : "recent";
-  const [listing, counts] = await Promise.all([
+  const [listing, counts, user] = await Promise.all([
     listContributions(db, {
       destinationId: destination.id,
       category,
       sort,
     }),
     categoryCounts(db, destination.id),
+    viewer(),
   ]);
+  const reactionStates = await viewerReactionStates(
+    db,
+    listing.cards,
+    user?.id,
+  );
   const totalTips = category
     ? (counts.find((count) => count.category === category)?.count ?? 0)
     : destination.publishedRootTipCount;
@@ -89,9 +99,7 @@ export default async function DestinationPage({
                 href={`/destinations/${slug}?${new URLSearchParams({ ...(key !== "all" ? { category: key } : {}), sort })}#tips`}
               >
                 <CategoryIcon category={key as Category | "all"} />
-                {key === "all"
-                  ? "All"
-                  : categoryLabels[key as Category]}
+                {key === "all" ? "All" : categoryLabels[key as Category]}
                 <span className="sr-only">
                   {key === "all"
                     ? destination.publishedRootTipCount
@@ -108,9 +116,7 @@ export default async function DestinationPage({
         <section id="tips">
           <div className="list-heading">
             <h2>
-              {category
-                ? `${categoryLabels[category]} tips`
-                : "Latest tips"}
+              {category ? `${categoryLabels[category]} tips` : "Latest tips"}
             </h2>
             <span>
               {totalTips} {totalTips === 1 ? "tip" : "tips"}
@@ -123,6 +129,7 @@ export default async function DestinationPage({
               category={category}
               sort={sort}
               initialCards={listing.cards}
+              initialReactionStates={reactionStates}
               initialNextCursor={listing.nextCursor}
               total={totalTips}
             />

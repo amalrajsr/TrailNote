@@ -1,7 +1,11 @@
 import { getDatabase } from "../../../../../src/db";
 import { categories, type Category } from "../../../../../src/lib/constants";
 import { destinationBySlug } from "../../../../../src/server/queries/destinations";
-import { listContributions } from "../../../../../src/server/queries/contributions";
+import {
+  listContributions,
+  viewerReactionStates,
+} from "../../../../../src/server/queries/contributions";
+import { viewer } from "../../../../../src/server/auth";
 import { DomainError } from "../../../../../src/server/result";
 
 export async function GET(
@@ -30,13 +34,23 @@ export async function GET(
         { status: 404 },
       );
 
-    return Response.json(
-      await listContributions(db, {
+    const [listing, user] = await Promise.all([
+      listContributions(db, {
         destinationId: destination.id,
         category: category ?? undefined,
         sort: rawSort,
         cursor,
       }),
+      viewer(),
+    ]);
+    const reactionStates = await viewerReactionStates(
+      db,
+      listing.cards,
+      user?.id,
+    );
+
+    return Response.json(
+      { ...listing, reactionStates },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (error) {

@@ -2,11 +2,15 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { Category } from "../../lib/constants";
-import type { ContributionCardDTO } from "../../server/queries/contributions";
+import type {
+  ContributionCardDTO,
+  ViewerReactionState,
+} from "../../server/queries/contributions";
 import { TipCard } from "./card";
 
 type TipPageResponse = {
   cards: ContributionCardDTO[];
+  reactionStates: Record<string, ViewerReactionState>;
   nextCursor: string | null;
 };
 
@@ -15,6 +19,7 @@ export function InfiniteTipFeed({
   category,
   sort,
   initialCards,
+  initialReactionStates,
   initialNextCursor,
   total,
 }: {
@@ -22,11 +27,13 @@ export function InfiniteTipFeed({
   category?: Category;
   sort: "recent" | "newest";
   initialCards: ContributionCardDTO[];
+  initialReactionStates: Record<string, ViewerReactionState>;
   initialNextCursor: string | null;
   total: number;
 }) {
   const hintId = useId();
   const [cards, setCards] = useState(initialCards);
+  const [reactionStates, setReactionStates] = useState(initialReactionStates);
   const [nextCursor, setNextCursor] = useState(initialNextCursor);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const sentinel = useRef<HTMLDivElement>(null);
@@ -59,6 +66,7 @@ export function InfiniteTipFeed({
         ];
       });
       setNextCursor(page.nextCursor);
+      setReactionStates((current) => ({ ...current, ...page.reactionStates }));
       setStatus("idle");
     } catch {
       if (!abort.signal.aborted) setStatus("error");
@@ -100,7 +108,11 @@ export function InfiniteTipFeed({
       >
         <div className="stack">
           {cards.map((tip) => (
-            <TipCard tip={tip} key={tip.id} />
+            <TipCard
+              tip={tip}
+              reactionState={reactionStates[tip.id]}
+              key={tip.id}
+            />
           ))}
         </div>
         <div ref={sentinel} className="tip-sentinel" aria-hidden="true" />

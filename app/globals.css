@@ -1444,6 +1444,12 @@ main {
   gap: 8px;
   flex-wrap: wrap;
 }
+.tip-card-reactions {
+  flex: 1 1 auto;
+}
+.card-reaction-buttons {
+  flex-wrap: wrap;
+}
 .more {
   margin-left: auto;
 }
@@ -6076,6 +6082,15 @@ summary {
   .reaction-buttons > :nth-child(3) {
     justify-content: flex-end;
     padding-inline: 0;
+  }
+  .card-reaction-buttons {
+    display: flex;
+  }
+  .card-reaction-buttons > * {
+    width: auto;
+  }
+  .card-reaction-buttons > :first-child {
+    grid-column: auto;
   }
   .moderation-action {
     margin-top: 16px;

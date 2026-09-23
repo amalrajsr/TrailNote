@@ -30,6 +30,7 @@ export function ReactionControls({
   initialConfirmationCount,
   initialHelpfulCount,
   intent,
+  compact = false,
 }: {
   id: string;
   rootId: string;
@@ -39,6 +40,7 @@ export function ReactionControls({
   initialConfirmationCount: number;
   initialHelpfulCount: number;
   intent?: string;
+  compact?: boolean;
 }) {
   const router = useRouter();
   const [confirmationMonth, setConfirmationMonth] = useState(
@@ -197,8 +199,10 @@ export function ReactionControls({
     );
 
   return (
-    <div className="reaction-region">
-      <div className="row reaction-buttons">
+    <div className={`reaction-region${compact ? " tip-card-reactions" : ""}`}>
+      <div
+        className={`row reaction-buttons${compact ? " card-reaction-buttons" : ""}`}
+      >
         {confirmationMonth ? (
           <Popover
             open={confirmationOpen}
@@ -259,9 +263,11 @@ export function ReactionControls({
             <Check size={18} aria-hidden="true" /> Still accurate
           </Button>
         )}
-        <Link className="quiet" href={`/tips/${rootId}/update`}>
-          <Flag size={18} aria-hidden="true" /> Report a change
-        </Link>
+        {!compact && (
+          <Link className="quiet" href={`/tips/${rootId}/update`}>
+            <Flag size={18} aria-hidden="true" /> Report a change
+          </Link>
+        )}
         <Button
           ref={helpfulRef}
           variant="quiet"
@@ -272,11 +278,13 @@ export function ReactionControls({
           <ThumbsUp size={18} aria-hidden="true" /> Helpful {helpfulCount}
         </Button>
       </div>
-      <p className="reaction-count small muted">
-        {confirmationCount === 0
-          ? ""
-          : `${confirmationCount} ${confirmationCount === 1 ? "traveller" : "travellers"} confirmed this tip.`}
-      </p>
+      {!compact && (
+        <p className="reaction-count small muted">
+          {confirmationCount === 0
+            ? ""
+            : `${confirmationCount} ${confirmationCount === 1 ? "traveller" : "travellers"} confirmed this tip.`}
+        </p>
+      )}
       <Dialog
         open={feedbackPrompt !== null}
         onOpenChange={(open) => {

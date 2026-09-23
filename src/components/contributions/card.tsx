@@ -1,11 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Check, Clock3, Flag, MoreHorizontal, ThumbsUp } from "lucide-react";
+import { Clock3, Flag, MoreHorizontal } from "lucide-react";
 import { CategoryIcon } from "../ui/category-icon";
 import { categoryLabels } from "../../lib/constants";
 import { formatMoney, priceSuffix } from "../../lib/money";
 import { formatMonth } from "../../lib/visit-month";
-import type { ContributionCardDTO } from "../../server/queries/contributions";
+import type {
+  ContributionCardDTO,
+  ViewerReactionState,
+} from "../../server/queries/contributions";
+import { ReactionControls } from "./reaction-controls";
 
 const humanize = (value: string) =>
   value
@@ -28,7 +32,13 @@ function quickFacts(tip: ContributionCardDTO) {
   return values.slice(0, 3);
 }
 
-export function TipCard({ tip }: { tip: ContributionCardDTO }) {
+export function TipCard({
+  tip,
+  reactionState,
+}: {
+  tip: ContributionCardDTO;
+  reactionState: ViewerReactionState;
+}) {
   const photo = tip.photos[0];
   const facts = quickFacts(tip);
   return (
@@ -96,14 +106,16 @@ export function TipCard({ tip }: { tip: ContributionCardDTO }) {
         </p>
       )}
       <div className="tip-actions">
-        <Link className="quiet" href={`/tips/${tip.id}?intent=confirm`}>
-          <Check size={18} aria-hidden="true" />
-          Still accurate
-        </Link>
-        <Link className="quiet" href={`/tips/${tip.id}?intent=helpful`}>
-          <ThumbsUp size={18} aria-hidden="true" />
-          Helpful {tip.helpfulCount}
-        </Link>
+        <ReactionControls
+          compact
+          id={tip.id}
+          rootId={tip.id}
+          revision={tip.revision}
+          visitedMonth={tip.visitedMonth}
+          initialState={reactionState}
+          initialConfirmationCount={tip.confirmationCount}
+          initialHelpfulCount={tip.helpfulCount}
+        />
         <Link
           className="quiet more"
           href={`/tips/${tip.id}`}

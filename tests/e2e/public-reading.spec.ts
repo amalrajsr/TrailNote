@@ -681,6 +681,44 @@ test("guest reaction returns to a focused intent without voting", async ({
   );
 });
 
+test("destination cards open feedback controls without navigating away", async ({
+  page,
+}) => {
+  await signInAsObserver(page);
+  await page.goto("/destinations/badami");
+
+  const card = page
+    .locator(".tip-card")
+    .filter({ has: page.locator(`a[href="/tips/${unconfirmedTipId}"]`) });
+  await card.getByRole("button", { name: "Still accurate" }).click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Confirm this tip is still accurate?",
+    }),
+  ).toBeVisible();
+  await expect(page).toHaveURL("/destinations/badami");
+  await page.getByRole("button", { name: "Cancel" }).click();
+
+  await card.getByRole("button", { name: /Helpful \d+/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "Mark as helpful?" }),
+  ).toBeVisible();
+  await expect(page).toHaveURL("/destinations/badami");
+  await page.getByRole("button", { name: "Mark helpful" }).click();
+  await expect(card.getByRole("button", { name: "Helpful 1" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page).toHaveURL("/destinations/badami");
+
+  await card.getByRole("button", { name: "Helpful 1" }).click();
+  await page.getByRole("button", { name: "Remove mark" }).click();
+  await expect(card.getByRole("button", { name: "Helpful 0" })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+});
+
 test("signed-in traveller can confirm, correct the month, undo, and mark helpful", async ({
   page,
 }) => {
