@@ -2217,15 +2217,6 @@ textarea.field-input {
   gap: 8px;
   flex-wrap: wrap;
 }
-.moderation-action-cell .btn {
-  min-height: 40px;
-  padding: 8px 12px;
-  font-size: 13px;
-}
-.btn.danger-outline {
-  border-color: color-mix(in srgb, var(--danger) 45%, var(--control-border));
-  color: var(--danger);
-}
 .moderation-feedback {
   display: block;
   margin-top: 8px;
@@ -2251,9 +2242,6 @@ textarea.field-input {
   justify-content: center;
   gap: 16px;
   margin-top: 28px;
-}
-.moderation-pagination .btn {
-  min-height: 44px;
 }
 .moderation-history {
   margin: 12px 0 0;
@@ -6966,4 +6954,218 @@ body:has(.composer-page) .site-footer .footer-grid::after {
 
 .report-tip-submit {
   width: 100%;
+}
+
+/* Moderator sections use the same card, toolbar, and form patterns as other pages. */
+.moderation-intro {
+  max-width: 560px;
+  margin-top: 8px;
+  color: var(--ink-muted);
+}
+.moderation-workspace {
+  margin-top: 24px;
+}
+.moderation-workspace .toolbar {
+  margin: 22px 0 18px;
+}
+.moderation-tabs {
+  max-width: 100%;
+}
+.filters.moderation-filters {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 18px 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.moderation-search-field {
+  flex: 1 1 280px;
+  min-width: 220px;
+}
+.moderation-filter-field {
+  display: grid;
+  flex: 1 1 140px;
+  gap: 4px;
+  min-width: 140px;
+}
+.moderation-filter-field label {
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+.moderation-filters .field-input {
+  min-width: 0;
+}
+.moderation-table-wrap {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.moderation-table {
+  display: block;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+}
+.moderation-table thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.moderation-table tbody {
+  display: grid;
+  gap: 14px;
+}
+.moderation-table tbody tr {
+  display: block;
+}
+.moderation-table td {
+  display: grid;
+  grid-template-columns: minmax(96px, 120px) minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+  min-width: 0;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+.moderation-table td::before {
+  color: var(--ink-muted);
+  content: attr(data-label);
+  font-size: 12px;
+  font-weight: 650;
+}
+.moderation-table td:last-child {
+  border-bottom: 0;
+}
+.moderation-excerpt {
+  color: var(--ink);
+  white-space: pre-line;
+}
+.moderation-secondary {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+.moderation-badge {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-soft);
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 650;
+  text-transform: capitalize;
+}
+.moderation-badge-active,
+.moderation-badge-published,
+.moderation-badge-resolved {
+  background: var(--success-soft);
+  color: var(--brand);
+}
+.moderation-badge-open {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.moderation-badge-blocked,
+.moderation-badge-hidden,
+.moderation-badge-dismissed {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.moderation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.moderation-table td.moderation-action-cell {
+  display: grid;
+}
+.moderation-action-cell > .btn {
+  width: fit-content;
+}
+.moderation-history-details {
+  margin-top: 10px;
+  font-size: 13px;
+}
+.moderation-history-details summary {
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+.moderation-history {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+.moderation-empty {
+  margin: 0;
+}
+.moderation-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 22px;
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+@media (max-width: 900px) {
+  .moderation-filter-field {
+    flex-basis: 140px;
+  }
+}
+@media (max-width: 640px) {
+  .moderation-workspace {
+    margin-top: 22px;
+  }
+  .moderation-workspace .toolbar {
+    margin: 18px 0 14px;
+  }
+  .moderation-tabs {
+    width: 100%;
+  }
+  .moderation-search-field,
+  .moderation-filter-field {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+  }
+  .moderation-filters .field-input,
+  .moderation-filters .btn,
+  .moderation-filters .quiet {
+    width: 100%;
+  }
+  .moderation-table tbody tr {
+    padding: 19px 17px;
+  }
+  .moderation-table td {
+    grid-template-columns: minmax(82px, 30%) minmax(0, 1fr);
+    gap: 10px;
+    padding: 9px 0;
+  }
+  .moderation-action-cell {
+    padding-top: 13px;
+  }
+  .moderation-action-cell > .btn,
+  .moderation-action-cell .btn,
+  .moderation-actions .btn {
+    width: 100%;
+  }
 }

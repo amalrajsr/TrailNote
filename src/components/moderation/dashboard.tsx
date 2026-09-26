@@ -9,7 +9,8 @@ import {
   reviewContactRequest,
 } from "../../../app/moderation/actions";
 import { Dialog } from "../ui/overlays";
-import { Button, Input, Select, Textarea } from "../ui/primitives";
+import { Button, Input, Textarea } from "../ui/primitives";
+import { CustomSelect } from "../ui/custom-select";
 import { toast } from "../ui/toaster";
 import { ReportReviewDrawer } from "./report-review-drawer";
 import type { ModerationReportDetail } from "../../server/services/moderation";
@@ -127,7 +128,7 @@ function ActionDialog({
       <Button
         type="button"
         variant="secondary"
-        className={danger ? "danger-outline" : undefined}
+        className={danger ? "danger" : undefined}
         onClick={() => {
           setOpen(true);
         }}
@@ -215,7 +216,7 @@ function Reports({
     ...contacts.map((item) => ({ kind: "contact" as const, item })),
   ].sort((a, b) => b.item.createdAt - a.item.createdAt);
   return (
-    <div className="moderation-table-wrap">
+    <div className="account-contributions moderation-table-wrap">
       <table className="moderation-table">
         <thead>
           <tr>
@@ -235,7 +236,7 @@ function Reports({
             const report = kind === "report" ? item : null;
             const contact = kind === "contact" ? item : null;
             return (
-              <tr key={item.id}>
+              <tr className="tip-card moderation-record" key={item.id}>
                 <td data-label="Reason">
                   {report
                     ? (reportReasonLabels[
@@ -300,7 +301,9 @@ function Reports({
         </tbody>
       </table>
       {!rows.length && (
-        <p className="moderation-empty">No reports match these filters.</p>
+        <p className="empty-state moderation-empty">
+          No reports match these filters.
+        </p>
       )}
     </div>
   );
@@ -308,7 +311,7 @@ function Reports({
 
 function Users({ users }: { users: User[] }) {
   return (
-    <div className="moderation-table-wrap">
+    <div className="account-contributions moderation-table-wrap">
       <table className="moderation-table">
         <thead>
           <tr>
@@ -323,7 +326,7 @@ function Users({ users }: { users: User[] }) {
         </thead>
         <tbody>
           {users.map((user) => (
-            <tr key={user.id}>
+            <tr className="tip-card moderation-record" key={user.id}>
               <td data-label="User">
                 <strong>{user.displayName}</strong>
                 <span className="moderation-secondary">{user.email}</span>
@@ -370,7 +373,9 @@ function Users({ users }: { users: User[] }) {
         </tbody>
       </table>
       {!users.length && (
-        <p className="moderation-empty">No users match these filters.</p>
+        <p className="empty-state moderation-empty">
+          No users match these filters.
+        </p>
       )}
     </div>
   );
@@ -378,7 +383,7 @@ function Users({ users }: { users: User[] }) {
 
 function Tips({ tips, events }: { tips: Tip[]; events: Event[] }) {
   return (
-    <div className="moderation-table-wrap">
+    <div className="account-contributions moderation-table-wrap">
       <table className="moderation-table">
         <thead>
           <tr>
@@ -394,7 +399,7 @@ function Tips({ tips, events }: { tips: Tip[]; events: Event[] }) {
         </thead>
         <tbody>
           {tips.map((tip) => (
-            <tr key={tip.id}>
+            <tr className="tip-card moderation-record" key={tip.id}>
               <td data-label="Tip excerpt" className="moderation-excerpt">
                 {tip.body}
               </td>
@@ -436,7 +441,9 @@ function Tips({ tips, events }: { tips: Tip[]; events: Event[] }) {
         </tbody>
       </table>
       {!tips.length && (
-        <p className="moderation-empty">No tips match these filters.</p>
+        <p className="empty-state moderation-empty">
+          No tips match these filters.
+        </p>
       )}
     </div>
   );
@@ -499,30 +506,32 @@ export function ModerationDashboard({
         : "Search reports...";
   return (
     <section className="moderation-workspace">
-      <nav className="tabs moderation-tabs" aria-label="Moderation sections">
+      <div className="toolbar">
+        <nav className="tabs moderation-tabs" aria-label="Moderation sections">
         <Link
-          className={data.section === "reports" ? "selected" : ""}
+          className={data.section === "reports" ? "tab selected" : "tab"}
           aria-current={data.section === "reports" ? "page" : undefined}
           href={sectionHref("reports")}
         >
           Reports
         </Link>
         <Link
-          className={data.section === "users" ? "selected" : ""}
+          className={data.section === "users" ? "tab selected" : "tab"}
           aria-current={data.section === "users" ? "page" : undefined}
           href={sectionHref("users")}
         >
           Users
         </Link>
         <Link
-          className={data.section === "tips" ? "selected" : ""}
+          className={data.section === "tips" ? "tab selected" : "tab"}
           aria-current={data.section === "tips" ? "page" : undefined}
           href={sectionHref("tips")}
         >
           Tips
         </Link>
-      </nav>
-      <form className="moderation-filters" method="get">
+        </nav>
+      </div>
+      <form className="filters moderation-filters" method="get">
         <input type="hidden" name="section" value={data.section} />
         <div className="moderation-search-field">
           <label className="sr-only" htmlFor="moderation-q">
@@ -555,41 +564,45 @@ export function ModerationDashboard({
         </div>
         <div className="moderation-filter-field">
           <label htmlFor="moderation-status">Status</label>
-          <Select
+          <CustomSelect
             id="moderation-status"
+            ariaLabel="Status"
             name="status"
             defaultValue={data.status}
-          >
-            <option value="all">All</option>
-            {data.section === "reports" && (
-              <>
-                <option value="open">Open</option>
-                <option value="resolved">Resolved</option>
-                <option value="dismissed">Dismissed</option>
-              </>
-            )}
-            {data.section === "users" && (
-              <>
-                <option value="active">Active</option>
-                <option value="blocked">Blocked</option>
-              </>
-            )}
-            {data.section === "tips" && (
-              <>
-                <option value="published">Published</option>
-                <option value="hidden">Hidden</option>
-              </>
-            )}
-          </Select>
+            options={[
+              { value: "all", label: "All" },
+              ...(data.section === "reports"
+                ? [
+                    { value: "open", label: "Open" },
+                    { value: "resolved", label: "Resolved" },
+                    { value: "dismissed", label: "Dismissed" },
+                  ]
+                : data.section === "users"
+                  ? [
+                      { value: "active", label: "Active" },
+                      { value: "blocked", label: "Blocked" },
+                    ]
+                  : [
+                      { value: "published", label: "Published" },
+                      { value: "hidden", label: "Hidden" },
+                    ]),
+            ]}
+          />
         </div>
         {data.section === "reports" && (
           <div className="moderation-filter-field">
             <label htmlFor="moderation-type">Type</label>
-            <Select id="moderation-type" name="type" defaultValue={data.type}>
-              <option value="all">All reports</option>
-              <option value="tip">Tip reports</option>
-              <option value="contact">Contact removal</option>
-            </Select>
+            <CustomSelect
+              id="moderation-type"
+              ariaLabel="Type"
+              name="type"
+              defaultValue={data.type}
+              options={[
+                { value: "all", label: "All reports" },
+                { value: "tip", label: "Tip reports" },
+                { value: "contact", label: "Contact removal" },
+              ]}
+            />
           </div>
         )}
         <Button type="submit">Apply</Button>
