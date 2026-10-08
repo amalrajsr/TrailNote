@@ -6536,18 +6536,6 @@ summary {
 body:has(.composer-page) .nav .desktop-link:nth-child(2) {
   display: none;
 }
-body:has(.composer-page) .site-footer .footer-col {
-  display: none;
-}
-body:has(.composer-page) .site-footer .footer-grid {
-  grid-template-columns: minmax(0, 1fr) auto;
-}
-body:has(.composer-page) .site-footer .footer-grid::after {
-  content: "Composer design reference · reader-first contribution flow";
-  align-self: end;
-  color: var(--ink-muted);
-  font-size: 12px;
-}
 .composer-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
