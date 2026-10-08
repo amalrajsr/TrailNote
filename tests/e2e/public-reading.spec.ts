@@ -861,6 +861,43 @@ test("signed-in traveller publishes an attributed update without replacing the o
   await expect(page.getByText(update)).toBeVisible();
 });
 
+test("returning to a saved edit loads a fresh submission key", async ({
+  page,
+}) => {
+  await signInAsObserver(page, newObserverSessionToken);
+  const editPath = `/tips/${unconfirmedTipId}/edit`;
+  await page.goto(editPath);
+
+  const key = page.locator('input[name="mutationId"]');
+  const revision = page.locator('input[name="expectedRevision"]');
+  const firstKey = await key.inputValue();
+  const firstRevision = Number(await revision.inputValue());
+  await page
+    .getByRole("textbox", { name: "Google Maps link" })
+    .fill("https://maps.google.com/?q=ABC+Lodge");
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page).toHaveURL(`/tips/${unconfirmedTipId}`);
+
+  await page.goBack();
+  await expect(page).toHaveURL(editPath);
+  await expect(revision).toHaveValue(String(firstRevision + 1));
+  await expect(key).not.toHaveValue(firstKey);
+  await expect(
+    page.getByRole("textbox", { name: "Google Maps link" }),
+  ).toHaveValue("https://maps.google.com/?q=ABC+Lodge");
+
+  await page
+    .getByRole("textbox", { name: "Google Maps link" })
+    .fill("https://maps.google.com/?q=ABC+Lodge+Road");
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page).toHaveURL(`/tips/${unconfirmedTipId}`);
+  await page.goto(editPath);
+  await expect(revision).toHaveValue(String(firstRevision + 2));
+  await expect(
+    page.getByRole("textbox", { name: "Google Maps link" }),
+  ).toHaveValue("https://maps.google.com/?q=ABC+Lodge+Road");
+});
+
 for (const path of [
   "/",
   "/destinations/badami",

@@ -1,6 +1,7 @@
 "use server";
 
 import { ZodError } from "zod";
+import { revalidatePath } from "next/cache";
 import { getDatabase } from "../../../../src/db";
 import { viewer } from "../../../../src/server/auth";
 import {
@@ -33,9 +34,11 @@ export async function shareEdit(
       formText(data, "mutationId"),
       input,
     );
-    return "unchanged" in result && result.unchanged
-      ? { status: "unchanged" }
-      : { status: "success", tipId: result.id };
+    if ("unchanged" in result && result.unchanged)
+      return { status: "unchanged" };
+    // Back navigation must load the new revision and a fresh submission key.
+    revalidatePath(`/tips/${result.id}/edit`);
+    return { status: "success", tipId: result.id };
   } catch (error) {
     if (error instanceof ZodError)
       return {
