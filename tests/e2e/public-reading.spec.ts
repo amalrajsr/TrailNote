@@ -91,14 +91,27 @@ test("homepage leads with tips and pairs four places with the map", async ({
       name: "A little local knowledge. A better trip.",
     }),
   ).toBeVisible();
-  await expect(page.locator(".home-tip-card")).toHaveCount(3);
+  await expect(page.locator(".home-tip-card")).toHaveCount(9);
   await expect(page.locator(".destination-tile")).toHaveCount(4);
   await expect(
     page.getByRole("link", { name: "View all places" }),
   ).toHaveAttribute("href", "/search");
 
   const map = page.getByRole("navigation", { name: "Map destinations" });
-  await expect(map.getByRole("link")).toHaveCount(6);
+  const clusters = map.getByRole("button", {
+    name: /Explore \d+ nearby places/,
+  });
+  await expect(clusters.first()).toBeVisible();
+  await expect(clusters.first().locator(".marker-cluster-badge")).toHaveCSS(
+    "width",
+    "20px",
+  );
+  const visiblePlaces = await map.getByRole("link").count();
+  const groupedPlaces = (await clusters.allTextContents()).reduce(
+    (sum, count) => sum + Number(count),
+    0,
+  );
+  expect(visiblePlaces + groupedPlaces).toBe(6);
   expect(
     (await page.locator(".home-explore-map").boundingBox())?.height,
   ).toBeGreaterThanOrEqual(470);
@@ -106,10 +119,22 @@ test("homepage leads with tips and pairs four places with the map", async ({
     "mask-image",
     /india-outline\.svg/,
   );
-  await expect(map.getByRole("link", { name: "Badami, Karnataka" })).toHaveCSS(
-    "left",
-    /.+/,
+  const clusterSize = Number(await clusters.first().textContent());
+  await clusters.first().click();
+  await expect(page.getByText(`${clusterSize} nearby places`)).toBeVisible();
+  await expect(map.getByRole("link")).toHaveCount(clusterSize);
+  await page.getByRole("button", { name: "← All India" }).click();
+  await expect(clusters.first()).toBeFocused();
+
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(clusters.first().locator(".marker-cluster-badge")).toBeVisible();
+  await expect(clusters.first().locator(".marker-cluster-badge")).toHaveCSS(
+    "width",
+    "20px",
   );
+  await clusters.first().click();
+  await expect(page.locator(".map-region-links a").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "← All India" })).toBeVisible();
 });
 
 test("place exploration and tip sharing use distinct search intents", async ({
