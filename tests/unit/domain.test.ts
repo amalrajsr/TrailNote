@@ -41,7 +41,17 @@ describe("travel domain rules", () => {
       expect(() => parseMoney(v)).toThrow();
     expect(formatMoney(null, null)).toBe("Price not provided");
     expect(formatMoney(0, "entry_person")).toBe("Free");
-    expect(formatMoney(0, "meal")).toBe("₹0");
+    expect(formatMoney(0, "meal")).toBe("₹\u202f0");
+    expect(
+      [500, 1000, 10000, 100000].map((rupees) =>
+        formatMoney(rupees * 100, null),
+      ),
+    ).toEqual([
+      "₹\u202f500",
+      "₹\u202f1,000",
+      "₹\u202f10,000",
+      "₹\u202f1,00,000",
+    ]);
   });
   it("uses India month boundaries and preserves update precedence", () => {
     const now = new Date("2026-08-31T18:30:00Z");

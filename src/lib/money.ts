@@ -19,7 +19,9 @@ export function formatMoney(
     style: "currency",
     currency: "INR",
     maximumFractionDigits: paise % 100 ? 2 : 0,
-  }).format(paise / 100);
+  })
+    .format(paise / 100)
+    .replace("₹", "₹\u202f");
 }
 export function priceSuffix(unit: PriceUnit | null, label: string | null) {
   return unit === "other" ? `/ ${label}` : unit ? unitLabels[unit] : "";
